@@ -66,13 +66,14 @@ class Compiler {
 		var variaveisGlobais = this.codeTree.variaveis;
 		this.functions = [
 		{
-			name:"$undefined",bytecode:[] // para ignorar chamadas a funcoes que nao existem
+			name:"$undefined",bytecode:[B_RET] // para ignorar chamadas a funcoes que nao existem
 		},
 		{
 			name:"escreva",
 			bytecode:[
 			B_LOAD,0,
-			B_WRITE
+			B_WRITE,
+			B_RET
 			]
 		},
 		{
@@ -81,7 +82,8 @@ class Compiler {
 			B_PUSH,"\n-------------------------------\n",B_WRITE,
 			B_PUSH,"|    NÃO DEU PARA  LIMPAR     |\n",B_WRITE,
 			B_PUSH,"|    ESQUECI O DETERGENTE     |\n",B_WRITE,
-			B_PUSH,"-------------------------------\n",B_WRITE
+			B_PUSH,"-------------------------------\n",B_WRITE,
+			B_RET
 			]
 		},
 		{
@@ -108,6 +110,7 @@ class Compiler {
 		this.compileStatements(variaveisGlobais,funcInit);
 		this.functions.push(funcInit);
 		
+		
 		var FuncOff = this.functions.length;
 		
 		for(var i=0;i<funcoes.length;i++)
@@ -118,13 +121,14 @@ class Compiler {
 		{
 			
 			this.compileStatements(funcoes[i].statements,this.functions[FuncOff+i]);//,this.functions[FuncOff+i].bytecode,this.functions[FuncOff+i].variableMap);
-			
+			this.functions[FuncOff+i].bytecode.push(B_RET); // nao pode esquecer
 		}
 		
 		funcInit.bytecode.push(B_INVOKE);
 		var funcIndex = this.getFuncIndex("inicio");
 		funcInit.bytecode.push(funcIndex);
 		funcInit.bytecode.push(0); // nenhum argumento
+		funcInit.bytecode.push(B_RET); // nao pode esquecer
 		
 		this.scope = this.scope.parentScope; // volta.
 		
@@ -241,6 +245,31 @@ class Compiler {
 						//bc[jumpTrueIndex] = bc.length; // ajusta o index de onde acaba o True Block
 						this.replaceAllBy(bc,falseJumps,bc.length); // determina o inicio do bloco false
 					}
+				break;
+				case STATEMENT_enquanto:
+					var falseJumps = [];
+					
+					var loopStart = bc.length; // inicio dos statements
+					
+					this.compileLogicalExpr(stat.expr,bc,false,falseJumps);
+					
+					this.compileStatements(stat.statements,func);
+					
+					bc.push(B_GOTO);
+					bc.push(loopStart); // para voltar
+					
+					this.replaceAllBy(bc,falseJumps,bc.length); // determina onde ir para sair do loop
+				break;
+				case STATEMENT_facaEnquanto:
+					var trueJumps = [];
+					
+					var loopStart = bc.length; // inicio dos statements
+					
+					this.compileStatements(stat.statements,func);
+					
+					this.compileLogicalExpr(stat.expr,bc,trueJumps,false);
+					
+					this.replaceAllBy(bc,trueJumps,loopStart); // determina onde ir para sair do loop
 				break;
 			}
 		}

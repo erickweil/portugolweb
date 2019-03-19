@@ -2,6 +2,8 @@ var STATEMENT_declVar = 1;
 var STATEMENT_expr = 2;
 var STATEMENT_block = 3;
 var STATEMENT_se = 4;
+var STATEMENT_enquanto = 5;
+var STATEMENT_facaEnquanto = 6;
 
 
 function pmatch(index,tokens)
@@ -192,11 +194,45 @@ class Parser {
 		// "faca" block "enquanto" ( expression )
 		else if(t == T_enquanto)
 		{
-			this.erro(tokens[i],"enquanto não implementado ainda");
+			var logic_Expr = [];
+			var statements = [];
+			// i -->
+			// enquanto (   expr   )
+			i++;
+			if(tokens[i].id != T_parO) this.erro(tokens[i],"esqueceu de abrir os parênteses da condição do enquanto");
+			i = this.parseExpressao(i,tokens,logic_Expr,0);
+			//                  i -->
+			// enquanto   (   expr   )  statementOrBlock
+			if(tokens[i].id != T_parC) this.erro(tokens[i],"esqueceu de fechar os parênteses da condição do enquanto");
+			i++;
+			i = this.parseStatementOrBlock(i,tokens,statements);
+			
+			tree.push({id:STATEMENT_enquanto,index:tIndex,expr:logic_Expr[0],statements:statements});
 		}
 		else if(t == T_faca)
 		{
-			this.erro(tokens[i],"faca não implementado ainda");
+			var logic_Expr = [];
+			var statements = [];
+			//  i -->
+			// faca  statementOrBlock enquanto ( expr )
+			i++;
+			i = this.parseStatementOrBlock(i,tokens,statements);
+			
+			//                    i -->
+			// faca  statementOrBlock enquanto ( expr )
+			i++;
+			if(tokens[i].id != T_enquanto) this.erro(tokens[i],"esperando 'enquanto' aqui, a estrutura faca está incompleta");
+			
+			//                           i -->
+			// faca  statementOrBlock enquanto ( expr )
+			i++;
+			if(tokens[i].id != T_parO) this.erro(tokens[i],"esqueceu de abrir os parênteses da condição do enquanto");
+			i = this.parseExpressao(i,tokens,logic_Expr,0);
+			//                  i -->
+			// enquanto   (   expr   )  statementOrBlock
+			if(tokens[i].id != T_parC) this.erro(tokens[i],"esqueceu de fechar os parênteses da condição do enquanto");
+			
+			tree.push({id:STATEMENT_facaEnquanto,index:tIndex,expr:logic_Expr[0],statements:statements});
 		}
 		
 		
@@ -363,7 +399,7 @@ class Parser {
 			
 			var op = tokens[i].id;
 			
-			if(getOpPrecedence(op) < prevPrecedence) // acabou aqui, tem que voltar pro operador anterior
+			if(getOpPrecedence(op) <= prevPrecedence) // acabou aqui, tem que voltar pro operador anterior
 			{	
 				// voltar para o operador anterior
 				tree.push(member0);

@@ -59,7 +59,7 @@
 	}
 }
 </div>
-<div id="myOutput">
+<div id="myOutput" style="position:relative;">
 <div class="portugol-buttons">
 <input type="button" id="btn-run" value="Executar" onclick="executar()"/>
 
@@ -68,12 +68,16 @@
 </div>
 <div class="saida" id="saida"><div id="errorArea"></div><textarea id="textAreaSaida" onclick="cursorToEnd(this)" onkeyup="cursorToEnd(this)" oninput="receiveInput(this)">??</textarea></div>
 <div class="saida" id="hidden"></div>
+<input type="button" value="mostrar bytecode" style="position:absolute;top:0px;right:0px;background:transparent;z-index: 5;border:none" onclick="document.getElementById('hidden').style.display = 'block';"/>
 </div>
-<script src="tokenizer.js"></script>
-<script src="parser.js"></script>
+<script src="tokenizer.js"></script> <!-- Quebra o texto [para, , tokens, certinho]-->
+<script src="parser.js"></script> <!-- pega os tokens e constroi a árvore -->
+
 <!--<script src="interpreter.js"></script>-->
-<script src="vm.js"></script>
-<script src="vmcompiler.js"></script>
+<script src="vm.js"></script> <!-- executa o 'bytecode' -->
+<script src="vmcompiler.js"></script> <!-- compila a árvore em 'bytecode' ( parecido com java só que não é java ) -->
+
+<!--<script src="treeview.js"></script>< ! - -  para visuzalizar a árvore -->
 <script src="src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
 
 <script src="ace_portugol.js"></script>
@@ -180,7 +184,7 @@
 		interpreter.run();
 	}*/
 	
-	var lastvm = false;
+	//var lastvm = false;
 	var lastvmState = STATE_ENDED;
 	function executar()
 	{
@@ -194,15 +198,18 @@
 		
 		var relevantTokens = tokenizer.getRelevantTokens();
 		var tree = new Parser(relevantTokens,string_cod).parse();
-		console.log(tree.funcoes[0].statements);
+		console.log(tree);
 		
 		var compiler = new Compiler(tree,relevantTokens,string_cod,div_saida);
 		compiler.compile();
 		
-		lastvm = new Vm(compiler.functions,string_cod,div_saida);
-		document.getElementById("hidden").innerHTML = lastvm.toString();
-		lastvmState = lastvm.run();
-		if(lastvmState == STATE_ENDED) lastvm.escreva("\n\nPrograma Terminado.");
+		//lastvm = new Vm(compiler.functions,string_cod,div_saida);
+		VMsetup(compiler.functions,string_cod,div_saida);
+		document.getElementById("hidden").innerHTML = VMtoString();
+		//lastvmState = lastvm.run();
+		lastvmState = VMrun();
+		//VM_saidaDiv.value = VM_saida;
+		if(lastvmState == STATE_ENDED) escreva("\n\nPrograma Terminado.");
 	}
 	
 	function receiveInput(textarea)
@@ -210,12 +217,12 @@
 		if(lastvmState == STATE_WAITINGINPUT)
 		{
 			var saidadiv = textarea.value;
-			var entrada = saidadiv.substring(lastvm.saida.length,saidadiv.length);
+			var entrada = saidadiv.substring(VM_saida.length,saidadiv.length);
 			
 			if(entrada.endsWith("\n"))
 			{
-				lastvmState = lastvm.run();
-				if(lastvmState == STATE_ENDED) lastvm.escreva("\n\nPrograma Terminado.");
+				lastvmState = VMrun();
+				if(lastvmState == STATE_ENDED) escreva("\n\nPrograma Terminado.");
 			}
 		}
 	}

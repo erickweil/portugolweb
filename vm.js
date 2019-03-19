@@ -1,71 +1,71 @@
-var B_TRUE = 0;
-var B_FALSE = 1;
+const B_TRUE = 0;
+const B_FALSE = 1;
 
-var B_PUSH = 1;
-var B_POP = 2;
-var B_ADD = 3;
-var B_SUB = 4;
-var B_MUL = 5;
-var B_DIV = 6;
-var B_REM = 7;
+const B_PUSH = 1;
+const B_POP = 2;
+const B_ADD = 3;
+const B_SUB = 4;
+const B_MUL = 5;
+const B_DIV = 6;
+const B_REM = 7;
 
-var B_GOTO = 8;
-var B_IFEQ = 9;
-var B_IFNE = 10;
-var B_IFLT = 11;
-var B_IFGE = 12;
-var B_IFGT = 13;
-var B_IFLE = 14;
+const B_GOTO = 8;
+const B_IFEQ = 9;
+const B_IFNE = 10;
+const B_IFLT = 11;
+const B_IFGE = 12;
+const B_IFGT = 13;
+const B_IFLE = 14;
 
-var B_DUP = 15;
-var B_INVOKE = 16;
+const B_DUP = 15;
+const B_INVOKE = 16;
 
-var B_STORE = 17;
-var B_LOAD = 18;
+const B_STORE = 17;
+const B_LOAD = 18;
 
-var B_RET      = 19;
-var B_RETVALUE = 20;
+const B_RET      = 19;
+const B_RETVALUE = 20;
 
-var B_SHL = 21;
-var B_SHR = 22;
-var B_XOR = 23;
-var B_AND = 24; //bitwise
-var B_OR = 25;  //bitwise
+const B_SHL = 21;
+const B_SHR = 22;
+const B_XOR = 23;
+const B_AND = 24; //bitwise
+const B_OR = 25;  //bitwise
 
-var B_IFCMPEQ = 26;
-var B_IFCMPNE = 27;
-var B_IFCMPLT = 28;
-var B_IFCMPLE = 29;
-var B_IFCMPGT = 30;
-var B_IFCMPGE = 31;
-var B_NEG = 32; // arithmetic negation
-var B_NOT = 33; // bitwise negation
+const B_IFCMPEQ = 26;
+const B_IFCMPNE = 27;
+const B_IFCMPLT = 28;
+const B_IFCMPLE = 29;
+const B_IFCMPGT = 30;
+const B_IFCMPGE = 31;
+const B_NEG = 32; // arithmetic negation
+const B_NOT = 33; // bitwise negation
 
-var B_STOREGLOBAL = 34;
-var B_LOADGLOBAL = 35;
+const B_STOREGLOBAL = 34;
+const B_LOADGLOBAL = 35;
 
-var B_F2I = 36; // float to int
+const B_F2I = 36; // float to int
 //var B_I2F = 37; // int to float
 
-var B_I2S = 37; // int to str
-var B_F2S = 38; // float to str
-var B_B2S = 39; // bool to str
-var B_C2S = 40; // char to str
+const B_I2S = 37; // int to str
+const B_F2S = 38; // float to str
+const B_B2S = 39; // bool to str
+const B_C2S = 40; // char to str
 
-var B_SWAP = 41; // swap the elemtns of the stack
+const B_SWAP = 41; // swap the elemtns of the stack
 
 // não existem opcodes pro or e and logico.
 //var B_LAND = 32; // logical or
 //var B_LOR = 33; // logical or
 
 // private
-var B_WRITE = 100;
-var B_WAITINPUT = 101;
-var B_READ_INT = 102;
-var B_READ_FLOAT = 103;
-var B_READ_STRING = 104;
-var B_READ_CHAR = 105;
-var B_READ_BOOL = 106;
+const B_WRITE = 100;
+const B_WAITINPUT = 101;
+const B_READ_INT = 102;
+const B_READ_FLOAT = 103;
+const B_READ_STRING = 104;
+const B_READ_CHAR = 105;
+const B_READ_BOOL = 106;
 
 function bytecodeName(c)
 {
@@ -180,347 +180,307 @@ case B_INVOKE :
 }
 }
 
+
 var STATE_ENDED = 0;
 var STATE_WAITINGINPUT = 1;
 
-class StackFrame{
-	constructor(parentFrame, globalVars,functionIndex, nVars, args) {
-		this.parentFrame = parentFrame;
-		this.globalVars = globalVars;
-		this.functionIndex = functionIndex;
-		this.vars = new Array(nVars);
-		if(args) for(var i=0;i<args.length;i++)
-		{
-			this.setVar(i,args[i]);
-		}
-		this.stack = [];
-		this.index = 0;
-	}
+// frame locals
+var VM_code = false;
+var VM_i = 0;
+var VM_stack = false; // o valor atual é o VM_si-1
+var VM_si = 0; // stack i
+var VM_vars = false;
+var VM_funcIndex = 0;
+
+// frame globals
+var VM_frame = false;
+var VM_globals = false;
+var VM_functions = false;
+var VM_saida = false;
+var VM_saidaDiv = false;
+var VN_textInput = false;
+
+function escreva(txt)
+{
+	VM_saida += txt;
+	VM_saidaDiv.value = VM_saida;
+}
 	
-	push(v)
+function leia()
+{
+	var saidadiv = VM_saidaDiv.value;
+	var entrada = saidadiv.substring(VM_saida.length,saidadiv.length);
+	if(entrada.endsWith("\n"))
 	{
-		this.stack.push(v);
+		entrada = entrada.substring(0,entrada.length-1);
 	}
-	
-	pop()
-	{
-		return this.stack.pop();
-	}
-	
-	setVar(i,v)
-	{
-		this.vars[i] = v;
-	}
-	
-	getVar(i)
-	{
-		return this.vars[i];
-	}
-	
-	setGlobal(i,v)
-	{
-		this.globalVars[i] = v;
-	}
-	
-	getGlobal(i)
-	{
-		return this.globalVars[i];
-	}
+	VM_saida = saidadiv;
+	return entrada;
 }
 
-class Vm {
-    constructor(functions,textInput,saida_div) {
-		this.functions = functions;
-		this.textInput = textInput;
-		
-		
-		this.saida = "";
-		this.saida_div = saida_div;
-		
-		for(var i=0;i<this.functions.length;i++)
-		{
-			if(this.functions[i].name == "#globalInit"){
-				this.frame = new StackFrame(false,new Array(100),i,100); // depois tem 	que ver para ter o numero certo de variaveis
-				break;
-			}
-		}
-		
-	}
-	
-	toString()
+function getTokenIndex(bcIndex,funcIndex)
+{
+	var func = VM_functions[funcIndex];
+	var indexKeys = Object.keys(func.bytecodeIndexes);
+	if(!indexKeys) return 0;
+	var tokenIndex = 0;
+	for(var i =0;i<indexKeys.length;i++)
 	{
-		var str = "";
-		
-		for(var i =8;i<this.functions.length;i++)
+		if(indexKeys[i] <= bcIndex)
 		{
-			var f = this.functions[i];
-			str+= i+": "+f.name+"\n";
-			var lastLine = -1;
-			for(var k =0;k<f.bytecode.length;k++)
-			{
-				var b = f.bytecode[k];
-				var line =numberOfLinesUntil(this.getTokenIndex(k,i),this.textInput);
-				if(line == lastLine)
-					str += "  \t"+k+":\t";
-				else
-					str += line+"\t"+k+":\t";
-				str += bytecodeName(b);
-				for(var o = 0;o<bytecodeArgs(b);o++)
-				{
-					k++;
-					str += "\t"+f.bytecode[k];
-				}
-				str += "\n";
-				lastLine = line;
-			}
+			tokenIndex = func.bytecodeIndexes[indexKeys[i]];
 		}
-		return str;
 	}
-	
-	getTokenIndex(bcIndex,funcIndex)
-	{
-		var func = this.functions[funcIndex];
-		var indexKeys = Object.keys(func.bytecodeIndexes);
-		if(!indexKeys) return 0;
-		var tokenIndex = 0;
-		for(var i =0;i<indexKeys.length;i++)
-		{
-			if(indexKeys[i] <= bcIndex)
-			{
-				tokenIndex = func.bytecodeIndexes[indexKeys[i]];
-			}
-		}
-		return tokenIndex
-	}
-	
-	erro(msg)
-	{	
-		enviarErro(this.textInput,{index:this.getTokenIndex(this.frame.index,this.frame.functionIndex)},msg);
-	}
+	return tokenIndex
+}
 
-	escreva(txt)
-	{
-		this.saida += txt;
-		this.saida_div.value = this.saida;
-	}
+function erro(msg)
+{	
+	enviarErro(VN_textInput,{index:0},msg);
+}
+
+function VMsetup(functions,textInput,saida_div) 
+{
+	VM_functions = functions;
+	VN_textInput = textInput;
 	
-	leia()
+	
+	VM_saida = "";
+	VM_saidaDiv = saida_div;
+	
+	VM_frame = [];
+	VM_globals = new Array(100);
+	
+	for(var i=0;i<VM_functions.length;i++)
 	{
-		var saidadiv = this.saida_div.value;
-		var entrada = saidadiv.substring(this.saida.length,saidadiv.length);
-		if(entrada.endsWith("\n"))
-		{
-			entrada = entrada.substring(0,entrada.length-1);
+		if(VM_functions[i].name == "#globalInit"){
+			//this.frame = new StackFrame(false,new Array(100),i,100); // depois tem 	que ver para ter o numero certo de variaveis
+			VM_funcIndex = i;
+			VM_code = VM_functions[VM_funcIndex].bytecode;
+			VM_i = 0;
+			VM_stack = new Array(100);
+			VM_si = 0;
+			VM_vars = new Array(100);
+			break;
 		}
-		this.saida = saidadiv;
-		return entrada;
 	}
 	
-	next()
+}
+
+// testando performance
+function VMrun()
+{
+	while(true)
 	{
-		var code = this.functions[this.frame.functionIndex].bytecode[this.frame.index];
-		this.frame.index += 1;
-		return code;
-	}
-	
-	next2()
-	{
-		var code = this.functions[this.frame.functionIndex].bytecode[this.frame.index+1];
-		this.frame.index += 2;
-		return code;
-	}
-	
-	run()
-	{
-		while(true)
+		//var code = this.next();
+		var code = VM_code[VM_i++];
+		
+		switch(code)
 		{
-			/*if(
-				this.frame.funcIndex < 0
-			|| !this.functions[this.frame.functionIndex] 
-			|| !this.functions[this.frame.functionIndex].bytecode 
-			|| this.frame.index >= this.functions[this.frame.functionIndex].bytecode.length)
-			{
-				if(this.frame.parentFrame)
-				{
-					this.frame = this.frame.parentFrame;
-				}
-				else
-				{
-					return;
-				}
-			}*/
+			case B_PUSH: VM_stack[VM_si++] = VM_code[VM_i++]; break;
+			case B_POP: VM_si--; break;
+			case B_DUP: VM_stack[VM_si] = VM_stack[VM_si-1]; VM_si++; break; // o valor atual é colocado na frente.
+			case B_SWAP: 
+				var v = VM_stack[VM_si-1];
+				VM_stack[VM_si-1] = VM_stack[VM_si-2];
+				VM_stack[VM_si-2] = v;
+			break;
+			case B_STORE: VM_vars[VM_code[VM_i++]] = VM_stack[--VM_si]; break;
+			case B_LOAD: VM_stack[VM_si++] = VM_vars[VM_code[VM_i++]]; break;
+			
+			case B_STOREGLOBAL: VM_globals[VM_code[VM_i++]] = VM_stack[--VM_si]; break;
+			case B_LOADGLOBAL: VM_stack[VM_si++] = VM_globals[VM_code[VM_i++]]; break;
+			
+
+			case B_ADD: VM_stack[VM_si-2] = VM_stack[VM_si-2]+VM_stack[VM_si-1]; VM_si--; break;
+			case B_SUB: VM_stack[VM_si-2] = VM_stack[VM_si-2]-VM_stack[VM_si-1]; VM_si--; break;
+			case B_MUL: VM_stack[VM_si-2] = VM_stack[VM_si-2]*VM_stack[VM_si-1]; VM_si--; break;
+			case B_DIV: VM_stack[VM_si-2] = VM_stack[VM_si-2]/VM_stack[VM_si-1]; VM_si--; break;
+			case B_REM: VM_stack[VM_si-2] = VM_stack[VM_si-2]%VM_stack[VM_si-1]; VM_si--; break;
+			
+			case B_SHL: VM_stack[VM_si-2] = VM_stack[VM_si-2]>>VM_stack[VM_si-1]; VM_si--; break;
+			case B_SHR: VM_stack[VM_si-2] = VM_stack[VM_si-2]<<VM_stack[VM_si-1]; VM_si--; break;
+			case B_XOR: VM_stack[VM_si-2] = VM_stack[VM_si-2]^VM_stack[VM_si-1]; VM_si--; break;
+			case B_AND: VM_stack[VM_si-2] = VM_stack[VM_si-2]&VM_stack[VM_si-1]; VM_si--; break;
+			case B_OR:  VM_stack[VM_si-2] = VM_stack[VM_si-2]|VM_stack[VM_si-1]; VM_si--; break;
+			
+			case B_IFCMPEQ: VM_i = (VM_stack[VM_si-2] == VM_stack[VM_si-1] ? VM_code[VM_i++] : VM_i+1); VM_si -= 2; break;
+			case B_IFCMPNE: VM_i = (VM_stack[VM_si-2] != VM_stack[VM_si-1] ? VM_code[VM_i++] : VM_i+1); VM_si -= 2; break;
+			case B_IFCMPLT: VM_i = (VM_stack[VM_si-2] < VM_stack[VM_si-1] ? VM_code[VM_i++] : VM_i+1); VM_si -= 2; break;
+			case B_IFCMPLE: VM_i = (VM_stack[VM_si-2] <= VM_stack[VM_si-1] ? VM_code[VM_i++] : VM_i+1); VM_si -= 2; break;
+			case B_IFCMPGT: VM_i = (VM_stack[VM_si-2] > VM_stack[VM_si-1] ? VM_code[VM_i++] : VM_i+1); VM_si -= 2; break;
+			case B_IFCMPGE: VM_i = (VM_stack[VM_si-2] >= VM_stack[VM_si-1] ? VM_code[VM_i++] : VM_i+1); VM_si -= 2; break;
+
+			case B_GOTO: VM_i = VM_code[VM_i++]; break;
+			case B_IFEQ: VM_i = (VM_stack[--VM_si] == 0 ? VM_code[VM_i++] : VM_i+1); break;
+			case B_IFNE: VM_i = (VM_stack[--VM_si] != 0 ? VM_code[VM_i++] : VM_i+1); break;
+			case B_IFLT: VM_i = (VM_stack[--VM_si] < 0 ? VM_code[VM_i++] : VM_i+1); break;
+			case B_IFGE: VM_i = (VM_stack[--VM_si] >= 0 ? VM_code[VM_i++] : VM_i+1); break;
+			case B_IFGT: VM_i = (VM_stack[--VM_si] > 0 ? VM_code[VM_i++] : VM_i+1); break;
+			case B_IFLE: VM_i = (VM_stack[--VM_si] <= 0 ? VM_code[VM_i++] : VM_i+1); break;
 			
 			
-			var code = this.next();
-			/*while(!code)
-			{
-				if(this.frame.parentFrame)
+			case B_INVOKE: 
+				// precisa criar um stackFrame
+				var methIndex = VM_code[VM_i++];
+				var methArgsN = VM_code[VM_i++];
+				var methArgs = [];
+				for(var i = 0;i<methArgsN; i++)
 				{
-					this.frame = this.frame.parentFrame;
-					var code = this.next();
+					methArgs.push(VM_stack[--VM_si]);
+				}
+				methArgs.reverse();
+				
+				if(
+				methIndex < 0
+				|| !VM_functions[methIndex]
+				|| !VM_functions[methIndex].bytecode
+				)
+				{
+					erro("Function not found");
 				}
 				else
 				{
-					return;
+					//this.frame = new StackFrame(this.frame,this.frame.globalVars,methIndex,100,methArgs);
+					VM_frame.push(
+					{
+						i : VM_i,
+						stack : VM_stack,
+						si : VM_si,
+						vars : VM_vars,
+						funcIndex : VM_funcIndex
+					}
+					); // snapshot now
+					
+					VM_funcIndex = methIndex;
+					VM_code = VM_functions[VM_funcIndex].bytecode;
+					VM_i = 0;
+					VM_stack = new Array(100);
+					VM_si = 0;
+					VM_vars = new Array(100);
+					if(methArgs) for(var i=0;i<methArgs.length;i++)
+					{
+						VM_vars[i] = methArgs[i];
+					}
+					
 				}
-			}*/
-			if(!code) code = B_RET;
-			switch(code)
-			{
-				case B_PUSH: this.frame.push(this.next()); break;
-				case B_POP: this.frame.pop(); break;
-				case B_DUP: var v = this.frame.pop(); this.frame.push(v); this.frame.push(v); break;
-				case B_SWAP: 
-					var va = this.frame.pop();
-					var vb = this.frame.pop();
-					this.frame.push(va);
-					this.frame.push(vb);
-				break;
+			break;
+			
+			case B_RET: // return; // sem valor
 				
-				case B_STORE: this.frame.setVar(this.next(),this.frame.pop()); break;
-				case B_LOAD: this.frame.push(this.frame.getVar(this.next())); break;
-				
-				case B_STOREGLOBAL: this.frame.setGlobal(this.next(),this.frame.pop()); break;
-				case B_LOADGLOBAL: this.frame.push(this.frame.getGlobal(this.next())); break;
-				
-				case B_ADD:
-				case B_SUB:
-				case B_MUL:
-				case B_DIV:
-				case B_REM:
-				case B_SHL:
-				case B_SHR:
-				case B_XOR:
-				case B_AND:
-				case B_OR:
-				case B_IFCMPEQ:
-				case B_IFCMPNE:
-				case B_IFCMPLT:
-				case B_IFCMPLE:
-				case B_IFCMPGT:
-				case B_IFCMPGE:
-					var vb = this.frame.pop();
-					var va = this.frame.pop();
-					switch(code)
-					{
-						case B_ADD: this.frame.push(va+vb); break;
-						case B_SUB: this.frame.push(va-vb); break;
-						case B_MUL: this.frame.push(va*vb); break;
-						case B_DIV: this.frame.push(va/vb); break;
-						case B_REM: this.frame.push(va%vb); break;
-						
-						case B_SHL: this.frame.push(va>>vb); break;
-						case B_SHR: this.frame.push(va<<vb); break;
-						case B_XOR: this.frame.push(va^vb); break;
-						case B_AND: this.frame.push(va&vb); break;
-						case B_OR:  this.frame.push(va|vb); break;
-						
-						case B_IFCMPEQ: this.frame.index = (va == vb ? this.next() : this.frame.index+1); break;
-						case B_IFCMPNE: this.frame.index = (va != vb ? this.next() : this.frame.index+1); break;
-						case B_IFCMPLT: this.frame.index = (va < vb ? this.next() : this.frame.index+1); break;
-						case B_IFCMPLE: this.frame.index = (va <= vb ? this.next() : this.frame.index+1); break;
-						case B_IFCMPGT: this.frame.index = (va > vb ? this.next() : this.frame.index+1); break;
-						case B_IFCMPGE: this.frame.index = (va >= vb ? this.next() : this.frame.index+1); break;
-					}
-				break;
-				
-				case B_GOTO: this.frame.index = this.next(); break;
-				case B_IFEQ: this.frame.index = (this.frame.pop() == 0 ? this.next() : this.frame.index+1); break;
-				case B_IFNE: this.frame.index = (this.frame.pop() != 0 ? this.next() : this.frame.index+1); break;
-				case B_IFLT: this.frame.index = (this.frame.pop() < 0 ? this.next() : this.frame.index+1); break;
-				case B_IFGE: this.frame.index = (this.frame.pop() >= 0 ? this.next() : this.frame.index+1); break;
-				case B_IFGT: this.frame.index = (this.frame.pop() > 0 ? this.next() : this.frame.index+1); break;
-				case B_IFLE: this.frame.index = (this.frame.pop() <= 0 ? this.next() : this.frame.index+1); break;
-				
-				
-				case B_INVOKE: 
-					// precisa criar um stackFrame
-					var methIndex = this.next();
-					var methArgsN = this.next();
-					var methArgs = [];
-					for(var i = 0;i<methArgsN; i++)
-					{
-						methArgs.push(this.frame.pop());
-					}
-					methArgs.reverse();
-					if(
-					this.frame.funcIndex < 0
-					|| !this.functions[this.frame.functionIndex] 
-					|| !this.functions[this.frame.functionIndex].bytecode 
-					)
-					{
-						erro("Function not found");
-					}
-					else
-					this.frame = new StackFrame(this.frame,this.frame.globalVars,methIndex,100,methArgs);
-				break;
-				
-				case B_RET: // return; // sem valor
-					if(this.frame.parentFrame)
-					{
-						this.frame = this.frame.parentFrame;
-					}
-					else
-					{
-						return STATE_ENDED;
-					}
-				break;
-				
-				case B_RETVALUE: // return <expr>; // com valor
-					var v = this.frame.pop();
-					if(this.frame.parentFrame)
-					{
-						this.frame = this.frame.parentFrame;
-						this.frame.push(v);
-					}
-					else
-					{
-						console.log("retornou:"+v);
-						return STATE_ENDED;
-					}
-				break;
-				
-				
+				if(VM_frame.length > 0)
+				{
+					var vI = VM_frame.length -1;
+					VM_funcIndex = VM_frame[vI].funcIndex;
+					VM_code = VM_functions[VM_funcIndex].bytecode;
+					VM_i = VM_frame[vI].i;
+					VM_stack = VM_frame[vI].stack;
+					VM_si = VM_frame[vI].si;
+					VM_vars = VM_frame[vI].vars;
+					
+					VM_frame.pop();
+				}
+				else
+				{
+					return STATE_ENDED;
+				}
+			break;
+			
+			case B_RETVALUE: // return <expr>; // com valor
+				var v = VM_stack[--VM_si];
+				if(VM_frame.length > 0)
+				{
+					var vI = VM_frame.length -1;
+					VM_funcIndex = VM_frame[vI].funcIndex;
+					VM_code = VM_functions[VM_funcIndex].bytecode;
+					VM_i = VM_frame[vI].i;
+					VM_stack = VM_frame[vI].stack;
+					VM_si = VM_frame[vI].si;
+					VM_vars = VM_frame[vI].vars;
+					
+					VM_frame.pop();
+					//push 
+					VM_stack[VM_si++] = v;
+				}
+				else
+				{
+					console.log("retornou:"+v);
+					return STATE_ENDED;
+				}
+			break;
+			
+			
 
 
-				case B_NEG: this.frame.push(-this.frame.pop()); break;
-				case B_NOT: this.frame.push(~this.frame.pop()); break;
-				
-				case B_F2I: this.frame.push(Math.trunc(this.frame.pop())); break;
-				
-				case B_I2S: this.frame.push(""+this.frame.pop()); break;
-				case B_F2S: 
-					var strFloat = ""+this.frame.pop();
-					if(!strFloat.includes(".")) strFloat += ".0";
-					this.frame.push(strFloat);
-				break;
-				case B_B2S: this.frame.push(this.frame.pop() == 0 ? "verdadeiro" : "falso"); break;
-				
-				case B_WRITE: 
-					this.escreva(this.frame.pop());
-				break;
-				case B_WAITINPUT: 
-					return STATE_WAITINGINPUT;
-				break;
-				case B_READ_INT:
-					this.frame.push(parseInt(this.leia().trim()));
-				break;
-				case B_READ_FLOAT:
-					this.frame.push(parseFloat(this.leia().trim()));
-				break;
-				case B_READ_STRING:
-					this.frame.push(this.leia());
-				break;
-				case B_READ_CHAR:
-					this.frame.push(this.leia()[0]);
-				break;
-				case B_READ_BOOL:
-					this.frame.push(this.leia().trim() == "verdadeiro");
-				break;
-				default:
-					this.erro("invalid bytecode:"+code);
-				break;
-			}
+			case B_NEG: VM_stack[VM_si-1] = -VM_stack[VM_si-1]; break;
+			case B_NOT: VM_stack[VM_si-1] = ~VM_stack[VM_si-1]; break;
+			
+			case B_F2I: VM_stack[VM_si-1] = Math.trunc(VM_stack[VM_si-1]); break;
+			
+			case B_I2S: VM_stack[VM_si-1] = ""+VM_stack[VM_si-1]; break;
+			case B_F2S: 
+				var strFloat = ""+VM_stack[VM_si-1];
+				if(!strFloat.includes(".")) strFloat += ".0";
+				VM_stack[VM_si-1] = strFloat;
+			break;
+			case B_B2S: VM_stack[VM_si-1] = (VM_stack[VM_si-1] == 0 ? "verdadeiro" : "falso"); break;
+			
+			case B_WRITE: 
+				escreva(VM_stack[--VM_si]);
+			break;
+			case B_WAITINPUT: 
+				return STATE_WAITINGINPUT;
+			break;
+			case B_READ_INT:
+				VM_stack[VM_si++] = parseInt(leia().trim());
+			break;
+			case B_READ_FLOAT:
+				VM_stack[VM_si++] = parseFloat(leia().trim());
+			break;
+			case B_READ_STRING:
+				VM_stack[VM_si++] = leia();
+			break;
+			case B_READ_CHAR:
+				VM_stack[VM_si++] = leia()[0];
+			break;
+			case B_READ_BOOL:
+				VM_stack[VM_si++] = leia().trim() == "verdadeiro";
+			break;
+			default:
+				erro("invalid bytecode:"+code);
+				return STATE_ENDED;
+			break;
 		}
 	}
+	
+}
+
+function VMtoString()
+{
+	var str = "";
+	
+	for(var i =8;i<VM_functions.length;i++)
+	{
+		var f = VM_functions[i];
+		str+= i+": "+f.name+"\n";
+		var lastLine = -1;
+		for(var k =0;k<f.bytecode.length;k++)
+		{
+			var b = f.bytecode[k];
+			var line =numberOfLinesUntil(getTokenIndex(k,i),VN_textInput);
+			if(line == lastLine)
+				str += "  \t"+k+":\t";
+			else
+				str += line+"\t"+k+":\t";
+			str += bytecodeName(b);
+			for(var o = 0;o<bytecodeArgs(b);o++)
+			{
+				k++;
+				str += "\t"+f.bytecode[k];
+			}
+			str += "\n";
+			lastLine = line;
+		}
+	}
+	return str;
 }
