@@ -186,6 +186,7 @@
 	
 	//var lastvm = false;
 	var lastvmState = STATE_ENDED;
+	var lastvmTime = 0;
 	function executar()
 	{
 		limparErros();
@@ -204,12 +205,24 @@
 		compiler.compile();
 		
 		//lastvm = new Vm(compiler.functions,string_cod,div_saida);
-		VMsetup(compiler.functions,string_cod,div_saida);
+		VMsetup(compiler.functions,compiler.globalCount,string_cod,div_saida);
 		document.getElementById("hidden").innerHTML = VMtoString();
 		//lastvmState = lastvm.run();
+		lastvmTime = performance.now();
+		executarVM();
+	}
+	
+	function executarVM()
+	{
 		lastvmState = VMrun();
 		//VM_saidaDiv.value = VM_saida;
-		if(lastvmState == STATE_ENDED) escreva("\n\nPrograma Terminado.");
+		if(lastvmState == STATE_ENDED) escreva("\n\nPrograma finalizado. Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
+		if(lastvmState == STATE_WAITINGINPUT) {
+			div_saida.focus();
+		}
+		if(lastvmState == STATE_BREATHING) {
+			setTimeout(executarVM, 1);
+		}
 	}
 	
 	function receiveInput(textarea)
@@ -221,9 +234,12 @@
 			
 			if(entrada.endsWith("\n"))
 			{
-				lastvmState = VMrun();
-				if(lastvmState == STATE_ENDED) escreva("\n\nPrograma Terminado.");
+				executarVM();
 			}
+		}
+		else
+		{
+			div_saida.value = VM_saida;
 		}
 	}
 //}

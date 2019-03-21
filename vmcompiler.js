@@ -1,6 +1,13 @@
+class FunctionScopeRef {
+	constructor() {
+		this.maxVarCount = 0;
+	}
+}
+
 class Scope {
-	constructor(parentScope,globalScope) {
+	constructor(parentScope,globalScope,funcScopeRef) {
 		this.parentScope = parentScope;
+		this.funcScopeRef = funcScopeRef;
 		this.vars = {};
 		if(globalScope)
 			this.globalScope = globalScope;
@@ -16,6 +23,8 @@ class Scope {
 	{
 		this.vars[varName] = v;
 		this.varCount++;
+		if(this.funcScopeRef && this.varCount > this.funcScopeRef.maxVarCount)
+			this.funcScopeRef.maxVarCount = this.varCount;
 	}
 	
 	getVar(varName)
@@ -66,7 +75,7 @@ class Compiler {
 		var variaveisGlobais = this.codeTree.variaveis;
 		this.functions = [
 		{
-			name:"$undefined",bytecode:[B_RET] // para ignorar chamadas a funcoes que nao existem
+			name:"$undefined",bytecode:[B_RET],varCount:0 // para ignorar chamadas a funcoes que nao existem
 		},
 		{
 			name:"escreva",
@@ -74,7 +83,8 @@ class Compiler {
 			B_LOAD,0,
 			B_WRITE,
 			B_RET
-			]
+			],
+			varCount:1
 		},
 		{
 			name:"limpa",
@@ -84,29 +94,30 @@ class Compiler {
 			B_PUSH,"|    ESQUECI O DETERGENTE     |\n",B_WRITE,
 			B_PUSH,"-------------------------------\n",B_WRITE,
 			B_RET
-			]
+			],
+			varCount:0
 		},
 		{
-			name:"leia$inteiro",bytecode:[B_WAITINPUT,B_READ_INT,B_RETVALUE]
+			name:"leia$inteiro",bytecode:[B_WAITINPUT,B_READ_INT,B_RETVALUE],varCount:0
 		},
 		{
-			name:"leia$real",bytecode:[B_WAITINPUT,B_READ_FLOAT,B_RETVALUE]
+			name:"leia$real",bytecode:[B_WAITINPUT,B_READ_FLOAT,B_RETVALUE],varCount:0
 		},
 		{
-			name:"leia$cadeia",bytecode:[B_WAITINPUT,B_READ_STRING,B_RETVALUE]
+			name:"leia$cadeia",bytecode:[B_WAITINPUT,B_READ_STRING,B_RETVALUE],varCount:0
 		},
 		{
-			name:"leia$caracter",bytecode:[B_WAITINPUT,B_READ_CHAR,B_RETVALUE]
+			name:"leia$caracter",bytecode:[B_WAITINPUT,B_READ_CHAR,B_RETVALUE],varCount:0
 		},
 		{
-			name:"leia$logico",bytecode:[B_WAITINPUT,B_READ_BOOL,B_RETVALUE]
+			name:"leia$logico",bytecode:[B_WAITINPUT,B_READ_BOOL,B_RETVALUE],varCount:0
 		}
 		];
 		
 		
-		this.scope = new Scope(this.scope,true); // cria um scopo para as variaveis globais
+		this.scope = new Scope(this.scope,true,false); // cria um scopo para as variaveis globais
 		
-		var funcInit = {name:"#globalInit",bytecode:[],bytecodeIndexes:{} };
+		var funcInit = {name:"#globalInit",bytecode:[],bytecodeIndexes:{},varCount:0 };
 		this.compileStatements(variaveisGlobais,funcInit);
 		this.functions.push(funcInit);
 		
@@ -115,13 +126,14 @@ class Compiler {
 		
 		for(var i=0;i<funcoes.length;i++)
 		{
-			this.functions.push({name:funcoes[i].name,bytecode:[],bytecodeIndexes:{} });
+			this.functions.push({name:funcoes[i].name,bytecode:[],bytecodeIndexes:{},varCount:0 });
 		}
 		for(var i=0;i<funcoes.length;i++)
 		{
-			
+			this.funcScopeRef = new FunctionScopeRef();
 			this.compileStatements(funcoes[i].statements,this.functions[FuncOff+i]);//,this.functions[FuncOff+i].bytecode,this.functions[FuncOff+i].variableMap);
 			this.functions[FuncOff+i].bytecode.push(B_RET); // nao pode esquecer
+			this.functions[FuncOff+i].varCount = this.funcScopeRef.maxVarCount;
 		}
 		
 		funcInit.bytecode.push(B_INVOKE);
@@ -129,6 +141,8 @@ class Compiler {
 		funcInit.bytecode.push(funcIndex);
 		funcInit.bytecode.push(0); // nenhum argumento
 		funcInit.bytecode.push(B_RET); // nao pode esquecer
+		
+		this.globalCount = this.scope.varCount;
 		
 		this.scope = this.scope.parentScope; // volta.
 		
@@ -212,7 +226,7 @@ class Compiler {
 					if(tipoRet != T_vazio) bc.push(B_POP); // para não encher a stack com coisa inútil
 				break;
 				case STATEMENT_block:
-					this.scope = new Scope(this.scope); // cria um scopo para rodar a funcao, se, enquanto e qualquer coisa...
+					this.scope = new Scope(this.scope,false,this.funcScopeRef); // cria um scopo para rodar a funcao, se, enquanto e qualquer coisa...
 						this.compileStatements(stat.statements,func);
 					this.scope = this.scope.parentScope;
 				break;

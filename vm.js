@@ -183,6 +183,7 @@ case B_INVOKE :
 
 var STATE_ENDED = 0;
 var STATE_WAITINGINPUT = 1;
+var STATE_BREATHING = 2;
 
 // frame locals
 var VM_code = false;
@@ -198,12 +199,15 @@ var VM_globals = false;
 var VM_functions = false;
 var VM_saida = false;
 var VM_saidaDiv = false;
-var VN_textInput = false;
+var VM_textInput = false;
+var VM_codeCount = 0;
+var VM_codeMax = 100000;
 
 function escreva(txt)
 {
 	VM_saida += txt;
 	VM_saidaDiv.value = VM_saida;
+	VM_saidaDiv.scrollTop = VM_saidaDiv.scrollHeight;
 }
 	
 function leia()
@@ -236,20 +240,20 @@ function getTokenIndex(bcIndex,funcIndex)
 
 function erro(msg)
 {	
-	enviarErro(VN_textInput,{index:0},msg);
+	enviarErro(VM_textInput,{index:0},msg);
 }
 
-function VMsetup(functions,textInput,saida_div) 
+function VMsetup(functions,globalCount,textInput,saida_div) 
 {
 	VM_functions = functions;
-	VN_textInput = textInput;
+	VM_textInput = textInput;
 	
 	
 	VM_saida = "";
 	VM_saidaDiv = saida_div;
 	
 	VM_frame = [];
-	VM_globals = new Array(100);
+	VM_globals = new Array(globalCount);
 	
 	for(var i=0;i<VM_functions.length;i++)
 	{
@@ -260,7 +264,7 @@ function VMsetup(functions,textInput,saida_div)
 			VM_i = 0;
 			VM_stack = new Array(100);
 			VM_si = 0;
-			VM_vars = new Array(100);
+			VM_vars = new Array(VM_functions[VM_funcIndex].varCount);
 			break;
 		}
 	}
@@ -270,10 +274,14 @@ function VMsetup(functions,textInput,saida_div)
 // testando performance
 function VMrun()
 {
+	VM_codeCount = 0;
 	while(true)
 	{
+		VM_codeCount++; // para parar o programa e atualizar a saida em loops muito demorados
+		if(VM_codeCount > VM_codeMax) return STATE_BREATHING;
 		//var code = this.next();
 		var code = VM_code[VM_i++];
+		
 		
 		switch(code)
 		{
@@ -357,7 +365,7 @@ function VMrun()
 					VM_i = 0;
 					VM_stack = new Array(100);
 					VM_si = 0;
-					VM_vars = new Array(100);
+					VM_vars = new Array(VM_functions[VM_funcIndex].varCount);
 					if(methArgs) for(var i=0;i<methArgs.length;i++)
 					{
 						VM_vars[i] = methArgs[i];
@@ -427,7 +435,8 @@ function VMrun()
 			
 			case B_WRITE: 
 				escreva(VM_stack[--VM_si]);
-			break;
+				//return STATE_BREATHING; // para ver o que foi escrito
+				break;
 			case B_WAITINPUT: 
 				return STATE_WAITINGINPUT;
 			break;
@@ -467,7 +476,7 @@ function VMtoString()
 		for(var k =0;k<f.bytecode.length;k++)
 		{
 			var b = f.bytecode[k];
-			var line =numberOfLinesUntil(getTokenIndex(k,i),VN_textInput);
+			var line =numberOfLinesUntil(getTokenIndex(k,i),VM_textInput);
 			if(line == lastLine)
 				str += "  \t"+k+":\t";
 			else
