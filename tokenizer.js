@@ -18,6 +18,10 @@ var decodeEntities = (function() {
   return decodeHTMLEntities;
 })();
 
+function htmlEntities(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 var separators = "\n\t +-*/%><!=&|^~;,.{}()[]:";
 var reserved_words =
 [
@@ -300,7 +304,7 @@ var T_inclua = 66;
 var T_biblioteca = 67;
 //var T_e = 68; deprecated
 //var T_ou = 69; deprecated
-var T_nao = 70;
+//var T_nao = 70; deprecated
 var T_se = 71;
 var T_senao = 72;
 var T_enquanto = 73;
@@ -495,6 +499,7 @@ class Tokenizer {
 			}
 			else if(/^[a-zA-Z_\$]$/.test(c)) // palavra
 			{
+				var palavraIndex = i;
 				var k = i+1;
 				for(; k< this.input.length;k++)
 				{
@@ -518,30 +523,34 @@ class Tokenizer {
 				// palavra
 				if( reserved_words.indexOf(word) > -1) // palavra reservada
 				{
-					if(word == "ou")
+					if(word == "nao")
 					{
-						this.tokens.push({id:T_or,index:start_off,txt:word});
+						this.tokens.push({id:T_not,index:palavraIndex,txt:word});
+					}
+					else if(word == "ou")
+					{
+						this.tokens.push({id:T_or,index:palavraIndex,txt:word});
 					}
 					else if(word == "e")
 					{
-						this.tokens.push({id:T_and,index:start_off,txt:word});
+						this.tokens.push({id:T_and,index:palavraIndex,txt:word});
 					}
 					else
 					{
-						this.tokens.push({id:getReservedWordCode(word),index:start_off,txt:word});
+						this.tokens.push({id:getReservedWordCode(word),index:palavraIndex,txt:word});
 					}
 				}
 				else if( type_words.indexOf(word) > -1) // tipo
 				{
-					this.tokens.push({id:getTypeWordCode(word),index:start_off,txt:word});
+					this.tokens.push({id:getTypeWordCode(word),index:palavraIndex,txt:word});
 				}
 				else if(word == "verdadeiro" || word == "falso")
 				{
-					this.tokens.push({id:T_logicoLiteral,index:start_off,txt:word});
+					this.tokens.push({id:T_logicoLiteral,index:palavraIndex,txt:word});
 				}
 				else
 				{
-					this.tokens.push({id:T_word,index:start_off,txt:word});
+					this.tokens.push({id:T_word,index:palavraIndex,txt:word});
 				}
 				
 

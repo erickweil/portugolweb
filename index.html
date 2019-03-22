@@ -61,7 +61,7 @@
 </div>
 <div id="myOutput" style="position:relative;">
 <div class="portugol-buttons">
-<input type="button" id="btn-run" value="Executar" onclick="executar()"/>
+<input type="button" id="btn-run" value="Executar" onclick="executar(this)"/>
 
 <input type="button" id="btn-fonteMaior" value="A+" onclick="fonteAumentar()"/>
 <input type="button" id="btn-fonteMenor" value="A-" onclick="fonteDiminuir()"/>
@@ -125,8 +125,8 @@
 		var logprev = "Linha "+lineNumber+":"+prev_line;
 		console.log(msg);
 		_enviarErro(lineNumber,colNumber,msg);
-		errosSaida.innerHTML += msg+"\n";
-		errosSaida.innerHTML += logprev+next_line+"\n";
+		errosSaida.innerHTML += htmlEntities(msg)+"\n";
+		errosSaida.innerHTML += htmlEntities(logprev+next_line)+"\n";
 		errosSaida.innerHTML += " ".repeat(logprev.length)+"^\n\n";
 	}
 	
@@ -187,41 +187,92 @@
 	//var lastvm = false;
 	var lastvmState = STATE_ENDED;
 	var lastvmTime = 0;
-	function executar()
+	function executar(btn)
 	{
-		limparErros();
-		var string_cod = editor.getValue();
+		if(btn.value == "Executar" && lastvmState == STATE_ENDED)
+		{
+			btn.value = "Parar";
 		
-		var tokenizer = new Tokenizer(string_cod);
-		console.log(tokenizer.tokenize());
-		
-		//div_port.innerHTML = tokenizer.formatHTML();
-		
-		var relevantTokens = tokenizer.getRelevantTokens();
-		var tree = new Parser(relevantTokens,string_cod).parse();
-		console.log(tree);
-		
-		var compiler = new Compiler(tree,relevantTokens,string_cod,div_saida);
-		compiler.compile();
-		
-		//lastvm = new Vm(compiler.functions,string_cod,div_saida);
-		VMsetup(compiler.functions,compiler.globalCount,string_cod,div_saida);
-		document.getElementById("hidden").innerHTML = VMtoString();
-		//lastvmState = lastvm.run();
-		lastvmTime = performance.now();
-		executarVM();
+			limparErros();
+			var string_cod = editor.getValue();
+			
+			var tokenizer = new Tokenizer(string_cod);
+			console.log(tokenizer.tokenize());
+			
+			//div_port.innerHTML = tokenizer.formatHTML();
+			
+			var relevantTokens = tokenizer.getRelevantTokens();
+			var tree = new Parser(relevantTokens,string_cod).parse();
+			console.log(tree);
+			
+			var compiler = new Compiler(tree,relevantTokens,string_cod,div_saida);
+			compiler.compile();
+			
+			//lastvm = new Vm(compiler.functions,string_cod,div_saida);
+			VMsetup(compiler.functions,compiler.globalCount,string_cod,div_saida);
+			document.getElementById("hidden").innerHTML = VMtoString();
+			//lastvmState = lastvm.run();
+			lastvmTime = performance.now();
+			executarVM();
+		}
+		else if(btn.value == "Parar" && (lastvmState == STATE_RUNNING || lastvmState == STATE_WAITINGINPUT || lastvmState == STATE_BREATHING))
+		{
+			btn.value = "Parando...";
+			if(lastvmState == STATE_WAITINGINPUT)
+			{
+				escreva("\n\nPrograma interrompido pelo usuário. Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
+				executarParou();
+			}
+			else if(lastvmState == STATE_RUNNING || lastvmState == STATE_BREATHING)
+			{
+				lastvmState = STATE_PENDINGSTOP;
+			}
+			else
+			{
+				console.log("botão estava em estado inconsistente: lastvmState:'"+lastvmState+"' e valor:'"+btn.value+"'");
+			}
+		}
+		else if(btn.value == "Parando..." && lastvmState == STATE_PENDINGSTOP)
+		{
+			// ta idaí?
+			lastvmState = STATE_PENDINGSTOP; // só para confirmar
+		}
+		else // para deixar o botao do jeito certo, e corrigir no caso de algum erro.
+		{
+			console.log("botão estava em estado inconsistente: lastvmState:'"+lastvmState+"' e valor:'"+btn.value+"'");
+			if(lastvmState == STATE_ENDED) btn.value = "Executar";
+			else if(lastvmState == STATE_PENDINGSTOP) btn.value = "Parando...";
+			else btn.value = "Parar";
+		}
+	}
+	
+	function executarParou()
+	{
+		lastvmState = STATE_ENDED;
+		document.getElementById("btn-run").value = "Executar";
 	}
 	
 	function executarVM()
 	{
+		if(lastvmState == STATE_PENDINGSTOP) {
+			// blz então
+			escreva("\n\nPrograma interrompido pelo usuário. Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
+			executarParou();
+			return;
+		}
+		lastvmState = STATE_RUNNING;
 		lastvmState = VMrun();
 		//VM_saidaDiv.value = VM_saida;
-		if(lastvmState == STATE_ENDED) escreva("\n\nPrograma finalizado. Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
-		if(lastvmState == STATE_WAITINGINPUT) {
+		if(lastvmState == STATE_ENDED)
+		{
+			escreva("\n\nPrograma finalizado. Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
+			executarParou();
+		}
+		else if(lastvmState == STATE_WAITINGINPUT) {
 			div_saida.focus();
 		}
-		if(lastvmState == STATE_BREATHING) {
-			setTimeout(executarVM, 1);
+		else if(lastvmState == STATE_BREATHING) {
+			setTimeout(executarVM, 1); // permite o navegador ficar responsivo
 		}
 	}
 	

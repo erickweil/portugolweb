@@ -285,6 +285,33 @@ class Compiler {
 					
 					this.replaceAllBy(bc,trueJumps,loopStart); // determina onde ir para sair do loop
 				break;
+				case STATEMENT_para:
+					var falseJumps = [];
+					
+					if(stat.decl)
+					{
+						this.compileStatements(stat.decl,func); // declaracao
+					}
+					
+					var loopStart = bc.length; // inicio dos statements
+					
+					if(stat.expr)
+					this.compileLogicalExpr(stat.expr,bc,false,falseJumps); // condicao
+					
+					this.compileStatements(stat.statements,func);
+					
+					if(stat.inc)
+					{
+						var tipoRet = this.compileExpr(stat.inc,bc,-1);
+						if(tipoRet != T_vazio) bc.push(B_POP); // para não encher a stack com coisa inútil
+					}
+					
+					bc.push(B_GOTO);
+					bc.push(loopStart); // para voltar
+					
+					if(stat.expr)
+					this.replaceAllBy(bc,falseJumps,bc.length); // determina onde ir para sair do loop
+				break;
 			}
 		}
 	}
@@ -307,9 +334,9 @@ class Compiler {
 			else if(tA == T_real)bc.push(B_F2S);
 			else if(tA == T_logico)bc.push(B_B2S);
 		}
-		else if(tRet == T_real)
+		else if(tRet == T_inteiro)
 		{
-			if(tA == T_inteiro)bc.push(B_F2I);
+			if(tA == T_real)bc.push(B_F2I);
 		}
 	}
 	
@@ -426,8 +453,13 @@ class Compiler {
 		
 		if(expr.op == T_not)
 		{
-			this.erro("¡no implementado!");
-			return T_vazio;
+			tExprA = this.compileLogicalExpr(expr[0],bc,falseJumps,trueJumps);
+			
+			if(trueJumps === false && falseJumps === false) // vai pular se for falso, continuar se for verdadeiro
+			{
+				bc.push(B_NOT); // inverte se for pra retorna bool
+			}
+			return T_logico;
 		}
 		
 		var tExprA = T_vazio;
@@ -610,6 +642,7 @@ class Compiler {
 				tExprB = this.compileExpr(expr[1],bc,tExprA);
 				
 				this.tryConvertType(tExprA,tExprB,bc);
+				bc.push(B_DUP); // o valor fica na stack. mds isso vai da o maior problema
 				
 				bc.push(v.global ? B_STOREGLOBAL : B_STORE);
 				bc.push(v.index);

@@ -4,7 +4,7 @@ var STATEMENT_block = 3;
 var STATEMENT_se = 4;
 var STATEMENT_enquanto = 5;
 var STATEMENT_facaEnquanto = 6;
-
+var STATEMENT_para = 7;
 
 function pmatch(index,tokens)
 {
@@ -240,7 +240,83 @@ class Parser {
 		// "para" ( {var declaration | expression} ; expression ; expression ) block
 		else if(t == T_para)
 		{
-			this.erro(tokens[i],"para não implementado ainda");
+			var decl = false;
+			var logic_Expr = false;
+			var inc = false;
+			var statements = [];
+			//  i -->
+			// para  (
+			i++;
+			if(tokens[i].id != T_parO)
+			{
+				this.erro(tokens[i],"esqueceu de abrir os parênteses do laço para");
+				i--;
+			}
+			
+			//        i -->
+			// para  (    ?? ;
+			i++;
+			if(tokens[i].id != T_semi)
+			{
+				decl = [];
+				i = this.parseStatement(i,tokens,decl);
+				if(decl.length == 1) // aqui pode ter vários, por causa da declaração de variável que pode dar um monte.
+				if(decl[0].id != STATEMENT_declVar && decl[0].id != STATEMENT_expr)
+				{
+					this.erro(tokens[i],"dentro do para só pode declarações de variáveis e expressões. remova isso");
+					decl = false;
+				}
+			}
+			
+			
+			//          i -->
+			// para  ( ...   ;
+			i++;
+			if(tokens[i].id != T_semi)
+			{
+				this.erro(tokens[i],"estava esperando o ponto e vírgula do para aqui!");
+				i--;
+			}
+			
+			//               i -->
+			// para  ( ...   ; logic-expr
+			i++;
+			if(tokens[i].id != T_semi)
+			{
+				logic_Expr =[];
+				i = this.parseExpressao(i,tokens,logic_Expr,0);
+			}
+			
+			//                       i -->
+			// para  ( ...   ; logic-expr ;
+			i++;
+			if(tokens[i].id != T_semi)
+			{
+				this.erro(tokens[i],"estava esperando o ponto e vírgula do para aqui!");
+				i--;
+			}
+			
+			//                              i -->
+			// para  ( ...   ; logic-expr   ;    expr  )
+			i++;
+			if(tokens[i].id != T_parC)
+			{
+				inc =[];
+				i = this.parseExpressao(i,tokens,inc,0);
+				//                                   i -->
+				// para  ( ...   ; logic-expr   ;    expr  )
+				i++;
+				if(tokens[i].id != T_parC)
+				{
+					this.erro(tokens[i-1],"esqueceu de fechar os parênteses do para!");
+					i--;
+				}
+			}
+			// pular o parenteses.
+			i++;
+			i = this.parseStatementOrBlock(i,tokens,statements);
+			
+			tree.push({id:STATEMENT_para,index:tIndex,decl:decl,expr:logic_Expr[0],inc:inc[0],statements:statements});
 		}
 		
 		//escolha

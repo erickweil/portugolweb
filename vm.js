@@ -184,6 +184,8 @@ case B_INVOKE :
 var STATE_ENDED = 0;
 var STATE_WAITINGINPUT = 1;
 var STATE_BREATHING = 2;
+var STATE_PENDINGSTOP = 3;
+var STATE_RUNNING = 4;
 
 // frame locals
 var VM_code = false;
@@ -202,14 +204,22 @@ var VM_saidaDiv = false;
 var VM_textInput = false;
 var VM_codeCount = 0;
 var VM_codeMax = 100000;
+var VM_escrevaCount = 0;
+var VM_escrevaMax = 5000;
 
 function escreva(txt)
 {
+	if(VM_escrevaCount > VM_escrevaMax)
+	{
+		VM_escrevaCount = 0;
+		VM_saida = "<MAIS DE "+VM_escrevaMax+" ESCREVAS, REINICIANDO LOG...>\n";
+	}
 	VM_saida += txt;
 	VM_saidaDiv.value = VM_saida;
 	VM_saidaDiv.scrollTop = VM_saidaDiv.scrollHeight;
+	VM_escrevaCount++;
 }
-	
+
 function leia()
 {
 	var saidadiv = VM_saidaDiv.value;
@@ -251,6 +261,8 @@ function VMsetup(functions,globalCount,textInput,saida_div)
 	
 	VM_saida = "";
 	VM_saidaDiv = saida_div;
+	
+	VM_escrevaCount = 0;
 	
 	VM_frame = [];
 	VM_globals = new Array(globalCount);
@@ -435,8 +447,8 @@ function VMrun()
 			
 			case B_WRITE: 
 				escreva(VM_stack[--VM_si]);
-				//return STATE_BREATHING; // para ver o que foi escrito
-				break;
+				return STATE_BREATHING; // para n travar tudo com muitos escrevas.
+				
 			case B_WAITINPUT: 
 				return STATE_WAITINGINPUT;
 			break;
