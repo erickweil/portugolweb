@@ -3,56 +3,61 @@ const B_FALSE = 1;
 
 const B_PUSH = 1;
 const B_POP = 2;
+
 const B_ADD = 3;
 const B_SUB = 4;
 const B_MUL = 5;
 const B_DIV = 6;
 const B_REM = 7;
 
-const B_GOTO = 8;
-const B_IFEQ = 9;
-const B_IFNE = 10;
-const B_IFLT = 11;
-const B_IFGE = 12;
-const B_IFGT = 13;
-const B_IFLE = 14;
+const B_iDIV = 8;  // integer div
+const B_iREM = 9; // integer modulo
 
-const B_DUP = 15;
-const B_INVOKE = 16;
+const B_GOTO = 13;
+const B_IFEQ = 14;
+const B_IFNE = 15;
+const B_IFLT = 16;
+const B_IFGE = 17;
+const B_IFGT = 18;
+const B_IFLE = 19;
 
-const B_STORE = 17;
-const B_LOAD = 18;
+const B_DUP = 20;
+const B_INVOKE = 21;
 
-const B_RET      = 19;
-const B_RETVALUE = 20;
+const B_STORE = 22; // inteiro
+const B_LOAD = 23;
 
-const B_SHL = 21;
-const B_SHR = 22;
-const B_XOR = 23;
-const B_AND = 24; //bitwise
-const B_OR = 25;  //bitwise
+const B_RET      = 24;
+const B_RETVALUE = 25;
 
-const B_IFCMPEQ = 26;
-const B_IFCMPNE = 27;
-const B_IFCMPLT = 28;
-const B_IFCMPLE = 29;
-const B_IFCMPGT = 30;
-const B_IFCMPGE = 31;
-const B_NEG = 32; // arithmetic negation
-const B_NOT = 33; // bitwise negation
+const B_SHL = 26;
+const B_SHR = 27;
+const B_XOR = 28;
+const B_AND = 29; //bitwise
+const B_OR = 30;  //bitwise
 
-const B_STOREGLOBAL = 34;
-const B_LOADGLOBAL = 35;
+const B_IFCMPEQ = 31;
+const B_IFCMPNE = 32;
+const B_IFCMPLT = 33;
+const B_IFCMPLE = 34;
+const B_IFCMPGT = 35;
+const B_IFCMPGE = 36;
+const B_NEG = 37; // arithmetic negation
+const B_NOT = 38; // bitwise negation
+const B_NO = 39;  // logic negation
 
-const B_F2I = 36; // float to int
+const B_STOREGLOBAL = 40;
+const B_LOADGLOBAL = 41;
+
+const B_F2I = 42; // float to int
 //var B_I2F = 37; // int to float
 
-const B_I2S = 37; // int to str
-const B_F2S = 38; // float to str
-const B_B2S = 39; // bool to str
-const B_C2S = 40; // char to str
+const B_I2S = 43; // int to str
+const B_F2S = 44; // float to str
+const B_B2S = 45; // bool to str
+const B_C2S = 46; // char to str
 
-const B_SWAP = 41; // swap the elemtns of the stack
+const B_SWAP = 47; // swap the elemtns of the stack
 
 // não existem opcodes pro or e and logico.
 //var B_LAND = 32; // logical or
@@ -66,6 +71,7 @@ const B_READ_FLOAT = 103;
 const B_READ_STRING = 104;
 const B_READ_CHAR = 105;
 const B_READ_BOOL = 106;
+const B_CLEAR = 107;
 
 function bytecodeName(c)
 {
@@ -78,6 +84,8 @@ case B_SUB : return "sub";
 case B_MUL : return "mul";
 case B_DIV : return "div";
 case B_REM : return "rem";
+case B_iDIV : return "idiv";
+case B_iREM : return "irem";
 case B_GOTO : return "goto";
 case B_IFEQ : return "ifeq";
 case B_IFNE : return "ifne";
@@ -119,6 +127,8 @@ case B_F2S : return "f2s";
 case B_B2S : return "b2s";
 case B_C2S : return "c2s";
 case B_SWAP : return "swap";
+case B_NO: return "no";
+case B_CLEAR: return "clear";
 }
 }
 
@@ -151,6 +161,8 @@ case B_SUB :
 case B_MUL :
 case B_DIV :
 case B_REM :
+case B_iDIV :
+case B_iREM :
 case B_DUP :
 case B_RET      : 
 case B_RETVALUE :
@@ -161,6 +173,7 @@ case B_AND :
 case B_OR :
 case B_NEG :
 case B_NOT :
+case B_NO:
 case B_WRITE : 
 case B_WAITINPUT : 
 case B_READ_INT :
@@ -174,6 +187,7 @@ case B_F2S :
 case B_B2S :
 case B_C2S :
 case B_SWAP : 
+case B_CLEAR:
 	return 0;
 case B_INVOKE : 
 	return 2;
@@ -205,7 +219,7 @@ var VM_textInput = false;
 var VM_codeCount = 0;
 var VM_codeMax = 100000;
 var VM_escrevaCount = 0;
-var VM_escrevaMax = 5000;
+var VM_escrevaMax = 1000;
 
 function escreva(txt)
 {
@@ -218,6 +232,14 @@ function escreva(txt)
 	VM_saidaDiv.value = VM_saida;
 	VM_saidaDiv.scrollTop = VM_saidaDiv.scrollHeight;
 	VM_escrevaCount++;
+}
+
+function limpa()
+{
+	VM_saida = "";
+	VM_saidaDiv.value = VM_saida;
+	VM_saidaDiv.scrollTop = VM_saidaDiv.scrollHeight;
+	VM_escrevaCount = 0;
 }
 
 function leia()
@@ -317,6 +339,9 @@ function VMrun()
 			case B_MUL: VM_stack[VM_si-2] = VM_stack[VM_si-2]*VM_stack[VM_si-1]; VM_si--; break;
 			case B_DIV: VM_stack[VM_si-2] = VM_stack[VM_si-2]/VM_stack[VM_si-1]; VM_si--; break;
 			case B_REM: VM_stack[VM_si-2] = VM_stack[VM_si-2]%VM_stack[VM_si-1]; VM_si--; break;
+			
+			case B_iDIV: VM_stack[VM_si-2] = Math.trunc(VM_stack[VM_si-2]/VM_stack[VM_si-1]); VM_si--; break;
+			case B_iREM: VM_stack[VM_si-2] = Math.trunc(VM_stack[VM_si-2]%VM_stack[VM_si-1]); VM_si--; break;
 			
 			case B_SHL: VM_stack[VM_si-2] = VM_stack[VM_si-2]>>VM_stack[VM_si-1]; VM_si--; break;
 			case B_SHR: VM_stack[VM_si-2] = VM_stack[VM_si-2]<<VM_stack[VM_si-1]; VM_si--; break;
@@ -434,10 +459,11 @@ function VMrun()
 
 			case B_NEG: VM_stack[VM_si-1] = -VM_stack[VM_si-1]; break;
 			case B_NOT: VM_stack[VM_si-1] = ~VM_stack[VM_si-1]; break;
+			case B_NO:  VM_stack[VM_si-1] = (VM_stack[VM_si-1] == 0 ? 1 : 0); break;
 			
 			case B_F2I: VM_stack[VM_si-1] = Math.trunc(VM_stack[VM_si-1]); break;
 			
-			case B_I2S: VM_stack[VM_si-1] = ""+VM_stack[VM_si-1]; break;
+			case B_I2S: VM_stack[VM_si-1] = VM_stack[VM_si-1].toLocaleString('fullwide', { useGrouping: false }); break;
 			case B_F2S: 
 				var strFloat = ""+VM_stack[VM_si-1];
 				if(!strFloat.includes(".")) strFloat += ".0";
@@ -448,10 +474,11 @@ function VMrun()
 			case B_WRITE: 
 				escreva(VM_stack[--VM_si]);
 				return STATE_BREATHING; // para n travar tudo com muitos escrevas.
-				
+			case B_CLEAR:
+				limpa();
+				return STATE_BREATHING; // para n travar tudo com muitos escrevas.
 			case B_WAITINPUT: 
 				return STATE_WAITINGINPUT;
-			break;
 			case B_READ_INT:
 				VM_stack[VM_si++] = parseInt(leia().trim());
 			break;

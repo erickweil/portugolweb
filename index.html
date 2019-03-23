@@ -53,9 +53,7 @@
 		escreva("Digite sua idade: ")
 		leia(idade)
 		
-		escreva("você é maior de idade? "+(idade >= 18))
-		escreva("\n") // para pular linha
-		escreva("ainda faltam "+(18 - idade)+" anos")
+		escreva("um terço da sua idade é:"+ idade / 3) // experimente com 3.0
 	}
 }
 </div>
@@ -270,6 +268,7 @@
 		}
 		else if(lastvmState == STATE_WAITINGINPUT) {
 			div_saida.focus();
+			cursorToEnd(div_saida);
 		}
 		else if(lastvmState == STATE_BREATHING) {
 			setTimeout(executarVM, 1); // permite o navegador ficar responsivo

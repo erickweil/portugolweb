@@ -4,6 +4,18 @@ class FunctionScopeRef {
 	}
 }
 
+class LoopScope {
+	constructor(parentScope,endJumps) {
+		this.parentScope = parentScope;
+		this.endJumps = endJumps;
+	}
+	
+	addJump(index)
+	{
+		this.endJumps.push(index);
+	}
+}
+
 class Scope {
 	constructor(parentScope,globalScope,funcScopeRef) {
 		this.parentScope = parentScope;
@@ -52,6 +64,7 @@ class Compiler {
 		
 		this.functions = [];
 		this.scope = false;
+		this.loopScope = false;
 	}
 	
 	erro(msg)
@@ -89,11 +102,7 @@ class Compiler {
 		{
 			name:"limpa",
 			bytecode:[
-			B_PUSH,"\n-------------------------------\n",B_WRITE,
-			B_PUSH,"|    NÃO DEU PARA  LIMPAR     |\n",B_WRITE,
-			B_PUSH,"|    ESQUECI O DETERGENTE     |\n",B_WRITE,
-			B_PUSH,"-------------------------------\n",B_WRITE,
-			B_RET
+			B_CLEAR,B_RET
 			],
 			varCount:0
 		},
@@ -222,9 +231,10 @@ class Compiler {
 					{
 						this.erro("Esta expressão não pode ficar sozinha, talvez tenha esquecido um operador matemático");
 					}
-					var tipoRet = this.compileExpr(stat.expr,bc,-1);
+					var tipoRet = this.compileExpr(stat.expr,bc,T_vazio);
 					if(tipoRet != T_vazio) bc.push(B_POP); // para não encher a stack com coisa inútil
 				break;
+				
 				case STATEMENT_block:
 					this.scope = new Scope(this.scope,false,this.funcScopeRef); // cria um scopo para rodar a funcao, se, enquanto e qualquer coisa...
 						this.compileStatements(stat.statements,func);
@@ -267,7 +277,11 @@ class Compiler {
 					
 					this.compileLogicalExpr(stat.expr,bc,false,falseJumps);
 					
-					this.compileStatements(stat.statements,func);
+					this.loopScope = new LoopScope(this.loopScope,falseJumps);
+					
+						this.compileStatements(stat.statements,func);
+						
+					this.loopScope = this.loopScope.parentScope;
 					
 					bc.push(B_GOTO);
 					bc.push(loopStart); // para voltar
@@ -276,14 +290,21 @@ class Compiler {
 				break;
 				case STATEMENT_facaEnquanto:
 					var trueJumps = [];
+					var falseJumps = [];
 					
 					var loopStart = bc.length; // inicio dos statements
 					
-					this.compileStatements(stat.statements,func);
+					this.loopScope = new LoopScope(this.loopScope,falseJumps);
+					
+						this.compileStatements(stat.statements,func);
+					
+					this.loopScope = this.loopScope.parentScope;
 					
 					this.compileLogicalExpr(stat.expr,bc,trueJumps,false);
 					
-					this.replaceAllBy(bc,trueJumps,loopStart); // determina onde ir para sair do loop
+					this.replaceAllBy(bc,trueJumps,loopStart); // determina onde ir para sair do loop da condicao
+					
+					this.replaceAllBy(bc,falseJumps,bc.length); // determina onde ir para sair do loop se tiver algum pare
 				break;
 				case STATEMENT_para:
 					var falseJumps = [];
@@ -298,19 +319,34 @@ class Compiler {
 					if(stat.expr)
 					this.compileLogicalExpr(stat.expr,bc,false,falseJumps); // condicao
 					
-					this.compileStatements(stat.statements,func);
+					this.loopScope = new LoopScope(this.loopScope,falseJumps);
+					
+						this.compileStatements(stat.statements,func);
+					
+					this.loopScope = this.loopScope.parentScope;
 					
 					if(stat.inc)
 					{
-						var tipoRet = this.compileExpr(stat.inc,bc,-1);
+						var tipoRet = this.compileExpr(stat.inc,bc,T_vazio);
 						if(tipoRet != T_vazio) bc.push(B_POP); // para não encher a stack com coisa inútil
 					}
 					
 					bc.push(B_GOTO);
 					bc.push(loopStart); // para voltar
 					
-					if(stat.expr)
 					this.replaceAllBy(bc,falseJumps,bc.length); // determina onde ir para sair do loop
+				break;
+				case STATEMENT_pare:
+					if(this.loopScope)
+					{
+						bc.push(B_GOTO);
+						bc.push(0); // para pular o loop
+						this.loopScope.addJump(bc.length-1);
+					}
+					else
+					{
+						this.erro("o 'pare' não faz sentido aqui, nenhum laço de repetição para parar.");
+					}
 				break;
 			}
 		}
@@ -457,7 +493,7 @@ class Compiler {
 			
 			if(trueJumps === false && falseJumps === false) // vai pular se for falso, continuar se for verdadeiro
 			{
-				bc.push(B_NOT); // inverte se for pra retorna bool
+				bc.push(B_NO); // inverte se for pra retorna bool
 			}
 			return T_logico;
 		}
@@ -616,6 +652,10 @@ class Compiler {
 	}
 	
 	// retorna o tipo da expressao
+	// typeExpected
+	// se for -1 é porque tem que retornar algum valor, não importa qualquer
+	// se for algum tipo, é porque deveria retornar aquele tipo
+	// e for T_vazio é porque não era para retornar nada, irá informar que não retornou nada pelo return T_vazio correspondente
 	compileExpr(expr,bc,typeExpected)
 	{
 		if(!expr) return T_vazio;
@@ -642,7 +682,8 @@ class Compiler {
 				tExprB = this.compileExpr(expr[1],bc,tExprA);
 				
 				this.tryConvertType(tExprA,tExprB,bc);
-				bc.push(B_DUP); // o valor fica na stack. mds isso vai da o maior problema
+				if(typeExpected != T_vazio)
+					bc.push(B_DUP); // o valor fica na stack. mds isso vai da o maior problema
 				
 				bc.push(v.global ? B_STOREGLOBAL : B_STORE);
 				bc.push(v.index);
@@ -658,7 +699,9 @@ class Compiler {
 					this.erro("não pode colocar "+getTypeWord(tExprB)+" em uma variável do tipo "+getTypeWord(tExprA));
 				}
 				
-				return tExprA;
+				if(typeExpected != T_vazio) // deu DUP
+					return tExprA;
+				else return T_vazio; // não deu DUP
 			}
 			else 
 			{
@@ -705,36 +748,52 @@ class Compiler {
 					this.tryConvertType(tRet,tExprB,bc);
 				}
 				
-				switch(expr.op)
+				if(tRet == T_inteiro && expr.op == T_div)
 				{
+					bc.push(B_iDIV);
+				}
+				else switch(expr.op)
+				{
+					case T_attrib_plus:
 					case T_plus:bc.push(B_ADD);break;
+					
+					case T_attrib_minus:
 					case T_minus:bc.push(B_SUB);break;
+					
+					case T_attrib_mul:
 					case T_mul:bc.push(B_MUL);break;
+					
+					case T_attrib_div:
 					case T_div:bc.push(B_DIV);break;
+					
+					case T_attrib_rem:
 					case T_rem:bc.push(B_REM);break;
+					
+					case T_attrib_shiftright:
 					case T_shiftright:bc.push(B_SHR);break;
+					
+					case T_attrib_shiftleft:
 					case T_shiftleft:bc.push(B_SHL);break;
-					/*case T_ge:gen(" >= ");break;
-					case T_gt:gen(" > ");break;
-					case T_le:gen(" <= ");break;
-					case T_lt:gen(" < ");break;
-					case T_notequals:gen(" != ");break;
-					case T_equals:gen(" == ");break;
-					case T_and:gen(" && ");break;
-					case T_or:gen(" || ");break;*/
+
+					case T_attrib_bitand:
 					case T_bitand:
 						if(tExprA == T_logico) // logico é invertido
 							bc.push(B_OR);
 						else
 							bc.push(B_AND);
 						break;
+						
+					case T_attrib_bitor:
 					case T_bitor:
 						if(tExprA == T_logico) // logico é invertido
 							bc.push(B_AND);
 						else
 							bc.push(B_OR);
 						break;
+						
+					case T_attrib_xor:
 					case T_xor:bc.push(B_XOR);break;
+					
 					default:
 						this.erro("o operador "+expr.op+" não pode ter dois operandos.");
 						bc.push(B_ADD);
@@ -744,7 +803,8 @@ class Compiler {
 				if(isAttribOp(expr.op))
 				{
 					var v = this.getVar(expr[0].name);
-					bc.push(B_DUP); // o valor fica na stack. mds isso vai da o maior problema
+					if(typeExpected != T_vazio)
+						bc.push(B_DUP); // o valor fica na stack. mds isso vai da o maior problema
 					
 					this.tryConvertType(tExprA,tExprB,bc);
 					
@@ -757,7 +817,10 @@ class Compiler {
 					{
 						this.erro("não pode alterar o valor da constante '"+v.name+"'");
 					}
-					return tExprA;
+					
+					if(typeExpected != T_vazio) // deu DUP
+						return tExprA;
+					else return T_vazio; // não deu DUP
 				}
 				return tRet;
 			}
@@ -775,7 +838,8 @@ class Compiler {
 					bc.push(B_PUSH);
 					bc.push(1);
 					bc.push(B_ADD);
-					bc.push(B_DUP); // o valor fica na stack. mds isso vai da o maior problema
+					if(typeExpected != T_vazio)
+						bc.push(B_DUP); // o valor fica na stack. mds isso vai da o maior problema
 					bc.push(v.global ? B_STOREGLOBAL : B_STORE);
 					bc.push(v.index);
 					
@@ -783,14 +847,18 @@ class Compiler {
 					{
 						this.erro("não pode alterar o valor da constante '"+v.name+"'");
 					}
-					return tExpr;
+					
+					if(typeExpected != T_vazio) // deu DUP
+						return tExpr;
+					else return T_vazio; // não deu DUP
 				case T_autodec:
 					var v = this.getVar(expr[0].name);
 					var tExpr = this.compileExpr(expr[0],bc,-1);
 					bc.push(B_PUSH);
 					bc.push(1);
 					bc.push(B_SUB);
-					bc.push(B_DUP); // o valor fica na stack. mds isso vai da o maior problema
+					if(typeExpected != T_vazio)
+						bc.push(B_DUP); // o valor fica na stack. mds isso vai da o maior problema
 					bc.push(v.global ? B_STOREGLOBAL : B_STORE);
 					bc.push(v.index);
 					
@@ -798,7 +866,9 @@ class Compiler {
 					{
 						this.erro("não pode alterar o valor da constante '"+v.name+"'");
 					}
-					return tExpr;
+					if(typeExpected != T_vazio) // deu DUP
+						return tExpr;
+					else return T_vazio; // não deu DUP
 				case T_bitnot:var tExpr = this.compileExpr(expr[0],bc,-1);bc.push(B_NOT);return tExpr;
 				//case T_not:tis.compileExpr(expr[0],bc,variableMap);break;
 				case T_parO: // methCall

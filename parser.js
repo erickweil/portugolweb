@@ -5,6 +5,7 @@ var STATEMENT_se = 4;
 var STATEMENT_enquanto = 5;
 var STATEMENT_facaEnquanto = 6;
 var STATEMENT_para = 7;
+var STATEMENT_pare = 8;
 
 function pmatch(index,tokens)
 {
@@ -139,12 +140,13 @@ class Parser {
 			i = this.parseDeclVariavel(i,tokens,tree);
 		}
 		
-		//pare, continue, retorne
+		//pare, continue??, retorne
 		// "pare"
 		// "retorne" expression
 		else if(t == T_pare)
 		{
-			this.erro(tokens[i],"pare não implementado ainda");
+			//this.erro(tokens[i],"pare não implementado ainda");
+			tree.push({id:STATEMENT_pare,index:tIndex});
 		}
 		else if(t == T_retorne)
 		{
@@ -266,7 +268,7 @@ class Parser {
 					this.erro(tokens[i],"dentro do para só pode declarações de variáveis e expressões. remova isso");
 					decl = false;
 				}
-			}
+			} else i--;
 			
 			
 			//          i -->
@@ -285,7 +287,7 @@ class Parser {
 			{
 				logic_Expr =[];
 				i = this.parseExpressao(i,tokens,logic_Expr,0);
-			}
+			} else i--;
 			
 			//                       i -->
 			// para  ( ...   ; logic-expr ;
