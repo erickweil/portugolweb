@@ -6,6 +6,7 @@ var STATEMENT_enquanto = 5;
 var STATEMENT_facaEnquanto = 6;
 var STATEMENT_para = 7;
 var STATEMENT_pare = 8;
+var STATEMENT_ret = 9;
 
 function pmatch(index,tokens)
 {
@@ -71,20 +72,41 @@ class Parser {
 			}
 			
 			// funcoes
-			else if(pmatch(i,tokens,T_funcao))
-			//if(tokens[i].id == T_funcao)
+			//else if(pmatch(i,tokens,T_funcao))
+			else if(t == T_funcao)
 			{
+				var funcType = T_vazio;
 				
-				var name = tokens[i+1].txt;
-				var DeclPars = this.extractBlock(i+2,tokens,T_parO,T_parC);
-				var parameters = this.parseDeclParametros(DeclPars.block);
-				var blockres = this.extractBlock(DeclPars.index+1,tokens,T_bracesO,T_bracesC);
-				var statements = [];
+				var funcPars = [];
+				var funcStats = [];
+				i++;// n entendeu?
+				//          i
+				// funcao <tipo> nome ( <pars> ) { <bloco> }
 				
-				i=this.parseStatementOrBlock(DeclPars.index+1,tokens,statements);
+				if(isTypeWord(tokens[i].id))
+				{
+					funcType = tokens[i].id;
+					//          i -->
+					// funcao <tipo> nome ( <pars> ) { <bloco> }
+					i++;
+				}
+				
+				this.processingFuncType = funcType; // para decidir sobre os retorne
+				var funcName = tokens[i].txt;
+				//                i -->
+				// funcao <tipo> nome ( <pars> ) { <bloco> }
+				i++;
+				
+				i = this.parseDeclParametros(i,tokens,funcPars);
+				
+				//                             i -->
+				// funcao <tipo> nome ( <pars> ) { <bloco> }
+				i++;
+				
+				i = this.parseStatementOrBlock(i,tokens,funcStats);
 				
 				
-				programaTree.funcoes.push({name:name,parameters:parameters,statements:statements});
+				programaTree.funcoes.push({name:funcName,type:funcType,parameters:funcPars,statements:funcStats});
 				
 			}
 			else
@@ -95,9 +117,38 @@ class Parser {
 		return programaTree;
 	}
 	
-	parseDeclParametros(tokens)
+	parseDeclParametros(i,tokens,tree)
 	{
-		return [];
+		if(tokens[i].id != T_parO)
+		{
+			this.erro(tokens[i],"esqueceu de abrir os parênteses da função");
+		}
+		
+		// i -->
+		// ( tipo nome [, tipo nome]* )
+		i++;
+		while(tokens[i].id != T_parC) // se tem alguma coisa
+		{
+			var tIndex = tokens[i].index;
+			var varType = tokens[i].id;i++;
+			var varName = tokens[i].txt;i++;
+			
+			tree.push({id:STATEMENT_declVar,index:tIndex,type:varType,isConst:false,name:varName,expr:false});
+			if(tokens[i].id != T_comma)
+			{
+				break;
+			}
+			else
+			{
+				i++;
+			}
+		}
+		
+		if(tokens[i].id != T_parC)
+		{
+			this.erro(tokens[i],"esqueceu de fechar os parênteses da função");
+		}
+		return i;
 	}
 	
 	parseStatementOrBlock(i,tokens,tree)
@@ -150,7 +201,15 @@ class Parser {
 		}
 		else if(t == T_retorne)
 		{
-			this.erro(tokens[i],"retorne não implementado ainda");
+			var exprTree = false;
+			if(this.processingFuncType != T_vazio) // se a função tem retorno
+			{
+				i++;
+				exprTree = [];
+				i = this.parseExpressao(i,tokens,exprTree,0);
+				exprTree = exprTree[0];
+			}
+			tree.push({id:STATEMENT_ret,index:tIndex,expr:exprTree});
 		}
 		
 		//se, se-senao
@@ -201,12 +260,20 @@ class Parser {
 			// i -->
 			// enquanto (   expr   )
 			i++;
-			if(tokens[i].id != T_parO) this.erro(tokens[i],"esqueceu de abrir os parênteses da condição do enquanto");
+			if(tokens[i].id != T_parO)
+			{
+				this.erro(tokens[i],"esqueceu de abrir os parênteses da condição do enquanto");
+			}
 			i = this.parseExpressao(i,tokens,logic_Expr,0);
-			//                  i -->
+
+			if(tokens[i].id != T_parC)
+			{
+				this.erro(tokens[i],"esqueceu de fechar os parênteses da condição do enquanto");
+			}
+			//                       i -->
 			// enquanto   (   expr   )  statementOrBlock
-			if(tokens[i].id != T_parC) this.erro(tokens[i],"esqueceu de fechar os parênteses da condição do enquanto");
 			i++;
+			
 			i = this.parseStatementOrBlock(i,tokens,statements);
 			
 			tree.push({id:STATEMENT_enquanto,index:tIndex,expr:logic_Expr[0],statements:statements});

@@ -72,13 +72,26 @@ class Compiler {
 		enviarErro(this.textInput,{index:this.lastIndex},msg);
 	}
 	
-	getFuncIndex(name)
+	getFuncIndex(name,funcArgs)
 	{
 		for(var i=0;i<this.functions.length;i++)
 		{
-			if(this.functions[i].name == name) return i;
+			if(this.functions[i].name == name)
+			{
+				var funcPars = this.functions[i].parameters;
+				
+				if(funcPars.length != funcArgs.length)
+					continue; // deve ter o mesmo número de argumentos
+				
+				for(var k=0;k<funcPars.length;k++)
+				{
+					if(!this.checarCompatibilidadeTipo(funcPars[k].type,funcArgs[k].type,T_attrib)) 
+						continue; // deve ter os mesmos tipos, ou compatíveis
+				}
+				return i;
+			}
 		}
-		this.erro("a função '"+name+"' não foi encontrada");
+		this.erro("a função '"+name+"' com "+funcArgs.length+" argumentos e tipos:"+funcArgs+" não foi encontrada");
 		return 0;
 	}
 	
@@ -88,7 +101,7 @@ class Compiler {
 		var variaveisGlobais = this.codeTree.variaveis;
 		this.functions = [
 		{
-			name:"$undefined",bytecode:[B_RET],varCount:0 // para ignorar chamadas a funcoes que nao existem
+			name:"$undefined",bytecode:[B_PUSH,"<Função desconhecida>",B_WRITE,B_RET],varCount:0,parameters:[],type:T_vazio // para ignorar chamadas a funcoes que nao existem
 		},
 		{
 			name:"escreva",
@@ -97,29 +110,33 @@ class Compiler {
 			B_WRITE,
 			B_RET
 			],
-			varCount:1
+			varCount:1,
+			parameters:[],
+			type:T_vazio
 		},
 		{
 			name:"limpa",
 			bytecode:[
 			B_CLEAR,B_RET
 			],
-			varCount:0
+			varCount:0,
+			parameters:[],
+			type:T_vazio
 		},
 		{
-			name:"leia$inteiro",bytecode:[B_WAITINPUT,B_READ_INT,B_RETVALUE],varCount:0
+			name:"leia$inteiro",bytecode:[B_WAITINPUT,B_READ_INT,B_RETVALUE],varCount:0,parameters:[],type:T_vazio
 		},
 		{
-			name:"leia$real",bytecode:[B_WAITINPUT,B_READ_FLOAT,B_RETVALUE],varCount:0
+			name:"leia$real",bytecode:[B_WAITINPUT,B_READ_FLOAT,B_RETVALUE],varCount:0,parameters:[],type:T_vazio
 		},
 		{
-			name:"leia$cadeia",bytecode:[B_WAITINPUT,B_READ_STRING,B_RETVALUE],varCount:0
+			name:"leia$cadeia",bytecode:[B_WAITINPUT,B_READ_STRING,B_RETVALUE],varCount:0,parameters:[],type:T_vazio
 		},
 		{
-			name:"leia$caracter",bytecode:[B_WAITINPUT,B_READ_CHAR,B_RETVALUE],varCount:0
+			name:"leia$caracter",bytecode:[B_WAITINPUT,B_READ_CHAR,B_RETVALUE],varCount:0,parameters:[],type:T_vazio
 		},
 		{
-			name:"leia$logico",bytecode:[B_WAITINPUT,B_READ_BOOL,B_RETVALUE],varCount:0
+			name:"leia$logico",bytecode:[B_WAITINPUT,B_READ_BOOL,B_RETVALUE],varCount:0,parameters:[],type:T_vazio
 		}
 		];
 		
@@ -135,18 +152,21 @@ class Compiler {
 		
 		for(var i=0;i<funcoes.length;i++)
 		{
-			this.functions.push({name:funcoes[i].name,bytecode:[],bytecodeIndexes:{},varCount:0 });
+			this.functions.push({name:funcoes[i].name,parameters:funcoes[i].parameters,type:funcoes[i].type,bytecode:[],bytecodeIndexes:{},varCount:0 });
 		}
 		for(var i=0;i<funcoes.length;i++)
 		{
 			this.funcScopeRef = new FunctionScopeRef();
-			this.compileStatements(funcoes[i].statements,this.functions[FuncOff+i]);//,this.functions[FuncOff+i].bytecode,this.functions[FuncOff+i].variableMap);
+			this.scope = new Scope(this.scope,false,this.funcScopeRef); // cria um scopo para rodar a funcao, se, enquanto e qualquer coisa...	
+				this.compileStatements(funcoes[i].parameters,this.functions[FuncOff+i]); // declara os parametros da funcao, n vai gerar bytecode nenhum
+				this.compileStatements(funcoes[i].statements,this.functions[FuncOff+i]);
+			this.scope = this.scope.parentScope;
 			this.functions[FuncOff+i].bytecode.push(B_RET); // nao pode esquecer
 			this.functions[FuncOff+i].varCount = this.funcScopeRef.maxVarCount;
 		}
 		
 		funcInit.bytecode.push(B_INVOKE);
-		var funcIndex = this.getFuncIndex("inicio");
+		var funcIndex = this.getFuncIndex("inicio",[]);
 		funcInit.bytecode.push(funcIndex);
 		funcInit.bytecode.push(0); // nenhum argumento
 		funcInit.bytecode.push(B_RET); // nao pode esquecer
@@ -346,6 +366,21 @@ class Compiler {
 					else
 					{
 						this.erro("o 'pare' não faz sentido aqui, nenhum laço de repetição para parar.");
+					}
+				break;
+				case STATEMENT_ret:
+					if(stat.expr)
+					{
+						var tipoRet = this.compileExpr(stat.expr,bc,-1);
+						if(tipoRet == T_vazio)
+						{
+							this.erro("não pode retornar vazio nesta função, arrume esta expressão.");
+						}
+						bc.push(B_RETVALUE);
+					}
+					else
+					{
+						bc.push(B_RET);
 					}
 				break;
 			}
@@ -874,37 +909,34 @@ class Compiler {
 				case T_parO: // methCall
 				{
 					var args = expr.args;
-					if(expr.name == "escreva" && args.length >= 1)
+					if(expr.name == "escreva")
 					{
 						for(var i =0;i<args.length;i++)
 						{
 							var tExpr = this.compileExpr(args[i],bc,-1);
 							this.tryConvertType(T_cadeia,tExpr,bc);
 							bc.push(B_INVOKE);
-							var funcIndex = this.getFuncIndex(expr.name);
+							var funcIndex = this.getFuncIndex(expr.name,[]);
 							bc.push(funcIndex);
 							bc.push(1);
 						}
+						return T_vazio;
 					}
-					else
+					else if(expr.name == "leia")
 					{
 						var methName= expr.name;
-						if(expr.name == "leia" && args.length == 1)
+						if(args.length == 1)
 						{
 							var v = this.getVar(args[0].name);
 							methName += "$"+getTypeWord(v.type);
-						}
-						for(var i =0;i<args.length;i++)
-						{
-							this.compileExpr(args[i],bc,-1);
-						}
-						bc.push(B_INVOKE);
-						var funcIndex = this.getFuncIndex(methName);
-						bc.push(funcIndex);
-						bc.push(args.length);
-						
-						if(expr.name == "leia" && args.length == 1)
-						{
+
+							this.compileExpr(args[0],bc,-1);
+							bc.push(B_INVOKE);
+							var funcIndex = this.getFuncIndex(methName,[]);
+							bc.push(funcIndex);
+							bc.push(args.length);
+							
+
 							var v = this.getVar(args[0].name);
 							bc.push(v.global ? B_STOREGLOBAL : B_STORE);
 							bc.push(v.index);
@@ -914,9 +946,27 @@ class Compiler {
 								this.erro("não pode alterar o valor da constante '"+v.name+"'");
 							}
 						}
+						else
+						{
+							this.erro("o leia deve receber uma variável como argumento");
+						}
+						return T_vazio;
+					}
+					else
+					{
+						var methName= expr.name;
+						var funcArgs = [];
+						for(var i =0;i<args.length;i++)
+						{
+							funcArgs.push(this.compileExpr(args[i],bc,-1));
+						}
+						bc.push(B_INVOKE);
+						var funcIndex = this.getFuncIndex(methName,funcArgs);
+						bc.push(funcIndex);
+						bc.push(args.length);
+						return this.functions[funcIndex].type;
 					}
 				}
-				return T_vazio;// tipos de retorno de funcoes nao implementados
 				case T_word: 
 					var v = this.getVar(expr.name);
 					
