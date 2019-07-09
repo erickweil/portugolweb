@@ -59,6 +59,14 @@ const B_C2S = 46; // char to str
 
 const B_SWAP = 47; // swap the elemtns of the stack
 
+
+const B_NEWARRAY = 48;
+const B_ASTORE = 49;
+const B_ALOAD = 50;
+const B_NEWARRAYGLOBAL = 51;
+const B_ASTOREGLOBAL = 52;
+const B_ALOADGLOBAL = 53;
+
 // não existem opcodes pro or e and logico.
 //var B_LAND = 32; // logical or
 //var B_LOR = 33; // logical or
@@ -129,6 +137,12 @@ case B_C2S : return "c2s";
 case B_SWAP : return "swap";
 case B_NO: return "no";
 case B_CLEAR: return "clear";
+case B_NEWARRAY: return "newarray";
+case B_ASTORE: return "astore";
+case B_ALOAD: return "aload";
+case B_NEWARRAYGLOBAL: return "newarrayglobal";
+case B_ASTOREGLOBAL: return "astoreglobal";
+case B_ALOADGLOBAL: return "aloadglobal";
 }
 }
 
@@ -154,6 +168,12 @@ case B_IFCMPLT :
 case B_IFCMPLE :
 case B_IFCMPGT :
 case B_IFCMPGE :
+case B_NEWARRAY:
+case B_ASTORE:
+case B_ALOAD:
+case B_NEWARRAYGLOBAL:
+case B_ASTOREGLOBAL:
+case B_ALOADGLOBAL:
 	return 1;
 case B_POP :
 case B_ADD :
@@ -189,7 +209,7 @@ case B_C2S :
 case B_SWAP : 
 case B_CLEAR:
 	return 0;
-case B_INVOKE : 
+case B_INVOKE :
 	return 2;
 }
 }
@@ -270,9 +290,10 @@ function getTokenIndex(bcIndex,funcIndex)
 	return tokenIndex
 }
 
-function erro(msg)
+function VMerro(msg)
 {	
-	enviarErro(VM_textInput,{index:0},msg);
+	var i = getTokenIndex(VM_i,VM_funcIndex);
+	enviarErro(VM_textInput,{index:i},msg);
 }
 
 function VMsetup(functions,globalCount,textInput,saida_div) 
@@ -285,6 +306,8 @@ function VMsetup(functions,globalCount,textInput,saida_div)
 	VM_saidaDiv = saida_div;
 	
 	VM_escrevaCount = 0;
+	// para resetar a div e talz
+	limpa();
 	
 	VM_frame = [];
 	VM_globals = new Array(globalCount);
@@ -308,6 +331,7 @@ function VMsetup(functions,globalCount,textInput,saida_div)
 // testando performance
 function VMrun()
 {
+	try {
 	VM_codeCount = 0;
 	while(true)
 	{
@@ -382,7 +406,7 @@ function VMrun()
 				|| !VM_functions[methIndex].bytecode
 				)
 				{
-					erro("Function not found");
+					VMerro("Function not found");
 				}
 				else
 				{
@@ -471,6 +495,36 @@ function VMrun()
 			break;
 			case B_B2S: VM_stack[VM_si-1] = (VM_stack[VM_si-1] == 0 ? "verdadeiro" : "falso"); break;
 			
+			case B_NEWARRAY:
+				var arrayVar = VM_code[VM_i++];
+				VM_vars[arrayVar] = new Array(VM_stack[--VM_si]);
+			break;
+			case B_ASTORE:  
+				var arrayVar = VM_code[VM_i++];
+				var arrayIndex = VM_stack[--VM_si];
+				VM_vars[arrayVar][arrayIndex] = VM_stack[--VM_si];
+			break;
+			case B_ALOAD:
+				var arrayVar = VM_code[VM_i++];
+				var arrayIndex = VM_stack[--VM_si];
+				VM_stack[VM_si++] = VM_vars[arrayVar][arrayIndex];
+			break;
+			
+			case B_NEWARRAYGLOBAL:
+				var arrayVar = VM_code[VM_i++];
+				VM_globals[arrayVar] = new Array(VM_stack[--VM_si]);
+			break;
+			case B_ASTOREGLOBAL:  
+				var arrayVar = VM_code[VM_i++];
+				var arrayIndex = VM_stack[--VM_si];
+				VM_globals[arrayVar][arrayIndex] = VM_stack[--VM_si];
+			break;
+			case B_ALOADGLOBAL:
+				var arrayVar = VM_code[VM_i++];
+				var arrayIndex = VM_stack[--VM_si];
+				VM_stack[VM_si++] = VM_globals[arrayVar][arrayIndex];
+			break;
+			
 			case B_WRITE: 
 				escreva(VM_stack[--VM_si]);
 				return STATE_BREATHING; // para n travar tudo com muitos escrevas.
@@ -495,12 +549,16 @@ function VMrun()
 				VM_stack[VM_si++] = leia().trim() == "verdadeiro";
 			break;
 			default:
-				erro("invalid bytecode:"+code);
+				VMerro("invalid bytecode:"+code);
 				return STATE_ENDED;
 			break;
 		}
 	}
-	
+	}
+	catch(err) {
+		VMerro(err);
+		return STATE_ENDED;
+	}
 }
 
 function VMtoString()

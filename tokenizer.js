@@ -345,6 +345,7 @@ function getTypeWord(code)
 		case T_cadeia: return "cadeia";
 		case T_real: return "real";
 		case T_logico: return "logico";
+		case T_squareO: return "vetor";
 		default: return "seila";
 	}
 }
@@ -367,8 +368,8 @@ function isAnyWord(code)
 }
 
 class Tokenizer {
-    constructor(input) {
-		this.input = input.replace(/\r\n/g,"\n");
+    constructor(input) { // esse input não pode conter \r !!!
+		this.input = input;
 		this.tokens = [];
     }
 	
@@ -434,6 +435,11 @@ class Tokenizer {
 				}
 				else if(c == "'")
 				{
+					if(str.length != 1)
+					{
+						this.erro(this.tokens[this.tokens.length-1],"o tipo caracter deve conter apenas uma letra ou número. mude para cadeia");
+						if(str.length > 1) str = str.charAt(0);
+					}
 					this.tokens.push({id:T_caracterLiteral,index:i,txt:str});
 				}
 				i = k; // vai fazer +1 no for
@@ -481,7 +487,7 @@ class Tokenizer {
 				{
 					var kc = this.input.charAt(k);
 					//if( separators.indexOf(kc) > -1 && kc != '.' &&  kc!= 'X' && kc!='x' && kc!='b' && kc!='B')
-					if(!(/^[0-9.XxBb]$/.test(kc)))
+					if(!(/^[0-9A-Fa-f\.XxBb]$/.test(kc)))
 					{
 						break;
 					}

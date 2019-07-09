@@ -1,4 +1,5 @@
 var STATEMENT_declVar = 1;
+var STATEMENT_declArr = 10;
 var STATEMENT_expr = 2;
 var STATEMENT_block = 3;
 var STATEMENT_se = 4;
@@ -26,7 +27,7 @@ function numberOfLinesUntil(index,str)
 	var st = str.substring(0,index);
 	return (st.match(/\r?\n/g) || '').length + 1;
 }
-	
+
 class Parser {
     constructor(tokens,textInput) {
 		this.tokens = tokens;
@@ -126,14 +127,47 @@ class Parser {
 		
 		// i -->
 		// ( tipo nome [, tipo nome]* )
+		//  tipo &nome
+		//  tipo nome[]
 		i++;
 		while(tokens[i].id != T_parC) // se tem alguma coisa
 		{
+			if(!isTypeWord(tokens[i].id))
+			{
+				this.erro(tokens[i],"uma declaração de parâmetro deve começar com um tipo de variável");
+				i++;
+				break;
+			}
 			var tIndex = tokens[i].index;
 			var varType = tokens[i].id;i++;
+			if(tokens[i].id != T_word)
+			{
+				this.erro(tokens[i],"o nome do parâmetro é inválido, deve ser apenas letras");
+				i++;
+				break;
+			}
 			var varName = tokens[i].txt;i++;
 			
-			tree.push({id:STATEMENT_declVar,index:tIndex,type:varType,isConst:false,name:varName,expr:false});
+			
+			if(tokens[i].id == T_squareO)
+			{
+				i++;
+				if(tokens[i].id != T_squareC)
+				{
+					this.erro(tokens[i],"esqueceu de fechar os colchetes no parâmetro");
+				}
+				else{
+					//             i -->
+					// tipo nome [ ]   ,
+					i++;
+				}
+				
+				tree.push({id:STATEMENT_declArr,index:tIndex,type:varType,isConst:false,name:varName,size_expr:false,values:[]});
+			}
+			else
+			{
+				tree.push({id:STATEMENT_declVar,index:tIndex,type:varType,isConst:false,name:varName,expr:false});
+			}
 			if(tokens[i].id != T_comma)
 			{
 				break;
@@ -436,10 +470,70 @@ class Parser {
 			
 		while(true)
 		{
-			var tIndex= tokens[i+1].index;
+			var tIndex= tokens[i+1].index; // index para saber onde está o erro na hora da execução
+			// arrays
+			// type word [ expression ] = { expression, ... }
+			// type word [ ] = { expression, ... }
+			// type word [ expression ]
+			
+			// variables
 			// type word = expression [, word = expression]
 			// type word
-			if(tokens[i+1].id == T_word && tokens[i+2].id == T_attrib)
+			
+			if(tokens[i+1].id == T_word && tokens[i+2].id == T_squareO)
+			{
+				var varName = tokens[i+1].txt;
+				var exprTree = [];
+				if(tokens[i+3].id != T_squareC)
+				{
+					i = this.parseExpressao(i+3,tokens,exprTree,0);
+				}
+				else
+				{			
+					//    i ----->
+					//  type word [  ]    =   {  expression, ... }
+					i = i+2
+				}
+				
+				//                   i ->
+				//  type word [ expression ]    =   {  expression, ... }
+				i++;
+				if(tokens[i].id != T_squareC) this.erro(tokens[i],"esqueceu de fechar os colchetes na declaração de vetor");
+				
+				
+				var ArrayValuesExpr = [];
+				if(tokens[i+1].id == T_attrib)
+				{
+					//                         i ------>
+					//  type word [ expression ]    =   {  expression, ... }
+					i = i+2; 
+					if(tokens[i].id != T_bracesO) this.erro(tokens[i],"esqueceu de abrir as chaves na declaração dos valores do vetor");
+					
+					do
+					{
+						//                                                i --->
+						//  type word [ expression ]    =   {  expression ,  expression , ... }
+						i++; 
+						
+						i = this.parseExpressao(i,tokens,ArrayValuesExpr,0); // NAO ESQUECER!
+				
+						//tree.push({id:STATEMENT_expr,index:tIndex,type:varType,expr:
+						//{op:T_attrib,expr:[
+						//{op:T_word,name:varName,expr:[{op:T_inteiroLiteral,value:k}]},
+						//indexTree[0]
+						//]
+						//}});
+						
+						//                                                        i --->
+						//  type word [ expression ]    =   {  expression ,  expression , ... }
+						i++;
+					}while(tokens[i].id == T_comma);
+					
+				}
+				
+				tree.push({id:STATEMENT_declArr,index:tIndex,type:varType,isConst:isConst,name:varName,size_expr:exprTree[0],values:ArrayValuesExpr});
+			}
+			else if(tokens[i+1].id == T_word && tokens[i+2].id == T_attrib)
 			{
 				
 				var varName = tokens[i+1].txt;
@@ -587,7 +681,21 @@ class Parser {
 		//word [ expression ] [ expression ]
 		else if(pmatch(i,tokens,T_word,T_squareO))
 		{
-			this.erro(tokens[i],"vetores não implementado ainda");
+			var word = tokens[i].txt;
+			//   i ----->
+			//  word [ expression ]
+			i++;
+			i++;
+			var exprTree = [];
+			i = this.parseExpressao(i,tokens,exprTree,0);
+			
+			//                   i ->
+			//  type word [ expression ]
+			i++;
+			if(tokens[i].id != T_squareC) this.erro(tokens[i],"esqueceu de fechar os colchetes no index do vetor");
+			
+			tree.push({op:T_squareO,name:word,expr:exprTree});
+			
 			return i;
 		}
 		//word
@@ -599,7 +707,7 @@ class Parser {
 		//( expression )
 		else if(pmatch(i,tokens,T_parO))
 		{
-			i = this.parseExpressao(i+1,tokens,tree);
+			i = this.parseExpressao(i+1,tokens,tree,0);
 			if(tokens[i+1].id != T_parC)
 			{
 				this.erro(tokens[i+1],"esqueceu de fechar os parênteses da expressão númerica");

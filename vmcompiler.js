@@ -26,14 +26,23 @@ class Scope {
 		else
 			this.globalScope = false;
 		if(parentScope)
+		{
 			this.varCount = parentScope.varCount;
+			this.globalCount = parentScope.globalCount;
+		}
 		else
+		{
 			this.varCount = 0;
+			this.globalCount = 0;
+		}
 	}
 	
 	createVar(varName,v)
 	{
 		this.vars[varName] = v;
+		if(this.globalScope)
+		this.globalCount++;
+		else
 		this.varCount++;
 		if(this.funcScopeRef && this.varCount > this.funcScopeRef.maxVarCount)
 			this.funcScopeRef.maxVarCount = this.varCount;
@@ -187,7 +196,7 @@ class Compiler {
 		}
 	}
 	
-	createVar(varName,type,isConst)
+	createVar(varName,type,isConst,isArray)
 	{
 		var v = this.scope.getVar(varName);
 		if(v)
@@ -197,7 +206,15 @@ class Compiler {
 		}
 		else
 		{
-			v = {type:type,name:varName,index:this.scope.varCount,global:this.scope.globalScope,isConst:isConst};
+			v = {
+				type:isArray ? T_squareO : type,
+				name:varName,
+				index:this.scope.globalScope ? this.scope.globalCount : this.scope.varCount,
+				global:this.scope.globalScope,
+				isConst:isConst,
+				isArray:isArray,
+				arrayType:isArray ? type : T_vazio
+			};
 			this.scope.createVar(varName,v);
 			return v;
 		}
@@ -214,7 +231,7 @@ class Compiler {
 		else
 		{
 			this.erro("não encontrou a variável '"+varName+"', esqueceu de declará-la?");
-			var v = this.createVar(varName,T_cadeia,false);
+			var v = this.createVar(varName,T_cadeia,false,false);
 			return v;
 		}
 	}
@@ -233,12 +250,55 @@ class Compiler {
 			bcIndex[bc.length] = this.lastIndex;
 			switch(stat.id)
 			{
+				case STATEMENT_declArr:
+					var v = this.createVar(stat.name,stat.type,stat.isConst,true);
+					if(stat.size_expr)
+					{
+						var tExpr = this.compileExpr(stat.size_expr,bc,T_inteiro); // tipo inteiro para indexar array
+						this.tryConvertType(T_inteiro,tExpr,bc);
+						
+						bc.push(v.global ? B_NEWARRAYGLOBAL : B_NEWARRAY);
+						bc.push(v.index);
+					}
+					else if(stat.values.length > 0)
+					{
+						bc.push(B_PUSH);
+						bc.push(stat.values.length);
+						
+						bc.push(v.global ? B_NEWARRAYGLOBAL : B_NEWARRAY);
+						bc.push(v.index);
+					}
+					
+					
+					if(stat.values.length > 0)
+					for(var k =0;k<stat.values.length;k++)
+					{
+						tExpr = this.compileExpr(stat.values[k],bc,v.arrayType);
+						this.tryConvertType(v.arrayType,tExpr,bc);
+						
+						if(!this.checarCompatibilidadeTipo(v.arrayType,tExpr,T_attrib))
+						{
+							this.erro("não pode colocar "+getTypeWord(tExpr)+" em uma variável do tipo "+getTypeWord(v.arrayType));
+						}
+						
+						bc.push(B_PUSH);
+						bc.push(k);
+						bc.push(v.global ? B_ASTOREGLOBAL : B_ASTORE);
+						bc.push(v.index);
+					}
+				break;
 				case STATEMENT_declVar:
-					var v = this.createVar(stat.name,stat.type,stat.isConst);
+					var v = this.createVar(stat.name,stat.type,stat.isConst,false);
 					if(stat.expr)
 					{
 						var tExpr = this.compileExpr(stat.expr,bc,stat.type);
 						this.tryConvertType(v.type,tExpr,bc);
+						
+						if(!this.checarCompatibilidadeTipo(v.type,tExpr,T_attrib))
+						{
+							this.erro("não pode colocar "+getTypeWord(tExpr)+" em uma variável do tipo "+getTypeWord(v.type));
+						}
+						
 						bc.push(v.global ? B_STOREGLOBAL : B_STORE);
 						bc.push(v.index);
 					}
@@ -329,6 +389,8 @@ class Compiler {
 				case STATEMENT_para:
 					var falseJumps = [];
 					
+					this.scope = new Scope(this.scope,false,this.funcScopeRef); // escopo para as variáveis decl
+					
 					if(stat.decl)
 					{
 						this.compileStatements(stat.decl,func); // declaracao
@@ -355,6 +417,8 @@ class Compiler {
 					bc.push(loopStart); // para voltar
 					
 					this.replaceAllBy(bc,falseJumps,bc.length); // determina onde ir para sair do loop
+					
+					this.scope = this.scope.parentScope; // fim do escopo
 				break;
 				case STATEMENT_pare:
 					if(this.loopScope)
@@ -415,6 +479,7 @@ class Compiler {
 	{
 		switch(op)
 		{
+			case T_attrib:
 			case T_attrib_plus:
 			case T_plus:
 			case T_attrib_minus:
@@ -429,7 +494,6 @@ class Compiler {
 			case T_shiftright:
 			case T_attrib_shiftleft:
 			case T_shiftleft:
-			case T_attrib:
 			case T_attrib_bitand:
 			case T_bitand:
 			case T_attrib_bitor:
@@ -438,6 +502,7 @@ class Compiler {
 			case T_xor:
 				switch(tA)
 				{
+					case T_squareO: return op == T_attrib && tB == T_squareO;
 					case T_inteiro: return (tB == T_inteiro || tB == T_real || ((op == T_plus || op == T_attrib_plus) && tB == T_cadeia));
 					case T_real: return (tB == T_inteiro || tB == T_real || ((op == T_plus || op == T_attrib_plus) && tB == T_cadeia));
 					case T_cadeia: return (op == T_attrib || op == T_plus || op == T_attrib_plus);
@@ -456,7 +521,6 @@ class Compiler {
 			case T_autoinc:
 			case T_autodec:
 				return (tA == T_inteiro || tA == T_real);
-			
 			case T_and:
 			case T_or:
 				return tA == T_logico && tB == T_logico;
@@ -469,6 +533,8 @@ class Compiler {
 			case T_notequals:
 			case T_equals:
 				return tA == tB;
+			case T_squareO: // operador de indexagem ?
+				return tB == T_inteiro;
 		}
 	}
 	
@@ -713,6 +779,11 @@ class Compiler {
 			if(expr.op == T_attrib)
 			{
 				var v = this.getVar(expr[0].name);
+				if(v.isArray && expr[0].expr)
+				{
+					tExprA = v.arrayType;
+				}
+				else
 				tExprA = v.type;
 				tExprB = this.compileExpr(expr[1],bc,tExprA);
 				
@@ -720,8 +791,18 @@ class Compiler {
 				if(typeExpected != T_vazio)
 					bc.push(B_DUP); // o valor fica na stack. mds isso vai da o maior problema
 				
-				bc.push(v.global ? B_STOREGLOBAL : B_STORE);
-				bc.push(v.index);
+				if(v.isArray && expr[0].expr) // se está indexando
+				{
+					var tExpri = this.compileExpr(expr[0].expr[0],bc,T_inteiro); // espera retorno inteiro do index do array
+					
+					bc.push(v.global ? B_ASTOREGLOBAL : B_ASTORE);
+					bc.push(v.index);
+				}
+				else
+				{
+					bc.push(v.global ? B_STOREGLOBAL : B_STORE);
+					bc.push(v.index);
+				}
 				
 				
 				if(v.isConst)
@@ -843,10 +924,22 @@ class Compiler {
 					
 					this.tryConvertType(tExprA,tExprB,bc);
 					
-					bc.push(v.global ? B_STOREGLOBAL : B_STORE);
-					bc.push(v.index);
+					if(v.isArray)
+					{
+						if(expr[0].expr)
+						{
+							this.erro("o vetor "+v.name+" está sendo usado como uma variável");
+						}
+						var tExpri = this.compileExpr(expr[0].expr[0],bc,T_inteiro); // espera retorno inteiro do index do array
 					
-					
+						bc.push(v.global ? B_ASTOREGLOBAL : B_ASTORE);
+						bc.push(v.index);
+					}
+					else
+					{
+						bc.push(v.global ? B_STOREGLOBAL : B_STORE);
+						bc.push(v.index);
+					}
 					
 					if(v.isConst)
 					{
@@ -875,9 +968,24 @@ class Compiler {
 					bc.push(B_ADD);
 					if(typeExpected != T_vazio)
 						bc.push(B_DUP); // o valor fica na stack. mds isso vai da o maior problema
-					bc.push(v.global ? B_STOREGLOBAL : B_STORE);
-					bc.push(v.index);
+						
+					if(v.isArray)
+					{
+						if(expr[0].expr)
+						{
+							this.erro("o vetor "+v.name+" está sendo usado como uma variável");
+						}
+						var tExpri = this.compileExpr(expr[0].expr[0],bc,T_inteiro); // espera retorno inteiro do index do array
 					
+						bc.push(v.global ? B_ASTOREGLOBAL : B_ASTORE);
+						bc.push(v.index);
+					}
+					else
+					{
+						bc.push(v.global ? B_STOREGLOBAL : B_STORE);
+						bc.push(v.index);
+					}
+
 					if(v.isConst)
 					{
 						this.erro("não pode alterar o valor da constante '"+v.name+"'");
@@ -894,8 +1002,23 @@ class Compiler {
 					bc.push(B_SUB);
 					if(typeExpected != T_vazio)
 						bc.push(B_DUP); // o valor fica na stack. mds isso vai da o maior problema
-					bc.push(v.global ? B_STOREGLOBAL : B_STORE);
-					bc.push(v.index);
+					
+					if(v.isArray)
+					{
+						if(expr[0].expr)
+						{
+							this.erro("o vetor "+v.name+" está sendo usado como uma variável");
+						}
+						var tExpri = this.compileExpr(expr[0].expr[0],bc,T_inteiro); // espera retorno inteiro do index do array
+					
+						bc.push(v.global ? B_ASTOREGLOBAL : B_ASTORE);
+						bc.push(v.index);
+					}
+					else
+					{
+						bc.push(v.global ? B_STOREGLOBAL : B_STORE);
+						bc.push(v.index);
+					}
 					
 					if(v.isConst)
 					{
@@ -936,10 +1059,22 @@ class Compiler {
 							bc.push(funcIndex);
 							bc.push(args.length);
 							
-
-							var v = this.getVar(args[0].name);
-							bc.push(v.global ? B_STOREGLOBAL : B_STORE);
-							bc.push(v.index);
+							if(v.isArray)
+							{
+								if(expr[0].expr)
+								{
+									this.erro("o vetor "+v.name+" está sendo usado como uma variável");
+								}
+								var tExpri = this.compileExpr(args[0].expr[0],bc,T_inteiro); // espera retorno inteiro do index do array
+							
+								bc.push(v.global ? B_ASTOREGLOBAL : B_ASTORE);
+								bc.push(v.index);
+							}
+							else
+							{
+								bc.push(v.global ? B_STOREGLOBAL : B_STORE);
+								bc.push(v.index);
+							}
 							
 							if(v.isConst)
 							{
@@ -973,14 +1108,53 @@ class Compiler {
 					bc.push(v.global ? B_LOADGLOBAL : B_LOAD);
 					bc.push(v.index);
 					return v.type;
-				case T_inteiroLiteral:bc.push(B_PUSH);bc.push(parseInt(expr.value));return T_inteiro;
+				case T_inteiroLiteral:bc.push(B_PUSH);bc.push(this.baseParseInt(expr.value));return T_inteiro;
 				case T_realLiteral:bc.push(B_PUSH);bc.push(parseFloat(expr.value));return T_real;
 				case T_cadeiaLiteral:bc.push(B_PUSH);bc.push(expr.value);return T_cadeia;
 				case T_caracterLiteral:bc.push(B_PUSH);bc.push(expr.value);return T_caracter;
+				
 				// x == 0: true
 				// x != 0: false
 				case T_logicoLiteral: bc.push(B_PUSH);bc.push(expr.value == "verdadeiro" ? B_TRUE : B_FALSE);return T_logico; 
+				case T_squareO:
+					var tExpri = this.compileExpr(expr.expr[0],bc,T_inteiro);
+					if(tExpri == T_vazio)
+					{
+						bc.push(B_PUSH);bc.push(0);
+					}
+					
+					var v = this.getVar(expr.name);
+					
+					bc.push(v.global ? B_ALOADGLOBAL : B_ALOAD);
+					bc.push(v.index);
+					return v.arrayType;
 			}
+		}
+	}
+	
+	baseParseInt(txt)
+	{
+		txt = txt.toUpperCase();
+		if(/^[1-9][0-9]*$/.test(txt) || txt == "0")
+		{
+			return parseInt(txt,10);
+		}
+		else if(/^0[0-9]+$/.test(txt)) // para evitar fazer o parse de octal. portugol não aceita octal
+		{
+			return parseInt(txt.substring(1,txt.length),10);
+		}
+		else if(/^0X[0-9A-F]+$/.test(txt))
+		{
+			return parseInt(txt.substring(2,txt.length),16);
+		}
+		else if(/^0B[01]+$/.test(txt))
+		{
+			return parseInt(txt.substring(2,txt.length),2);
+		}
+		else
+		{
+			this.erro("número inteiro escrito em formato desconhecido:'"+txt+"'");
+			return parseInt(txt);
 		}
 	}
 }
