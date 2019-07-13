@@ -114,7 +114,13 @@ color: #24708F;\
 }\
 .ace-portugoldark .ace_indent-guide {\
 background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAEklEQVQImWMQERFpYLC1tf0PAAgOAnPnhxyiAAAAAElFTkSuQmCC) right repeat-y\
-}";
+}\
+.ace_erroportugol-marker {\
+   position: absolute; /* without this positions will be erong */\
+   background-color: #59262A;\
+   z-index: 0; /* back of all other markers */ \
+}\
+";
 
 var dom = require("../lib/dom");
 dom.importCssString(exports.cssText, exports.cssClass);
