@@ -168,12 +168,6 @@ case B_IFCMPLT :
 case B_IFCMPLE :
 case B_IFCMPGT :
 case B_IFCMPGE :
-case B_NEWARRAY:
-case B_ASTORE:
-case B_ALOAD:
-case B_NEWARRAYGLOBAL:
-case B_ASTOREGLOBAL:
-case B_ALOADGLOBAL:
 	return 1;
 case B_POP :
 case B_ADD :
@@ -210,6 +204,12 @@ case B_SWAP :
 case B_CLEAR:
 	return 0;
 case B_INVOKE :
+case B_NEWARRAY:
+case B_NEWARRAYGLOBAL:
+case B_ASTORE:
+case B_ALOAD:
+case B_ASTOREGLOBAL:
+case B_ALOADGLOBAL:
 	return 2;
 }
 }
@@ -240,6 +240,27 @@ var VM_codeCount = 0;
 var VM_codeMax = 100000;
 var VM_escrevaCount = 0;
 var VM_escrevaMax = 1000;
+
+function recursiveDeclareArray(sizes,i)
+{
+	if(i >= sizes.length)
+	{
+		console.log("não deveria chamar o recursiveDeclareArray DENOVO!");
+		return false; // no more dimensions
+	}
+	
+	var arr = new Array(sizes[i]);
+	
+	if(i+1 < sizes.length)
+	{
+		for(var k=0;k<arr.length;k++)
+		{
+			arr[k] = this.recursiveDeclareArray(sizes,i+1);
+		}
+	}
+	
+	return arr;
+}
 
 function escreva(txt)
 {
@@ -495,34 +516,60 @@ function VMrun()
 			break;
 			case B_B2S: VM_stack[VM_si-1] = (VM_stack[VM_si-1] == 0 ? "verdadeiro" : "falso"); break;
 			
+			case B_NEWARRAYGLOBAL:
 			case B_NEWARRAY:
 				var arrayVar = VM_code[VM_i++];
-				VM_vars[arrayVar] = new Array(VM_stack[--VM_si]);
+				var ndims = VM_code[VM_i++];
+				var sizes = [];
+				for(var k=0;k<ndims;k++)
+				{
+					sizes.push(VM_stack[--VM_si]);
+				}
+				sizes.reverse();
+				
+				if(code == B_NEWARRAYGLOBAL)
+				VM_globals[arrayVar] = this.recursiveDeclareArray(sizes,0);
+				else
+				VM_vars[arrayVar] = this.recursiveDeclareArray(sizes,0);
 			break;
+			case B_ASTOREGLOBAL: 
 			case B_ASTORE:  
 				var arrayVar = VM_code[VM_i++];
-				var arrayIndex = VM_stack[--VM_si];
-				VM_vars[arrayVar][arrayIndex] = VM_stack[--VM_si];
-			break;
-			case B_ALOAD:
-				var arrayVar = VM_code[VM_i++];
-				var arrayIndex = VM_stack[--VM_si];
-				VM_stack[VM_si++] = VM_vars[arrayVar][arrayIndex];
-			break;
-			
-			case B_NEWARRAYGLOBAL:
-				var arrayVar = VM_code[VM_i++];
-				VM_globals[arrayVar] = new Array(VM_stack[--VM_si]);
-			break;
-			case B_ASTOREGLOBAL:  
-				var arrayVar = VM_code[VM_i++];
-				var arrayIndex = VM_stack[--VM_si];
-				VM_globals[arrayVar][arrayIndex] = VM_stack[--VM_si];
+				var ndims = VM_code[VM_i++];
+				
+				var indexes = [];
+				for(var k=0;k<ndims;k++)
+				{
+					indexes.push(VM_stack[--VM_si]);
+				}
+				indexes.reverse();
+				
+				var tempArr = code == B_ASTOREGLOBAL ? VM_globals[arrayVar] :VM_vars[arrayVar];
+				for(var k=0;k<ndims-1;k++)
+				{
+					tempArr = tempArr[indexes[k]];
+				}
+				tempArr[indexes[ndims-1]] = VM_stack[--VM_si];
 			break;
 			case B_ALOADGLOBAL:
+			case B_ALOAD:
 				var arrayVar = VM_code[VM_i++];
-				var arrayIndex = VM_stack[--VM_si];
-				VM_stack[VM_si++] = VM_globals[arrayVar][arrayIndex];
+				var ndims = VM_code[VM_i++];
+				
+				var indexes = [];
+				for(var k=0;k<ndims;k++)
+				{
+					indexes.push(VM_stack[--VM_si]);
+				}
+				indexes.reverse();
+				
+				var tempArr = code == B_ALOADGLOBAL ? VM_globals[arrayVar] :VM_vars[arrayVar];
+				for(var k=0;k<ndims-1;k++)
+				{
+					tempArr = tempArr[indexes[k]];
+				}
+				
+				VM_stack[VM_si++] = tempArr[indexes[ndims-1]];
 			break;
 			
 			case B_WRITE: 
@@ -556,6 +603,7 @@ function VMrun()
 	}
 	}
 	catch(err) {
+		console.log(err.stack);
 		VMerro(err);
 		return STATE_ENDED;
 	}

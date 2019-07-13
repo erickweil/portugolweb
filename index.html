@@ -252,6 +252,7 @@ o que falta:
 			}
 			catch(err)
 			{
+				console.log(err.stack);
 				enviarErro(string_cod,{index:0},"Erro na compilação:"+err);
 				return;
 			}

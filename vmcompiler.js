@@ -196,7 +196,7 @@ class Compiler {
 		}
 	}
 	
-	createVar(varName,type,isConst,isArray)
+	createVar(varName,type,isConst,isArray,arrayDim)
 	{
 		var v = this.scope.getVar(varName);
 		if(v)
@@ -213,7 +213,8 @@ class Compiler {
 				global:this.scope.globalScope,
 				isConst:isConst,
 				isArray:isArray,
-				arrayType:isArray ? type : T_vazio
+				arrayType:isArray ? type : T_vazio,
+				arrayDim:arrayDim
 			};
 			this.scope.createVar(varName,v);
 			return v;
@@ -236,6 +237,41 @@ class Compiler {
 		}
 	}
 	
+	compileDeclArray(values,bc,v,arrayDim,indexes)
+	{
+		for(var k =0;k<values.length;k++)
+		{
+			if(arrayDim <= 1)
+			{
+				var tExpr = this.compileExpr(values[k],bc,v.arrayType);
+				this.tryConvertType(v.arrayType,tExpr,bc);
+				
+				if(!this.checarCompatibilidadeTipo(v.arrayType,tExpr,T_attrib))
+				{
+					this.erro("não pode colocar "+getTypeWord(tExpr)+" em uma variável do tipo "+getTypeWord(v.arrayType));
+				}
+				
+				for(var j=0;j<indexes.length;j++)
+				{
+					bc.push(B_PUSH);
+					bc.push(indexes[j]);
+				}
+				
+				bc.push(B_PUSH);
+				bc.push(k);
+				bc.push(v.global ? B_ASTOREGLOBAL : B_ASTORE);
+				bc.push(v.index);
+				bc.push(v.arrayDim);
+			}
+			else
+			{
+				indexes.push(k);
+				this.compileDeclArray(values[k],bc,v,arrayDim-1,indexes);
+				indexes.pop();
+			}
+		}
+	}
+	
 	compileStatements(statements,func)
 	{
 		//,this.functions[FuncOff+i].bytecode,this.functions[FuncOff+i].variableMap);
@@ -251,41 +287,47 @@ class Compiler {
 			switch(stat.id)
 			{
 				case STATEMENT_declArr:
-					var v = this.createVar(stat.name,stat.type,stat.isConst,true);
-					if(stat.size_expr)
+					var arrayDim = stat.size_expr.length;
+					var v = this.createVar(stat.name,stat.type,stat.isConst,true,arrayDim);
+					
+					var declared = 0;
+					for(var k =0;k<arrayDim;k++)
 					{
-						var tExpr = this.compileExpr(stat.size_expr,bc,T_inteiro); // tipo inteiro para indexar array
-						this.tryConvertType(T_inteiro,tExpr,bc);
-						
-						bc.push(v.global ? B_NEWARRAYGLOBAL : B_NEWARRAY);
-						bc.push(v.index);
+						if(stat.size_expr[k])
+						{
+							var tExpr = this.compileExpr(stat.size_expr[k],bc,T_inteiro); // tipo inteiro para indexar array
+							this.tryConvertType(T_inteiro,tExpr,bc);
+							
+							declared++;
+						}
 					}
-					else if(stat.values.length > 0)
+					
+					if( declared != 0)
 					{
-						bc.push(B_PUSH);
-						bc.push(stat.values.length);
+						if(declared != arrayDim) this.erro("não especificou um dos tamanhos da matriz.");
 						
 						bc.push(v.global ? B_NEWARRAYGLOBAL : B_NEWARRAY);
 						bc.push(v.index);
+						bc.push(declared);
+					}
+					else if(stat.values.length > 0 && declared == 0)
+					{
+						var valuesLeng = stat.values;
+						for(var k =0;k<arrayDim;k++)
+						{
+							if(k > 0) valuesLeng = valuesLeng[0];
+							bc.push(B_PUSH);
+							bc.push(valuesLeng.length);
+						}
+						
+						bc.push(v.global ? B_NEWARRAYGLOBAL : B_NEWARRAY);
+						bc.push(v.index);
+						bc.push(arrayDim);
 					}
 					
 					
 					if(stat.values.length > 0)
-					for(var k =0;k<stat.values.length;k++)
-					{
-						tExpr = this.compileExpr(stat.values[k],bc,v.arrayType);
-						this.tryConvertType(v.arrayType,tExpr,bc);
-						
-						if(!this.checarCompatibilidadeTipo(v.arrayType,tExpr,T_attrib))
-						{
-							this.erro("não pode colocar "+getTypeWord(tExpr)+" em uma variável do tipo "+getTypeWord(v.arrayType));
-						}
-						
-						bc.push(B_PUSH);
-						bc.push(k);
-						bc.push(v.global ? B_ASTOREGLOBAL : B_ASTORE);
-						bc.push(v.index);
-					}
+					this.compileDeclArray(stat.values,bc,v,arrayDim,[]);
 				break;
 				case STATEMENT_declVar:
 					var v = this.createVar(stat.name,stat.type,stat.isConst,false);
@@ -793,10 +835,14 @@ class Compiler {
 				
 				if(v.isArray && expr[0].expr) // se está indexando
 				{
-					var tExpri = this.compileExpr(expr[0].expr[0],bc,T_inteiro); // espera retorno inteiro do index do array
+					for(var k = 0;k<expr[0].expr.length;k++)
+					{
+						var tExpri = this.compileExpr(expr[0].expr[k],bc,T_inteiro); // espera retorno inteiro do index do array
+					}
 					
 					bc.push(v.global ? B_ASTOREGLOBAL : B_ASTORE);
 					bc.push(v.index);
+					bc.push(expr[0].expr.length);
 				}
 				else
 				{
@@ -930,10 +976,6 @@ class Compiler {
 						{
 							this.erro("o vetor "+v.name+" está sendo usado como uma variável");
 						}
-						var tExpri = this.compileExpr(expr[0].expr[0],bc,T_inteiro); // espera retorno inteiro do index do array
-					
-						bc.push(v.global ? B_ASTOREGLOBAL : B_ASTORE);
-						bc.push(v.index);
 					}
 					else
 					{
@@ -975,10 +1017,6 @@ class Compiler {
 						{
 							this.erro("o vetor "+v.name+" está sendo usado como uma variável");
 						}
-						var tExpri = this.compileExpr(expr[0].expr[0],bc,T_inteiro); // espera retorno inteiro do index do array
-					
-						bc.push(v.global ? B_ASTOREGLOBAL : B_ASTORE);
-						bc.push(v.index);
 					}
 					else
 					{
@@ -1009,10 +1047,6 @@ class Compiler {
 						{
 							this.erro("o vetor "+v.name+" está sendo usado como uma variável");
 						}
-						var tExpri = this.compileExpr(expr[0].expr[0],bc,T_inteiro); // espera retorno inteiro do index do array
-					
-						bc.push(v.global ? B_ASTOREGLOBAL : B_ASTORE);
-						bc.push(v.index);
 					}
 					else
 					{
@@ -1061,14 +1095,14 @@ class Compiler {
 							
 							if(v.isArray)
 							{
-								if(expr[0].expr)
+								for(var k = 0;k<args[0].expr.length;k++)
 								{
-									this.erro("o vetor "+v.name+" está sendo usado como uma variável");
+									var tExpri = this.compileExpr(args[0].expr[k],bc,T_inteiro); // espera retorno inteiro do index do array
 								}
-								var tExpri = this.compileExpr(args[0].expr[0],bc,T_inteiro); // espera retorno inteiro do index do array
-							
+								
 								bc.push(v.global ? B_ASTOREGLOBAL : B_ASTORE);
 								bc.push(v.index);
+								bc.push(args[0].expr.length);
 							}
 							else
 							{
@@ -1117,16 +1151,22 @@ class Compiler {
 				// x != 0: false
 				case T_logicoLiteral: bc.push(B_PUSH);bc.push(expr.value == "verdadeiro" ? B_TRUE : B_FALSE);return T_logico; 
 				case T_squareO:
-					var tExpri = this.compileExpr(expr.expr[0],bc,T_inteiro);
-					if(tExpri == T_vazio)
+					//var tExpri = this.compileExpr(expr.expr[0],bc,T_inteiro);
+					for(var k = 0;k<expr.expr.length;k++)
 					{
-						bc.push(B_PUSH);bc.push(0);
+						var tExpri = this.compileExpr(expr.expr[k],bc,T_inteiro); // espera retorno inteiro do index do array
+						if(tExpri == T_vazio)
+						{
+							this.erro(tokens[i],"a expressão que indica a posição do vetor não retorna valor nenhum");
+							bc.push(B_PUSH);bc.push(0);
+						}
 					}
 					
 					var v = this.getVar(expr.name);
 					
 					bc.push(v.global ? B_ALOADGLOBAL : B_ALOAD);
 					bc.push(v.index);
+					bc.push(expr.expr.length);
 					return v.arrayType;
 			}
 		}

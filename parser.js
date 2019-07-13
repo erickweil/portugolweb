@@ -151,18 +151,23 @@ class Parser {
 			
 			if(tokens[i].id == T_squareO)
 			{
-				i++;
-				if(tokens[i].id != T_squareC)
+				var arrayDimExpr = [];
+				do
 				{
-					this.erro(tokens[i],"esqueceu de fechar os colchetes no parâmetro");
-				}
-				else{
-					//             i -->
-					// tipo nome [ ]   ,
+					//            i --->
+					//  type word [    ] [? ]?
+					i++;
+					arrayDimExpr.push(false); // eu sei que isso deveria dar erro mas dane-se
+					
+					if(tokens[i].id != T_squareC) this.erro(tokens[i],"esqueceu de fechar os colchetes na declaração de vetor");
+					
+					//                 i->
+					//  type word [    ] [? ]?
 					i++;
 				}
+				while(tokens[i].id == T_squareO);
 				
-				tree.push({id:STATEMENT_declArr,index:tIndex,type:varType,isConst:false,name:varName,size_expr:false,values:[]});
+				tree.push({id:STATEMENT_declArr,index:tIndex,type:varType,isConst:false,name:varName,size_expr:arrayDimExpr,values:[]});
 			}
 			else
 			{
@@ -448,6 +453,35 @@ class Parser {
 		return i;
 	}
 	
+	parseDeclArray(i,tokens,tree)
+	{
+		if(tokens[i].id != T_bracesO) this.erro(tokens[i],"esqueceu de abrir as chaves na declaração dos valores do vetor");
+		
+		do
+		{
+			//                                                i --->
+			//  type word [ expression ]    =   {  expression ,  expression , ... }
+			i++;
+			
+			if(tokens[i].id == T_bracesO)
+			{
+				var expr = []
+				i = this.parseDeclArray(i,tokens,expr);
+				tree.push(expr);
+			}
+			else
+			{
+				i = this.parseExpressao(i,tokens,tree,0);
+			}
+			
+			//                                                        i --->
+			//  type word [ expression ]    =   {  expression ,  expression , ... }
+			i++;
+		}while(tokens[i].id == T_comma);
+		
+		return i;
+	}
+	
 	parseDeclVariavel(i,tokens,tree)
 	{	
 		var isConst = false;
@@ -482,56 +516,39 @@ class Parser {
 			
 			if(tokens[i+1].id == T_word && tokens[i+2].id == T_squareO)
 			{
-				var varName = tokens[i+1].txt;
-				var exprTree = [];
-				if(tokens[i+3].id != T_squareC)
-				{
-					i = this.parseExpressao(i+3,tokens,exprTree,0);
-				}
-				else
-				{			
-					//    i ----->
-					//  type word [  ]    =   {  expression, ... }
-					i = i+2
-				}
-				
-				//                   i ->
-				//  type word [ expression ]    =   {  expression, ... }
+				//    i -->
+				//  type word [ expr?  ]    =   {  expression, ... }
 				i++;
-				if(tokens[i].id != T_squareC) this.erro(tokens[i],"esqueceu de fechar os colchetes na declaração de vetor");
+				var varName = tokens[i].txt;
+				var arrayDimExpr = [];
+				do
+				{
+					if(tokens[i+2].id != T_squareC)
+					{
+						i = this.parseExpressao(i+2,tokens,arrayDimExpr,0);
+					}
+					else
+					{
+						arrayDimExpr.push(false); // eu sei que isso deveria dar erro mas dane-se
+						i++;
+					}
+					//                   i --->
+					//  type word [ expression ]    =   {  expression, ... }
+					i++;
+					if(tokens[i].id != T_squareC) this.erro(tokens[i],"esqueceu de fechar os colchetes na declaração de vetor");
+				}
+				while(tokens[i+1].id == T_squareO);
 				
 				
 				var ArrayValuesExpr = [];
 				if(tokens[i+1].id == T_attrib)
 				{
-					//                         i ------>
+					//                         i ------->
 					//  type word [ expression ]    =   {  expression, ... }
-					i = i+2; 
-					if(tokens[i].id != T_bracesO) this.erro(tokens[i],"esqueceu de abrir as chaves na declaração dos valores do vetor");
-					
-					do
-					{
-						//                                                i --->
-						//  type word [ expression ]    =   {  expression ,  expression , ... }
-						i++; 
-						
-						i = this.parseExpressao(i,tokens,ArrayValuesExpr,0); // NAO ESQUECER!
-				
-						//tree.push({id:STATEMENT_expr,index:tIndex,type:varType,expr:
-						//{op:T_attrib,expr:[
-						//{op:T_word,name:varName,expr:[{op:T_inteiroLiteral,value:k}]},
-						//indexTree[0]
-						//]
-						//}});
-						
-						//                                                        i --->
-						//  type word [ expression ]    =   {  expression ,  expression , ... }
-						i++;
-					}while(tokens[i].id == T_comma);
-					
+					i = this.parseDeclArray(i+2,tokens,ArrayValuesExpr);
 				}
 				
-				tree.push({id:STATEMENT_declArr,index:tIndex,type:varType,isConst:isConst,name:varName,size_expr:exprTree[0],values:ArrayValuesExpr});
+				tree.push({id:STATEMENT_declArr,index:tIndex,type:varType,isConst:isConst,name:varName,size_expr:arrayDimExpr,values:ArrayValuesExpr});
 			}
 			else if(tokens[i+1].id == T_word && tokens[i+2].id == T_attrib)
 			{
@@ -682,19 +699,33 @@ class Parser {
 		else if(pmatch(i,tokens,T_word,T_squareO))
 		{
 			var word = tokens[i].txt;
-			//   i ----->
-			//  word [ expression ]
-			i++;
-			i++;
+
 			var exprTree = [];
-			i = this.parseExpressao(i,tokens,exprTree,0);
-			
-			//                   i ->
-			//  type word [ expression ]
-			i++;
-			if(tokens[i].id != T_squareC) this.erro(tokens[i],"esqueceu de fechar os colchetes no index do vetor");
-			
-			tree.push({op:T_squareO,name:word,expr:exprTree});
+			//i = this.parseExpressao(i,tokens,exprTree,0);
+			var arrayDimExpr = [];
+
+			//  i
+			//word [ expression ] [ expression ]
+			do
+			{
+				if(tokens[i+2].id != T_squareC)
+				{
+					i = this.parseExpressao(i+2,tokens,arrayDimExpr,0);
+				}
+				else
+				{
+					this.erro(tokens[i],"esperando expressão que indica a posição do vetor, mas não encontrou nada");
+					arrayDimExpr.push({op:T_inteiroLiteral,value:"0"});
+					i++;
+				}
+				//                   i --->
+				//  type word [ expression ]
+				i++;
+				if(tokens[i].id != T_squareC) this.erro(tokens[i],"esqueceu de fechar os colchetes na declaração de vetor");
+			}
+			while(tokens[i+1].id == T_squareO);
+
+			tree.push({op:T_squareO,name:word,expr:arrayDimExpr});
 			
 			return i;
 		}
