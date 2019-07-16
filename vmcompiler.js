@@ -1,3 +1,16 @@
+function getDefaultValue(code)
+{
+	switch(code)
+	{
+		case T_inteiro: return 0;
+		case T_caracter: return '\0';
+		case T_cadeia: return "";
+		case T_real: return 0.0;
+		case T_logico: return false;
+		case T_squareO: return [];
+	}
+}
+
 class FunctionScopeRef {
 	constructor() {
 		this.maxVarCount = 0;
@@ -62,16 +75,17 @@ class Scope {
 }
 // http://blog.jamesdbloom.com/JavaCodeToByteCode_PartOne.html
 class Compiler {
-    constructor(codeTree,tokens,textInput,saida_div) {
+    constructor(codeTree,libraries,tokens,textInput,saida_div) {
 		this.codeTree = codeTree;
 		this.tokens = tokens;
 		this.textInput = textInput;
-		
+		this.libraries = libraries;
 		
 		this.saida = "";
 		this.saida_div = saida_div;
 		
 		this.functions = [];
+		this.incluas = [];
 		this.scope = false;
 		this.loopScope = false;
 	}
@@ -108,6 +122,9 @@ class Compiler {
 	{
 		var funcoes = this.codeTree.funcoes;
 		var variaveisGlobais = this.codeTree.variaveis;
+		
+		this.incluas = this.codeTree.incluas;
+		
 		this.functions = [
 		{
 			name:"$undefined",bytecode:[B_PUSH,"<Função desconhecida>",B_WRITE,B_RET],varCount:0,parameters:[],type:T_vazio // para ignorar chamadas a funcoes que nao existem
@@ -259,6 +276,7 @@ class Compiler {
 				
 				bc.push(B_PUSH);
 				bc.push(k);
+				
 				bc.push(v.global ? B_ASTOREGLOBAL : B_ASTORE);
 				bc.push(v.index);
 				bc.push(v.arrayDim);
@@ -309,6 +327,7 @@ class Compiler {
 						bc.push(v.global ? B_NEWARRAYGLOBAL : B_NEWARRAY);
 						bc.push(v.index);
 						bc.push(declared);
+						bc.push(getDefaultValue(v.arrayType));
 					}
 					else if(stat.values.length > 0 && declared == 0)
 					{
@@ -323,6 +342,7 @@ class Compiler {
 						bc.push(v.global ? B_NEWARRAYGLOBAL : B_NEWARRAY);
 						bc.push(v.index);
 						bc.push(arrayDim);
+						bc.push(getDefaultValue(v.arrayType));
 					}
 					
 					
@@ -349,7 +369,8 @@ class Compiler {
 					if(!isAttribOp(stat.expr.op) 
 					&& stat.expr.op != T_autoinc
 					&& stat.expr.op != T_autodec
-					&& stat.expr.op != T_parO)
+					&& stat.expr.op != T_parO
+					&& stat.expr.op != T_dot)
 					{
 						this.erro("Esta expressão não pode ficar sozinha, talvez tenha esquecido um operador matemático");
 					}
@@ -794,6 +815,42 @@ class Compiler {
 		return T_logico;
 	}
 	
+	compileMemberAttrib(member,v,bc)
+	{
+		if(v.isArray && member.expr) // se está indexando
+		{
+			for(var k = 0;k<member.expr.length;k++)
+			{
+				var tExpri = this.compileExpr(member.expr[k],bc,T_inteiro); // espera retorno inteiro do index do array
+				if(tExpri == T_vazio)
+				{
+					this.erro("a expressão que indica a posição do vetor não retorna valor nenhum");
+					bc.push(B_PUSH);bc.push(0);
+				}
+				else if(tExpri != T_inteiro) this.erro("para acessar um vetor ou matriz, deve informar um valor numérico do tipo inteiro.");
+			}
+			
+			bc.push(v.global ? B_ASTOREGLOBAL : B_ASTORE);
+			bc.push(v.index);
+			bc.push(member.expr.length);
+			
+			if(member.expr.length != v.arrayDim) this.erro("seu vetor é de "+v.arrayDim+" dimensões, porém indexou "+member.expr.length+" dimensões.");
+		}
+		else
+		{
+			if(v.isArray)
+				this.erro("você deve indicar a posição do vetor que deseja acessar, não pode usar um vetor assim");
+			bc.push(v.global ? B_STOREGLOBAL : B_STORE);
+			bc.push(v.index);
+		}
+		
+		
+		if(v.isConst)
+		{
+			this.erro("não pode alterar o valor da constante '"+v.name+"'");
+		}
+	}
+	
 	// retorna o tipo da expressao
 	// typeExpected
 	// se for -1 é porque tem que retornar algum valor, não importa qualquer
@@ -833,28 +890,7 @@ class Compiler {
 				if(typeExpected != T_vazio)
 					bc.push(B_DUP); // o valor fica na stack. mds isso vai da o maior problema
 				
-				if(v.isArray && expr[0].expr) // se está indexando
-				{
-					for(var k = 0;k<expr[0].expr.length;k++)
-					{
-						var tExpri = this.compileExpr(expr[0].expr[k],bc,T_inteiro); // espera retorno inteiro do index do array
-					}
-					
-					bc.push(v.global ? B_ASTOREGLOBAL : B_ASTORE);
-					bc.push(v.index);
-					bc.push(expr[0].expr.length);
-				}
-				else
-				{
-					bc.push(v.global ? B_STOREGLOBAL : B_STORE);
-					bc.push(v.index);
-				}
-				
-				
-				if(v.isConst)
-				{
-					this.erro("não pode alterar o valor da constante '"+v.name+"'");
-				}
+				this.compileMemberAttrib(expr[0],v,bc);
 				
 				if(!this.checarCompatibilidadeTipo(tExprA,tExprB,expr.op))
 				{
@@ -970,23 +1006,7 @@ class Compiler {
 					
 					this.tryConvertType(tExprA,tExprB,bc);
 					
-					if(v.isArray)
-					{
-						if(expr[0].expr)
-						{
-							this.erro("o vetor "+v.name+" está sendo usado como uma variável");
-						}
-					}
-					else
-					{
-						bc.push(v.global ? B_STOREGLOBAL : B_STORE);
-						bc.push(v.index);
-					}
-					
-					if(v.isConst)
-					{
-						this.erro("não pode alterar o valor da constante '"+v.name+"'");
-					}
+					this.compileMemberAttrib(expr[0],v,bc);
 					
 					if(typeExpected != T_vazio) // deu DUP
 						return tExprA;
@@ -1011,23 +1031,7 @@ class Compiler {
 					if(typeExpected != T_vazio)
 						bc.push(B_DUP); // o valor fica na stack. mds isso vai da o maior problema
 						
-					if(v.isArray)
-					{
-						if(expr[0].expr)
-						{
-							this.erro("o vetor "+v.name+" está sendo usado como uma variável");
-						}
-					}
-					else
-					{
-						bc.push(v.global ? B_STOREGLOBAL : B_STORE);
-						bc.push(v.index);
-					}
-
-					if(v.isConst)
-					{
-						this.erro("não pode alterar o valor da constante '"+v.name+"'");
-					}
+					this.compileMemberAttrib(expr[0],v,bc);
 					
 					if(typeExpected != T_vazio) // deu DUP
 						return tExpr;
@@ -1041,23 +1045,8 @@ class Compiler {
 					if(typeExpected != T_vazio)
 						bc.push(B_DUP); // o valor fica na stack. mds isso vai da o maior problema
 					
-					if(v.isArray)
-					{
-						if(expr[0].expr)
-						{
-							this.erro("o vetor "+v.name+" está sendo usado como uma variável");
-						}
-					}
-					else
-					{
-						bc.push(v.global ? B_STOREGLOBAL : B_STORE);
-						bc.push(v.index);
-					}
+					this.compileMemberAttrib(expr[0],v,bc);
 					
-					if(v.isConst)
-					{
-						this.erro("não pode alterar o valor da constante '"+v.name+"'");
-					}
 					if(typeExpected != T_vazio) // deu DUP
 						return tExpr;
 					else return T_vazio; // não deu DUP
@@ -1093,27 +1082,7 @@ class Compiler {
 							bc.push(funcIndex);
 							bc.push(args.length);
 							
-							if(v.isArray)
-							{
-								for(var k = 0;k<args[0].expr.length;k++)
-								{
-									var tExpri = this.compileExpr(args[0].expr[k],bc,T_inteiro); // espera retorno inteiro do index do array
-								}
-								
-								bc.push(v.global ? B_ASTOREGLOBAL : B_ASTORE);
-								bc.push(v.index);
-								bc.push(args[0].expr.length);
-							}
-							else
-							{
-								bc.push(v.global ? B_STOREGLOBAL : B_STORE);
-								bc.push(v.index);
-							}
-							
-							if(v.isConst)
-							{
-								this.erro("não pode alterar o valor da constante '"+v.name+"'");
-							}
+							this.compileMemberAttrib(args[0],v,bc);
 						}
 						else
 						{
@@ -1139,6 +1108,10 @@ class Compiler {
 				case T_word: 
 					var v = this.getVar(expr.name);
 					
+					// chamadas de funções usam o vetor como uma variável...
+					//if(v.isArray) 
+					//this.erro("tentou usar o vetor como se fosse uma variável. você deve indicar a posição do vetor que quer acessar");
+					
 					bc.push(v.global ? B_LOADGLOBAL : B_LOAD);
 					bc.push(v.index);
 					return v.type;
@@ -1157,9 +1130,10 @@ class Compiler {
 						var tExpri = this.compileExpr(expr.expr[k],bc,T_inteiro); // espera retorno inteiro do index do array
 						if(tExpri == T_vazio)
 						{
-							this.erro(tokens[i],"a expressão que indica a posição do vetor não retorna valor nenhum");
+							this.erro("a expressão que indica a posição do vetor não retorna valor nenhum");
 							bc.push(B_PUSH);bc.push(0);
 						}
+						else if(tExpri != T_inteiro) this.erro("para acessar um vetor ou matriz, deve informar um valor numérico do tipo inteiro.");
 					}
 					
 					var v = this.getVar(expr.name);
@@ -1167,7 +1141,77 @@ class Compiler {
 					bc.push(v.global ? B_ALOADGLOBAL : B_ALOAD);
 					bc.push(v.index);
 					bc.push(expr.expr.length);
+					
+					if(expr.expr.length != v.arrayDim) this.erro("sua matriz é de "+v.arrayDim+" dimensões, porém indexou "+expr.expr.length+" dimensões.");
+					
 					return v.arrayType;
+				case T_dot:
+					var biblioteca = expr.name;
+					var campo = expr.expr;
+					
+					var declarado = false;
+					for(var k=0;k<this.incluas.length;k++)
+					{
+						if(this.incluas[k].name == biblioteca || this.incluas[k].alias == biblioteca)
+						{
+							biblioteca = this.incluas[k].name;
+							declarado = true;
+							break;
+						}
+					}
+					
+					if(!declarado)
+					{
+						this.erro("a biblioteca "+biblioteca+" não foi inclusa no programa");
+					}
+					
+					var libObj = this.libraries[biblioteca];
+					
+					if(!libObj)
+					{
+						this.erro("a biblioteca "+biblioteca+" não existe.");
+						return T_vazio;
+					}
+					
+					if(!libObj.members[campo.name])
+						this.erro("a biblioteca "+biblioteca+" não tem nenhuma variável ou função '"+campo.name+"'");
+					
+					if(libObj.members[campo.name].id == T_word && campo.op == T_parO)
+						this.erro("está usando a variável '"+campo.name+"' como se fosse uma função.");
+						
+					if(libObj.members[campo.name].id == T_parO && campo.op == T_word)
+						this.erro("está usando a fução '"+campo.name+"' como se fosse uma variável.");
+					
+					if(campo.op == T_word)
+					{
+						bc.push(B_LIBLOAD);
+						bc.push(biblioteca);
+						bc.push(campo.name);
+					}
+					else if(campo.op == T_parO)
+					{
+						var funcPars = libObj.members[campo.name].parameters;
+						
+						if(funcPars.length != campo.args.length)
+						{
+							this.erro("a função "+campo.name+" espera "+funcPars.length+" argumentos, foram passados apenas "+campo.args.length);
+						}
+						
+						for(var k =0;k<campo.args.length;k++)
+						{
+							var tExpr = this.compileExpr(campo.args[k],bc,-1);
+							
+							if(!this.checarCompatibilidadeTipo(funcPars[k],tExpr,T_attrib))
+							this.erro("a função "+campo.name+" esperava o tipo "+getTypeWord(funcPars[k])+" porém foi fornecido o tipo "+getTypeWord(tExpr));
+						}
+						
+						bc.push(B_LIBINVOKE);
+						bc.push(biblioteca);
+						bc.push(campo.name);
+						bc.push(campo.args.length);
+					}
+					
+				return libObj.members[campo.name].type;
 			}
 		}
 	}

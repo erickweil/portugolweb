@@ -63,11 +63,14 @@ class Parser {
 		{
 			var t = tokens[i].id;
 			// incluas
-			
+			if(t == T_inclua)
+			{
+				i = this.parseDeclBiblioteca(i,tokens,programaTree.incluas);
+			}
 			// variaveis globais
 			//declaracão de variáveis, vetor, matriz
 			// type word = expression [, word = expression]
-			if(isTypeWord(t) || t == T_const)
+			else if(isTypeWord(t) || t == T_const)
 			{
 				i = this.parseDeclVariavel(i,tokens,programaTree.variaveis);
 			}
@@ -116,6 +119,33 @@ class Parser {
 			}
 		}
 		return programaTree;
+	}
+	
+	parseDeclBiblioteca(i,tokens,tree)
+	{
+		//   i -->
+		//	inclua biblioteca Util --> u
+		//  inclua biblioteca Util
+		i++;
+		if(tokens[i].id != T_biblioteca)
+		{
+			this.erro(tokens[i],"esperando 'biblioteca' logo após a palavra inclua");
+			i--; // n estou com fome.
+		}
+
+		i++;		
+		var biblioteca = tokens[i].txt;
+		var alias = false;
+		
+		if(tokens[i+1].id == T_arrow)
+		{
+			i += 2;
+			alias = tokens[i].txt;
+		}
+		
+		tree.push({name:biblioteca,alias:alias});
+		
+		return i;
 	}
 	
 	parseDeclParametros(i,tokens,tree)
@@ -686,7 +716,20 @@ class Parser {
 		//word . word ( [, expression] )
 		if(pmatch(i,tokens,T_word,T_dot))
 		{
-			this.erro(tokens[i],"chamada a bibliotecas não implementado ainda");
+			var biblioteca = tokens[i].txt;
+			
+			i += 2;
+			
+			var campo = {op:T_word,name:tokens[i].txt};
+			if(tokens[i+1].id == T_parO)
+			{
+				campo = [];
+				i = this.parseMethCall(i,tokens,campo);
+				campo = campo[0];
+			}
+			
+			tree.push({op:T_dot,name:biblioteca,expr:campo});
+			
 			return i;
 		}
 		//word ( [, expression] )

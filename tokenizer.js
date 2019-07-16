@@ -56,7 +56,8 @@ var T_attrib_plus = 32;
 var T_unary_plus = 54;
 var T_plus = 3;
 
-// -- -= -
+// --> -- -= -
+var T_arrow = 56;
 var T_autodec = 52;
 var T_attrib_minus = 33;
 var T_unary_minus = 55;
@@ -123,6 +124,8 @@ var T_parC = 22;
 var T_squareO = 23;
 var T_squareC = 24;
 var T_colon = 53;
+
+
 
 function isDualOperator(code)
 {
@@ -577,7 +580,10 @@ class Tokenizer {
 					else if(t0 == T_plus && t1 == T_attrib)
 						{t0 = T_attrib_plus; sepOff = 2;}
 						
-					if(t0 == T_minus && t1 == T_minus)
+					// --> -- -= -
+					if(t0 == T_minus && t1 == T_minus && t2 == T_gt)
+						{t0 = T_arrow; sepOff = 3;}
+					else if(t0 == T_minus && t1 == T_minus)
 						{t0 = T_autodec; sepOff = 2;}
 					else if(t0 == T_minus && t1 == T_attrib)
 						{t0 = T_attrib_minus; sepOff = 2;}	

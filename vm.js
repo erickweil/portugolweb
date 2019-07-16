@@ -67,6 +67,8 @@ const B_NEWARRAYGLOBAL = 51;
 const B_ASTOREGLOBAL = 52;
 const B_ALOADGLOBAL = 53;
 
+const B_LIBLOAD = 54; // library load
+const B_LIBINVOKE = 55; // library invoke
 // não existem opcodes pro or e and logico.
 //var B_LAND = 32; // logical or
 //var B_LOR = 33; // logical or
@@ -143,6 +145,8 @@ case B_ALOAD: return "aload";
 case B_NEWARRAYGLOBAL: return "newarrayglobal";
 case B_ASTOREGLOBAL: return "astoreglobal";
 case B_ALOADGLOBAL: return "aloadglobal";
+case B_LIBLOAD: return "libload";
+case B_LIBINVOKE: return "libinvoke";
 }
 }
 
@@ -204,13 +208,16 @@ case B_SWAP :
 case B_CLEAR:
 	return 0;
 case B_INVOKE :
-case B_NEWARRAY:
-case B_NEWARRAYGLOBAL:
 case B_ASTORE:
 case B_ALOAD:
 case B_ASTOREGLOBAL:
 case B_ALOADGLOBAL:
+case B_LIBLOAD:
 	return 2;
+case B_NEWARRAY:
+case B_NEWARRAYGLOBAL:
+case B_LIBINVOKE:
+	return 3;
 }
 }
 
@@ -220,7 +227,8 @@ var STATE_WAITINGINPUT = 1;
 var STATE_BREATHING = 2;
 var STATE_PENDINGSTOP = 3;
 var STATE_RUNNING = 4;
-
+var STATE_DELAY = 5;
+var VM_delay = false;
 // frame locals
 var VM_code = false;
 var VM_i = 0;
@@ -233,6 +241,7 @@ var VM_funcIndex = 0;
 var VM_frame = false;
 var VM_globals = false;
 var VM_functions = false;
+var VM_libraries = false;
 var VM_saida = false;
 var VM_saidaDiv = false;
 var VM_textInput = false;
@@ -241,7 +250,7 @@ var VM_codeMax = 100000;
 var VM_escrevaCount = 0;
 var VM_escrevaMax = 1000;
 
-function recursiveDeclareArray(sizes,i)
+function recursiveDeclareArray(sizes,defaultValue,i)
 {
 	if(i >= sizes.length)
 	{
@@ -255,7 +264,14 @@ function recursiveDeclareArray(sizes,i)
 	{
 		for(var k=0;k<arr.length;k++)
 		{
-			arr[k] = this.recursiveDeclareArray(sizes,i+1);
+			arr[k] = this.recursiveDeclareArray(sizes,defaultValue,i+1);
+		}
+	}
+	else
+	{
+		for(var k=0;k<arr.length;k++)
+		{
+			arr[k] = defaultValue;
 		}
 	}
 	
@@ -317,11 +333,11 @@ function VMerro(msg)
 	enviarErro(VM_textInput,{index:i},msg);
 }
 
-function VMsetup(functions,globalCount,textInput,saida_div) 
+function VMsetup(functions,libraries,globalCount,textInput,saida_div) 
 {
 	VM_functions = functions;
 	VM_textInput = textInput;
-	
+	VM_libraries = libraries;
 	
 	VM_saida = "";
 	VM_saidaDiv = saida_div;
@@ -378,6 +394,11 @@ function VMrun()
 			case B_STOREGLOBAL: VM_globals[VM_code[VM_i++]] = VM_stack[--VM_si]; break;
 			case B_LOADGLOBAL: VM_stack[VM_si++] = VM_globals[VM_code[VM_i++]]; break;
 			
+			case B_LIBLOAD: 
+				var lib = VM_code[VM_i++];
+				var field = VM_code[VM_i++];
+				VM_stack[VM_si++] = VM_libraries[lib][field];
+			break;
 
 			case B_ADD: VM_stack[VM_si-2] = VM_stack[VM_si-2]+VM_stack[VM_si-1]; VM_si--; break;
 			case B_SUB: VM_stack[VM_si-2] = VM_stack[VM_si-2]-VM_stack[VM_si-1]; VM_si--; break;
@@ -409,8 +430,36 @@ function VMrun()
 			case B_IFGT: VM_i = (VM_stack[--VM_si] > 0 ? VM_code[VM_i++] : VM_i+1); break;
 			case B_IFLE: VM_i = (VM_stack[--VM_si] <= 0 ? VM_code[VM_i++] : VM_i+1); break;
 			
-			
-			case B_INVOKE: 
+			case B_LIBINVOKE:
+				// precisa criar um stackFrame
+				var lib = VM_code[VM_i++];
+				var meth = VM_code[VM_i++];
+				var methArgsN = VM_code[VM_i++];
+				var methArgs = [];
+				for(var i = 0;i<methArgsN; i++)
+				{
+					methArgs.push(VM_stack[--VM_si]);
+				}
+				methArgs.reverse();
+				
+				var ret = VM_libraries[lib][meth].apply(VM_libraries[lib], methArgs);
+				
+				
+				if(ret)
+				{
+					var retValue = ret.value;
+					if(typeof retValue !== "undefined")
+					{
+						VM_stack[VM_si++] = retValue;
+					}
+					
+					if(typeof ret.state !== "undefined" && ret.state != STATE_RUNNING)
+					{
+						return ret.state;
+					}
+				}
+			break;
+			case B_INVOKE:
 				// precisa criar um stackFrame
 				var methIndex = VM_code[VM_i++];
 				var methArgsN = VM_code[VM_i++];
@@ -520,17 +569,25 @@ function VMrun()
 			case B_NEWARRAY:
 				var arrayVar = VM_code[VM_i++];
 				var ndims = VM_code[VM_i++];
+				var defaultValue = VM_code[VM_i++];
 				var sizes = [];
 				for(var k=0;k<ndims;k++)
 				{
-					sizes.push(VM_stack[--VM_si]);
+					var size = VM_stack[--VM_si];
+					if(size>=0)
+						sizes.push(size);
+					else
+					{
+						VMerro("Tentou criar vetor com tamanho inválido '"+size+"'");
+						return STATE_ENDED;
+					}
 				}
 				sizes.reverse();
 				
 				if(code == B_NEWARRAYGLOBAL)
-				VM_globals[arrayVar] = this.recursiveDeclareArray(sizes,0);
+				VM_globals[arrayVar] = this.recursiveDeclareArray(sizes,defaultValue,0);
 				else
-				VM_vars[arrayVar] = this.recursiveDeclareArray(sizes,0);
+				VM_vars[arrayVar] = this.recursiveDeclareArray(sizes,defaultValue,0);
 			break;
 			case B_ASTOREGLOBAL: 
 			case B_ASTORE:  
@@ -547,9 +604,22 @@ function VMrun()
 				var tempArr = code == B_ASTOREGLOBAL ? VM_globals[arrayVar] :VM_vars[arrayVar];
 				for(var k=0;k<ndims-1;k++)
 				{
-					tempArr = tempArr[indexes[k]];
+					if(indexes[k]>=0 && indexes[k] < tempArr.length)
+						tempArr = tempArr[indexes[k]];
+					else
+					{
+						VMerro("a matriz tem tamanho '"+tempArr.length+"' na dimensão '"+k+"' mas tentou acessar a posição '"+indexes[k]+"'");
+						return STATE_ENDED;
+					}
 				}
-				tempArr[indexes[ndims-1]] = VM_stack[--VM_si];
+				
+				if(indexes[ndims-1]>=0 && indexes[ndims-1] < tempArr.length)
+					tempArr[indexes[ndims-1]] = VM_stack[--VM_si];
+				else
+				{
+					VMerro("O vetor vai de 0 à "+(tempArr.length-1)+" mas tentou acessar a posição '"+indexes[ndims-1]+"'");
+					return STATE_ENDED;
+				}
 			break;
 			case B_ALOADGLOBAL:
 			case B_ALOAD:
@@ -566,10 +636,22 @@ function VMrun()
 				var tempArr = code == B_ALOADGLOBAL ? VM_globals[arrayVar] :VM_vars[arrayVar];
 				for(var k=0;k<ndims-1;k++)
 				{
-					tempArr = tempArr[indexes[k]];
+					if(indexes[k]>=0 && indexes[k] < tempArr.length)
+						tempArr = tempArr[indexes[k]];
+					else
+					{
+						VMerro("a matriz tem tamanho '"+tempArr.length+"' na dimensão '"+k+"' mas tentou acessar a posição '"+indexes[k]+"'");
+						return STATE_ENDED;
+					}
 				}
 				
-				VM_stack[VM_si++] = tempArr[indexes[ndims-1]];
+				if(indexes[ndims-1]>=0 && indexes[ndims-1] < tempArr.length)
+					VM_stack[VM_si++] = tempArr[indexes[ndims-1]];
+				else
+				{
+					VMerro("O vetor vai de 0 à "+(tempArr.length-1)+" mas tentou acessar a posição '"+indexes[ndims-1]+"'");
+					return STATE_ENDED;
+				}
 			break;
 			
 			case B_WRITE: 

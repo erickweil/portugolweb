@@ -75,6 +75,7 @@ o que falta:
 
 <input type="button" id="btn-fonteMaior" value="A+" onclick="fonteAumentar()"/>
 <input type="button" id="btn-fonteMenor" value="A-" onclick="fonteDiminuir()"/>
+<input type="button" id="btn-execErros" value="Ignorar Erros" onclick="check_execErros()"/>
 </div>
 <div class="saida" id="saida"><div id="errorArea"></div><textarea id="textAreaSaida" onclick="cursorToEnd(this)" onkeyup="cursorToEnd(this)" oninput="receiveInput(this)">??</textarea></div>
 <div class="saida" id="hidden"></div>
@@ -83,7 +84,11 @@ o que falta:
 <script src="tokenizer.js"></script> <!-- Quebra o texto [para, , tokens, certinho]-->
 <script src="parser.js"></script> <!-- pega os tokens e constroi a árvore -->
 
-<!--<script src="interpreter.js"></script>-->
+<!-- Bibliotecas -->
+<script src="libraries/Util.js"></script>
+<script src="libraries/Matematica.js"></script>
+<script src="libraries/Texto.js"></script>
+
 <script src="vm.js"></script> <!-- executa o 'bytecode' -->
 <script src="vmcompiler.js"></script> <!-- compila a árvore em 'bytecode' ( parecido com java só que não é java ) -->
 
@@ -92,6 +97,9 @@ o que falta:
 
 <script src="ace_portugol.js"></script>
 <script>
+
+
+
 
 
 	//var codigo = document.getElementById("myEditor");
@@ -142,6 +150,15 @@ o que falta:
 		var next_line = textInput.substring(token.index,textInput.indexOf('\n', token.index));
 		var colNumber = prev_line.length;
 		var logprev = "Linha "+lineNumber+":"+prev_line;
+		
+		try {
+			ERRO();
+		} catch (e) {
+			var myStackTrace = e.stack || e.stacktrace || "";
+			
+			console.log(myStackTrace);
+		}
+		
 		console.log(msg);
 		_enviarErro(lineNumber,colNumber,colNumber+next_line.length,msg);
 		errosSaida.innerHTML += htmlEntities(msg)+"\n";
@@ -185,6 +202,20 @@ o que falta:
 		});
 	}
 	
+	var execMesmoComErros = false;
+	function check_execErros()
+	{
+		// Get the checkbox
+		var btn = document.getElementById("btn-execErros");
+
+		// If the checkbox is checked, display the output text
+		execMesmoComErros = !execMesmoComErros;
+		if(!execMesmoComErros)
+			btn.value = "Ignorar Erros";
+		else
+			btn.value = "Parar em Erros";
+	}
+	
 	//alert(string_cod);
 	//div_port.innerHTML = token_replace(string_cod);
 	/*function executar()
@@ -223,28 +254,34 @@ o que falta:
 				
 				var tokenizer = new Tokenizer(string_cod);
 				console.log(tokenizer.tokenize());
-				if(errosAnnot.length > 0)
+				if(!execMesmoComErros && errosAnnot.length > 0)
 				{
-					//return;
+					return;
 				}
 				//div_port.innerHTML = tokenizer.formatHTML();
 				
 				var relevantTokens = tokenizer.getRelevantTokens();
 				var tree = new Parser(relevantTokens,string_cod).parse();
 				console.log(tree);
-				if(errosAnnot.length > 0)
+				if(!execMesmoComErros && errosAnnot.length > 0)
 				{
-					//return;
+					return;
 				}
 				
-				var compiler = new Compiler(tree,relevantTokens,string_cod,div_saida);
+				var libraries = {};
+				libraries["Util"] = new Util();
+				libraries["Matematica"] = new Matematica();
+				libraries["Texto"] = new Texto();
+				
+				var compiler = new Compiler(tree,libraries,relevantTokens,string_cod,div_saida);
 				compiler.compile();
-				if(errosAnnot.length > 0)
+				if(!execMesmoComErros && errosAnnot.length > 0)
 				{
-					//return;
+					return;
 				}
 				//lastvm = new Vm(compiler.functions,string_cod,div_saida);
-				VMsetup(compiler.functions,compiler.globalCount,string_cod,div_saida);
+				
+				VMsetup(compiler.functions,libraries,compiler.globalCount,string_cod,div_saida);
 				document.getElementById("hidden").innerHTML = VMtoString();
 				//lastvmState = lastvm.run();
 				lastvmTime = performance.now();
@@ -252,7 +289,7 @@ o que falta:
 			}
 			catch(err)
 			{
-				console.log(err.stack);
+				//console.log(err.stack);
 				enviarErro(string_cod,{index:0},"Erro na compilação:"+err);
 				return;
 			}
@@ -260,7 +297,7 @@ o que falta:
 			btn.value = "Parar";
 			executarVM();
 		}
-		else if(btn.value == "Parar" && (lastvmState == STATE_RUNNING || lastvmState == STATE_WAITINGINPUT || lastvmState == STATE_BREATHING))
+		else if(btn.value == "Parar" && (lastvmState == STATE_RUNNING || lastvmState == STATE_WAITINGINPUT || lastvmState == STATE_BREATHING || lastvmState == STATE_DELAY))
 		{
 			btn.value = "Parando...";
 			if(lastvmState == STATE_WAITINGINPUT)
@@ -268,7 +305,7 @@ o que falta:
 				escreva("\n\nPrograma interrompido pelo usuário. Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
 				executarParou();
 			}
-			else if(lastvmState == STATE_RUNNING || lastvmState == STATE_BREATHING)
+			else if(lastvmState == STATE_RUNNING || lastvmState == STATE_BREATHING || lastvmState == STATE_DELAY)
 			{
 				lastvmState = STATE_PENDINGSTOP;
 			}
@@ -319,6 +356,9 @@ o que falta:
 		}
 		else if(lastvmState == STATE_BREATHING) {
 			setTimeout(executarVM, 0); // permite o navegador ficar responsivo
+		}
+		else if(lastvmState == STATE_DELAY) {
+			setTimeout(executarVM, VM_delay);
 		}
 	}
 	
