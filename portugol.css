@@ -47,6 +47,39 @@ body {
 	}
 }
 
+#myCanvasModal{
+	z-index: 10; /* Sit on top */
+
+	display:none;
+	position: fixed; /* Stay in place */
+	margin: 0 auto;
+	width: 100%;
+	top:0;
+	left:0;
+}
+
+#myCanvasWindow{
+	display:block;
+	position: relative;
+	margin: 0 auto;
+	margin-top: 5%;
+	background: #1E2324;
+}
+
+#myCanvas{
+	display:block;
+	position: relative;
+	
+	padding:4px;
+}
+
+#hotbar{
+	z-index:9;
+	display:none;
+	position: fixed;
+	bottom:0px;
+	left:0px;
+}
 
 .paragrafo{
 white-space: pre-wrap;
@@ -61,9 +94,9 @@ div.saida {
 	/*font-family: "Courier New", Courier, monospace;*/
 	line-height:18px;
 	tab-size: 4;
--webkit-box-shadow: 0px 13px 21px 0px rgba(207,207,207,1);
--moz-box-shadow: 0px 13px 21px 0px rgba(207,207,207,1);
-box-shadow: 0px 13px 21px 0px rgba(207,207,207,1);
+/*-webkit-box-shadow: 0px 13px 21px 0px rgba(207,207,207,1);*/
+/*-moz-box-shadow: 0px 13px 21px 0px rgba(207,207,207,1);*/
+/*box-shadow: 0px 13px 21px 0px rgba(207,207,207,1);*/
 	/*height: 100%;*/
 	display: block;
 	padding: 5px;
@@ -94,7 +127,7 @@ div.portugol-buttons{
 	border-top: 1px solid #1E2324;
 }
 
-div.portugol-buttons>input{
+div.portugol-buttons input, #myCanvasModal input{
 	color:#01EABC;
 	font-weight: 800;
 	min-width:40px;
@@ -165,4 +198,4 @@ div.portugol-buttons>input{
 h1 {
 	color: maroon;
 	margin-left: 40px;
-} 
+}
