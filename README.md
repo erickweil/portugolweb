@@ -1,6 +1,7 @@
 # portugolweb
 Simples versão web, compatível com smartphones, para programar na linguagem do portugol studio.
 
+![Site no celular](celular.jpeg)
 Aceito ajuda! 
   inicie uma discussão com uma nova Issue ou mande email para erickweil2@gmail.com caso queira conversar.
 
