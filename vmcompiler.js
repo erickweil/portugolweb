@@ -1074,7 +1074,10 @@ class Compiler {
 						if(args.length == 1)
 						{
 							var v = this.getVar(args[0].name);
-							methName += "$"+getTypeWord(v.type);
+							if(v.isArray)
+								methName += "$"+getTypeWord(v.arrayType);
+							else
+								methName += "$"+getTypeWord(v.type);
 
 							this.compileExpr(args[0],bc,-1);
 							bc.push(B_INVOKE);
