@@ -218,6 +218,8 @@ programa
 		var myOutput = document.getElementById("myOutput");
 		myOutput.style.height = "120px";
 		hotbar.appendChild(myOutput);
+		
+		setHotbarPosition(hotbar_middleyOffset);
 	}
 	else
 	{
@@ -228,7 +230,7 @@ programa
 
 	
 	if(isMobile) {
-		fontSize = 8;
+		fontSize = 9;
 	}
     var editor = ace.edit("myEditor",{
 			minLines: 10,
@@ -744,6 +746,11 @@ programa
 			return true;
 		}
 		return false;
+	}
+	
+	//https://stackoverflow.com/questions/821011/prevent-a-webpage-from-navigating-away-using-javascript
+	window.onbeforeunload = function() {
+	return "";
 	}
 	
 	window.addEventListener("resize", hideHotBarWhenLandscape);
