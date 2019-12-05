@@ -23,6 +23,20 @@ o que falta:
 - passar argumentos por referência
 - passar vetores e matrizes como argumentos
 
+Portugol web no celular
+- Utilização:
+	- Executar como um bottomsheetdialog
+	- porcentagem na barra de caracteres
+	- Perguntar antes de sair( ao recarregar a página por exemplo )
+	- Selecionar o texto não funciona no celular
+	- Editor não utiliza espaçamentos com TAB por padrão.
+
+- Exibição de erros:
+	- retorne em função sem retorno, exibir erro correto
+	- Utilizar uma variável que não é vetor como vetor apresenta undefined dimensões
+
+
+
 - Bibliotecas
 
 	funcao hhh()
@@ -57,15 +71,17 @@ o que falta:
 		escreva(v+" == -2\n")
 	}
 -->
-<div id="myEditor">programa 
+<div id="myEditor">/* Portugol Web desenvolvido por Erick Leonardo Weil
+baseado no programa Portugol Studio.
+*/
+programa 
 {
 	funcao inicio()
 	{
-		inteiro vet [] = {23,13,7,69,64,007,42,255,99,-1}
-		
-		escreva("vetor de exemplo:\n")
-		para(inteiro i = 0; i < 10; i++)
-			escreva (vet[i], " ")
+		// Seu código deve vir aqui.
+
+		para(inteiro i =0;i<200;i++)
+		escreva("Olá mundo"+i+" \n")
 	}
 }
 </div>
@@ -94,7 +110,6 @@ o que falta:
 </div>
 
 <div id="hotbar" class="portugol-buttons" style="width:100%">
-
 <div style="overflow-x:scroll;white-space:nowrap;width: auto;">
 <input type="button" value="(" onclick="editorType('(')" onfocus="preventFocus(event)"/>
 <input type="button" value=")" onclick="editorType(')')" onfocus="preventFocus(event)"/>
@@ -180,22 +195,40 @@ o que falta:
 	var fontSize = 10;
 	
 	var isMobile = isMobile();
+	var hotbar = document.getElementById("hotbar");
+    var hotbar_currentY;
+    var hotbar_initialY;
+	var hotbar_clickY;
+	var hotbar_maxyOffset = 180;
+	var hotbar_collapsedyOffset = 120;
+	var hotbar_middleyOffset = 80;
+	var hotbar_extendedyOffset = 0;
+	var hotbar_minyOffset = -180;
+    var hotbar_yOffset = hotbar_collapsedyOffset;
+	var hotbar_active = false;
+	var hotbar_textarea = false;
 	
 	if(isMobile)
 	{
-		document.getElementById("hotbar").style.display = "block";
+		hotbar.style.display = "block";
+		hotbar.addEventListener("touchstart", hotbar_dragStart, false);
+		hotbar.addEventListener("touchend", hotbar_dragEnd, false);
+		hotbar.addEventListener("touchmove", hotbar_drag, false);
 		
+		var myOutput = document.getElementById("myOutput");
+		myOutput.style.height = "120px";
+		hotbar.appendChild(myOutput);
 	}
 	else
 	{
-		document.getElementById("hotbar").style.display = "none";
+		hotbar.style.display = "none";
 	}
 	
 
 
 	
 	if(isMobile) {
-		fontSize = 7;
+		fontSize = 8;
 	}
     var editor = ace.edit("myEditor",{
 			minLines: 10,
@@ -207,6 +240,10 @@ o que falta:
 	if(isMobile) {
 		editor.renderer.setShowGutter(false);
 	}
+	
+			
+	div_saida.style.fontSize = fontSize+"pt";
+	errosSaida.style.fontSize = fontSize+"pt";
 	
 
 	
@@ -376,6 +413,12 @@ o que falta:
 			limparErros();
 			limpa();
 			
+			// abrir hotbar e animar
+			if(isMobile)
+			{
+				setHotbarPosition(hotbar_extendedyOffset,true);
+			}
+			
 			var string_cod = editor.getValue();
 			try{
 				
@@ -512,13 +555,14 @@ o que falta:
 		}
 	}
 	
-	/*function editorFocus()
+	function editorFocus()
 	{
 		if(isMobile)
 		{
 			//document.getElementById("hotbar").style.display = "block";
+			setHotbarPosition(hotbar_middleyOffset,true);
 		}
-	}*/
+	}
 	
 	function preventFocus(event) {
 		event.preventDefault();
@@ -559,8 +603,10 @@ o que falta:
 		editor.getSession().replace(new Range(p.row, p.column, p.row, p.column+1), "");
 	}
 	
-	//editor.on("focus", editorFocus);
+	editor.on("focus", editorFocus);
 	//editor.on("blur", editorBlur);
+	
+	// HOTBAR
 	
 	function hideHotBarWhenLandscape()
 	{
@@ -581,6 +627,124 @@ o que falta:
 		}
 	}
 	
+	function hotbar_dragStart(e) {
+		var yValue = 0;
+		if (e.type === "touchstart") {
+			yValue = e.touches[0].clientY;
+		} else {
+			yValue = e.clientY;
+		}
+		
+		hotbar_clickY = yValue;
+		hotbar_initialY = yValue - hotbar_yOffset;
+
+		if (e.target === hotbar) {
+			hotbar_active = true;
+		}
+		else if(e.target === saida)
+		{
+			hotbar_textarea = true;
+		}
+    }
+
+    function hotbar_dragEnd(e) {
+		//initialX = currentX;
+		hotbar_initialY = hotbar_currentY;
+
+		
+		console.log(hotbar_yOffset);
+		if(Math.abs(hotbar_yOffset - hotbar_extendedyOffset) < 30)
+		{
+			setHotbarPosition(hotbar_extendedyOffset,true);
+		}
+		else if(Math.abs(hotbar_yOffset - hotbar_middleyOffset) < 30)
+		{
+			setHotbarPosition(hotbar_middleyOffset,true);
+		}
+		else if(Math.abs(hotbar_yOffset - hotbar_collapsedyOffset) < 30)
+		{
+			setHotbarPosition(hotbar_collapsedyOffset,true);
+		}
+
+
+		hotbar_active = false;
+		hotbar_textarea = false;
+    }
+
+    function hotbar_drag(e) {
+		var yValue = 0
+		if (e.type === "touchmove") {
+			yValue = e.touches[0].clientY;
+		} else {
+			yValue = e.clientY;
+		}
+		
+		hotbar_currentY = yValue - hotbar_initialY;
+		var yOff = Math.abs(hotbar_clickY - yValue);
+		//console.log("drag:"+yOff);
+		
+		
+	
+		if (!hotbar_active) {
+		
+			if(hotbar_textarea && !elementIsAllScrolled(saida))
+			{
+				hotbar_clickY = yValue;
+				hotbar_initialY = yValue - hotbar_yOffset;
+				return;
+			}
+		
+			if(yOff < 20)
+			{
+				return;
+			}
+			else
+			{
+				hotbar_active = true;
+			}
+		}
+		else
+		{
+			if(e.cancelable)
+			{
+				e.preventDefault();
+			}
+		}
+
+		//xOffset = currentX;
+		
+
+		//setTranslate(hotbar_currentY, hotbar);
+		setHotbarPosition(hotbar_currentY,false);
+    }
+
+    function setHotbarPosition(yPos,animate) {
+		if(animate)
+		{
+			hotbar.classList.add('animate');
+		}
+		else
+		{
+			hotbar.classList.remove('animate');
+		}
+		//el.style.transform = "translate3d(0px,	  " + yPos + "px, 0)";
+		hotbar_yOffset = Math.max(hotbar_minyOffset,Math.min(hotbar_maxyOffset,yPos));
+		//hotbar_yOffset = Math.min(hotbar_maxyOffset,yPos);
+		hotbar.style.bottom = (-hotbar_yOffset)+"px";
+    }
+	
+	function elementIsAllScrolled(obj)
+	{
+		if( obj.scrollTop === (obj.scrollHeight - obj.offsetHeight))
+		{
+			return true;
+		}
+		if( obj.scrollTop === 0)
+		{
+			return true;
+		}
+		return false;
+	}
 	
 	window.addEventListener("resize", hideHotBarWhenLandscape);
 //}

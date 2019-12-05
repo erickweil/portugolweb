@@ -21,7 +21,6 @@ body {
 	color: inherit;
 	font-weight: inherit;
 	font-family: inherit;
-	line-height:inherit;
 	font-size:inherit;
 	white-space: inherit;
 	resize: auto;
@@ -40,7 +39,7 @@ body {
 		height:auto;
 	}
 	#myEditor{
-		height: 85vh;
+		height: 100vh;
 	}
 	#myOutput{
 		min-height: 100px;
@@ -77,9 +76,15 @@ body {
 	z-index:9;
 	display:none;
 	position: fixed;
-	bottom:0px;
+	bottom:-80px;
 	left:0px;
+	touch-action: none;
 }
+
+#hotbar.animate{
+	transition: bottom 0.3s ease 0s;
+}
+
 
 .paragrafo{
 white-space: pre-wrap;
@@ -92,7 +97,6 @@ div.saida {
 	background: #000000;
 	font-family:Liberation Mono, Courier New, Consolas,Monaco,Lucida Console,DejaVu Sans Mono,Bitstream Vera Sans Mono, monospace;
 	/*font-family: "Courier New", Courier, monospace;*/
-	line-height:18px;
 	tab-size: 4;
 /*-webkit-box-shadow: 0px 13px 21px 0px rgba(207,207,207,1);*/
 /*-moz-box-shadow: 0px 13px 21px 0px rgba(207,207,207,1);*/
