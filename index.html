@@ -25,7 +25,6 @@ o que falta:
 
 Portugol web no celular
 - Utilização:
-<<<<<<< HEAD
 	OK Executar como um bottomsheetdialog
 	OK porcentagem na barra de caracteres
 	OK Perguntar antes de sair( ao recarregar a página por exemplo )
@@ -38,14 +37,6 @@ Portugol web no celular
 	OK Editor não utiliza espaçamentos com TAB por padrão.
 	- Popup de sugestões
 	
-=======
-	- Executar como um bottomsheetdialog
-	- porcentagem na barra de caracteres
-	- Perguntar antes de sair( ao recarregar a página por exemplo )
-	- Selecionar o texto não funciona no celular
-	- Editor não utiliza espaçamentos com TAB por padrão.
-
->>>>>>> 38fbf10201c11b5d3ace6d1555d5827185f9ee09
 - Exibição de erros:
 	- retorne em função sem retorno, exibir erro correto
 	- Utilizar uma variável que não é vetor como vetor apresenta undefined dimensões
@@ -86,24 +77,16 @@ Portugol web no celular
 		escreva(v+" == -2\n")
 	}
 -->
-<div id="myEditor">/* Portugol Web desenvolvido por Erick Leonardo Weil
-baseado no programa Portugol Studio.
-*/
-programa 
+<div id="myEditor">programa 
 {
 	funcao inicio()
 	{
 		// Seu código deve vir aqui.
 
-<<<<<<< HEAD
 		para(inteiro i =1;i<=20;i++)
 		{
 			escreva("Olá mundo"+i+" \n")
 		}
-=======
-		para(inteiro i =0;i<200;i++)
-		escreva("Olá mundo"+i+" \n")
->>>>>>> 38fbf10201c11b5d3ace6d1555d5827185f9ee09
 	}
 }
 </div>
@@ -216,7 +199,6 @@ programa
     var hotbar_currentY;
     var hotbar_initialY;
 	var hotbar_clickY;
-<<<<<<< HEAD
 	// se mexer nesses numeros tudo para de funcionar deixa assim.
 	var hotbar_initialHeight = 200;
 	
@@ -225,13 +207,6 @@ programa
 	var hotbar_middleyOffset = 120;
 	var hotbar_extendedyOffset = 295;
 	var hotbar_maxyOffset = 300;
-=======
-	var hotbar_maxyOffset = 180;
-	var hotbar_collapsedyOffset = 120;
-	var hotbar_middleyOffset = 80;
-	var hotbar_extendedyOffset = 0;
-	var hotbar_minyOffset = -180;
->>>>>>> 38fbf10201c11b5d3ace6d1555d5827185f9ee09
     var hotbar_yOffset = hotbar_collapsedyOffset;
 	var hotbar_active = false;
 	var hotbar_textarea = false;
@@ -244,7 +219,6 @@ programa
 		hotbar.addEventListener("touchmove", hotbar_drag, false);
 		
 		var myOutput = document.getElementById("myOutput");
-<<<<<<< HEAD
 		hotbar.appendChild(myOutput);
 				
 		setHotbarPosition(hotbar_middleyOffset);
@@ -254,12 +228,7 @@ programa
 		myOutput.classList.add('mobile');
 		saida.classList.add('mobile');
 		window.addEventListener("resize", resizeEditorToFitHotbar);
-=======
-		myOutput.style.height = "120px";
-		hotbar.appendChild(myOutput);
->>>>>>> 38fbf10201c11b5d3ace6d1555d5827185f9ee09
 		
-		setHotbarPosition(hotbar_middleyOffset);
 	}
 	else
 	{
@@ -286,7 +255,6 @@ programa
 		resizeEditorToFitHotbar();
 	}
 	
-<<<<<<< HEAD
 	editor.setOptions({
 		enableBasicAutocompletion: true,
 		enableSnippets: true,
@@ -297,8 +265,6 @@ programa
 	var last_code = getAutoSave();
 	if(last_code)
 		editor.setValue(last_code,-1);
-=======
->>>>>>> 38fbf10201c11b5d3ace6d1555d5827185f9ee09
 			
 	div_saida.style.fontSize = fontSize+"pt";
 	errosSaida.style.fontSize = fontSize+"pt";
@@ -475,10 +441,7 @@ programa
 			// abrir hotbar e animar
 			if(isMobile)
 			{
-<<<<<<< HEAD
 				if(hotbar_yOffset < hotbar_extendedyOffset)
-=======
->>>>>>> 38fbf10201c11b5d3ace6d1555d5827185f9ee09
 				setHotbarPosition(hotbar_extendedyOffset,true);
 			}
 			
@@ -623,10 +586,7 @@ programa
 		if(isMobile)
 		{
 			//document.getElementById("hotbar").style.display = "block";
-<<<<<<< HEAD
 			if(hotbar_yOffset > hotbar_middleyOffset)
-=======
->>>>>>> 38fbf10201c11b5d3ace6d1555d5827185f9ee09
 			setHotbarPosition(hotbar_middleyOffset,true);
 		}
 	}
@@ -697,15 +657,9 @@ programa
 	function hotbar_dragStart(e) {
 		var yValue = 0;
 		if (e.type === "touchstart") {
-<<<<<<< HEAD
 			yValue = -e.touches[0].clientY;
 		} else {
 			yValue = -e.clientY;
-=======
-			yValue = e.touches[0].clientY;
-		} else {
-			yValue = e.clientY;
->>>>>>> 38fbf10201c11b5d3ace6d1555d5827185f9ee09
 		}
 		
 		hotbar_clickY = yValue;
@@ -725,17 +679,12 @@ programa
 		hotbar_initialY = hotbar_currentY;
 
 		
-<<<<<<< HEAD
 		
 		if(hotbar_yOffset > (hotbar_extendedyOffset + 30))
 		{
 			setHotbarPosition(hotbar_maxyOffset,true);
 		}
 		else if(hotbar_yOffset > (hotbar_middleyOffset + 30))
-=======
-		console.log(hotbar_yOffset);
-		if(Math.abs(hotbar_yOffset - hotbar_extendedyOffset) < 30)
->>>>>>> 38fbf10201c11b5d3ace6d1555d5827185f9ee09
 		{
 			setHotbarPosition(hotbar_extendedyOffset,true);
 		}
@@ -747,14 +696,11 @@ programa
 		{
 			setHotbarPosition(hotbar_collapsedyOffset,true);
 		}
-<<<<<<< HEAD
 		else if(Math.abs(hotbar_yOffset - hotbar_maxyOffset) < 30)
 		{
 			setHotbarPosition(hotbar_minyOffset,true);
 		}
 		
-=======
->>>>>>> 38fbf10201c11b5d3ace6d1555d5827185f9ee09
 
 
 		hotbar_active = false;
@@ -764,15 +710,9 @@ programa
     function hotbar_drag(e) {
 		var yValue = 0
 		if (e.type === "touchmove") {
-<<<<<<< HEAD
 			yValue = -e.touches[0].clientY;
 		} else {
 			yValue = -e.clientY;
-=======
-			yValue = e.touches[0].clientY;
-		} else {
-			yValue = e.clientY;
->>>>>>> 38fbf10201c11b5d3ace6d1555d5827185f9ee09
 		}
 		
 		hotbar_currentY = yValue - hotbar_initialY;
@@ -823,7 +763,6 @@ programa
 		{
 			hotbar.classList.remove('animate');
 		}
-<<<<<<< HEAD
 		
 		
 		//el.style.transform = "translate3d(0px,	  " + yPos + "px, 0)";
@@ -842,32 +781,12 @@ programa
 		
 		document.getElementById("myEditor").style.height = (h-hotbar_yOffset)+"px";
 		editor.resize();
-=======
-		//el.style.transform = "translate3d(0px,	  " + yPos + "px, 0)";
-		hotbar_yOffset = Math.max(hotbar_minyOffset,Math.min(hotbar_maxyOffset,yPos));
-		//hotbar_yOffset = Math.min(hotbar_maxyOffset,yPos);
-		hotbar.style.bottom = (-hotbar_yOffset)+"px";
-    }
-	
-	function elementIsAllScrolled(obj)
-	{
-		if( obj.scrollTop === (obj.scrollHeight - obj.offsetHeight))
-		{
-			return true;
-		}
-		if( obj.scrollTop === 0)
-		{
-			return true;
-		}
-		return false;
->>>>>>> 38fbf10201c11b5d3ace6d1555d5827185f9ee09
 	}
 	
 	//https://stackoverflow.com/questions/821011/prevent-a-webpage-from-navigating-away-using-javascript
 	window.onbeforeunload = function() {
 	return "";
 	}
-<<<<<<< HEAD
 	
 	function autoSave()
 	{
@@ -881,8 +800,6 @@ programa
 	}
 	
 	setInterval(autoSave, 30000);
-=======
->>>>>>> 38fbf10201c11b5d3ace6d1555d5827185f9ee09
 	
 	window.addEventListener("resize", hideHotBarWhenLandscape);
 //}
