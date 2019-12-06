@@ -550,6 +550,7 @@ var MatchingBraceOutdent = function() {};
         if (!openBracePos || openBracePos.row == row) return 0;
 
         var indent = this.$getIndent(doc.getLine(openBracePos.row));
+		indent = indent.replace(/    /g,"\t");
         doc.replace(new Range(row, 0, row, column-1), indent);
     };
 
@@ -730,7 +731,9 @@ oop.inherits(Mode, TextMode);
 
     this.getNextLineIndent = function(state, line, tab) {
         var indent = this.$getIndent(line);
-
+		indent = indent.replace(/    /g,"\t");
+		//var initialIndent = indent;
+		//console.log("'"+indent.replace(/\t/g,"\\t")+"','"+tab.replace(/\t/g,"\\t")+"'");
         var tokenizedLine = this.getTokenizer().getLineTokens(line, state);
         var tokens = tokenizedLine.tokens;
         var endState = tokenizedLine.state;
@@ -742,7 +745,8 @@ oop.inherits(Mode, TextMode);
         if (state == "start" || state == "no_regex") {
             var match = line.match(/^.*(?:\bcase\b.*:|[\{\(\[])\s*$/);
             if (match) {
-                indent += tab;
+				//indent += tab;
+                indent += "\t";
             }
         } else if (state == "doc-start") {
             if (endState == "start" || endState == "no_regex") {
@@ -757,7 +761,10 @@ oop.inherits(Mode, TextMode);
             }
         }
 
-        return indent;
+
+		//console.log("'"+initialIndent.replace(/\t/g,"\\t")+"' --> '"+indent.replace(/\t/g,"\\t")+"'");
+        
+		return indent;
     };
 
     this.checkOutdent = function(state, line, input) {
@@ -783,7 +790,7 @@ oop.inherits(Mode, TextMode);
         return worker;
     };
 
-    this.$id = "ace/mode/javascript";
+    this.$id = "ace/mode/portugol";
 }).call(Mode.prototype);
 
 exports.Mode = Mode;

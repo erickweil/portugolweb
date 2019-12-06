@@ -21,7 +21,6 @@ body {
 	color: inherit;
 	font-weight: inherit;
 	font-family: inherit;
-	line-height:inherit;
 	font-size:inherit;
 	white-space: inherit;
 	resize: auto;
@@ -35,17 +34,30 @@ body {
 	max-height: 600px;
 }
 
-@media only screen and (max-width: 600px) {
-	body {
-		height:auto;
-	}
-	#myEditor{
-		height: 85vh;
-	}
-	#myOutput{
-		min-height: 100px;
-	}
+/**
+Mobile Only things
+*/
+
+body.mobile {
+	background: #263238;
+	height:100%;
+	overflow-y: hidden;
 }
+
+#myEditor.mobile{
+	max-height: 100vh;
+	min-height: 200px;
+}
+#myOutput.mobile{
+	min-height: 120px;
+}
+#errorArea.mobile{
+	overflow-y: scroll;
+}
+#textAreaSaida.mobile{
+	min-height: 160px;
+}
+
 
 #myCanvasModal{
 	z-index: 10; /* Sit on top */
@@ -77,9 +89,15 @@ body {
 	z-index:9;
 	display:none;
 	position: fixed;
-	bottom:0px;
+	bottom:-80px;
 	left:0px;
+	touch-action: none;
 }
+
+#hotbar.animate{
+	transition: bottom 0.3s ease 0s;
+}
+
 
 .paragrafo{
 white-space: pre-wrap;
@@ -92,7 +110,6 @@ div.saida {
 	background: #000000;
 	font-family:Liberation Mono, Courier New, Consolas,Monaco,Lucida Console,DejaVu Sans Mono,Bitstream Vera Sans Mono, monospace;
 	/*font-family: "Courier New", Courier, monospace;*/
-	line-height:18px;
 	tab-size: 4;
 /*-webkit-box-shadow: 0px 13px 21px 0px rgba(207,207,207,1);*/
 /*-moz-box-shadow: 0px 13px 21px 0px rgba(207,207,207,1);*/
@@ -125,6 +142,8 @@ box-shadow: 0px 13px 21px 0px rgba(207,207,207,1);
 div.portugol-buttons{
 	background: #263238;
 	border-top: 1px solid #1E2324;
+	font-family:Liberation Mono, Courier New, Consolas,Monaco,Lucida Console,DejaVu Sans Mono,Bitstream Vera Sans Mono, monospace;
+	
 }
 
 div.portugol-buttons input, #myCanvasModal input{
