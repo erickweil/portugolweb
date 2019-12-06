@@ -34,6 +34,7 @@ body {
 	max-height: 600px;
 }
 
+<<<<<<< HEAD
 /**
 Mobile Only things
 */
@@ -53,6 +54,19 @@ body.mobile {
 }
 #errorArea.mobile{
 	overflow-y: scroll;
+=======
+@media only screen and (max-width: 600px) {
+	body {
+		height:auto;
+		overflow-y: hidden;
+	}
+	#myEditor{
+		height: 100vh;
+	}
+	#myOutput{
+		min-height: 100px;
+	}
+>>>>>>> 38fbf10201c11b5d3ace6d1555d5827185f9ee09
 }
 #textAreaSaida.mobile{
 	min-height: 160px;
@@ -92,12 +106,21 @@ body.mobile {
 	bottom:-80px;
 	left:0px;
 	touch-action: none;
+<<<<<<< HEAD
 }
 
 #hotbar.animate{
 	transition: bottom 0.3s ease 0s;
 }
 
+=======
+}
+
+#hotbar.animate{
+	transition: bottom 0.3s ease 0s;
+}
+
+>>>>>>> 38fbf10201c11b5d3ace6d1555d5827185f9ee09
 
 .paragrafo{
 white-space: pre-wrap;
