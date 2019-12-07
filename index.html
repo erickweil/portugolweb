@@ -278,42 +278,65 @@ Portugol web no celular
 
 	function save() {
 		var string_cod = editor.getValue();
-		tring_cod = string_cod.replace(/\r\n/g,"\n");
-		
-		var element = document.createElement('a');
-		element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(string_cod));
-		element.setAttribute('download', 'programa.por');
+		string_cod = string_cod.replace(/\r\n/g,"\n");
+		if(typeof Android !== 'undefined')
+		{
+			Android.save(string_cod);
+		}
+		else
+		{
+			var element = document.createElement('a');
+			element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(string_cod));
+			element.setAttribute('download', 'programa.por');
 
-		element.style.display = 'none';
-		document.body.appendChild(element);
+			element.style.display = 'none';
+			document.body.appendChild(element);
 
-		element.click();
+			element.click();
 
-		document.body.removeChild(element);
+			document.body.removeChild(element);
+		}
+	}
+	
+	function android_loaded(code){
+
+		editor.setValue(code, -1); // moves cursor to the start
+
+		limparErros();
 	}
 
 	function load() {
-		var element = document.createElement('input');
-		element.setAttribute('type', 'file');
+	
+		if(typeof Android !== 'undefined')
+		{
+			Android.load();
+		}
+		else
+		{
+	
+			var element = document.createElement('input');
+			element.setAttribute('type', 'file');
 
-		element.style.display = 'none';
-		document.body.appendChild(element);
+			element.style.display = 'none';
+			document.body.appendChild(element);
 
-		element.click();
+			element.click();
+			
+			element.addEventListener('change', function(){
+				var file = element.files[0];
+
+				var reader = new FileReader();
+				reader.onload = function(progressEvent)
+				{
+					editor.setValue(this.result, -1); // moves cursor to the start
+					
+					limparErros();
+				};
+				reader.readAsText(file);
+				document.body.removeChild(element);
+			});
 		
-		element.addEventListener('change', function(){
-			var file = element.files[0];
-
-			var reader = new FileReader();
-			reader.onload = function(progressEvent)
-			{
-				editor.setValue(this.result, -1); // moves cursor to the start
-				
-				limparErros();
-			};
-			reader.readAsText(file);
-			document.body.removeChild(element);
-		});
+		}
 	}
 	
 	function limparErros()
