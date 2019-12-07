@@ -91,11 +91,11 @@ Portugol web no celular
 }
 </div>
 <div id="myOutput" style="position:relative;">
-<div class="portugol-buttons" style="overflow-x:auto;white-space:nowrap;width: auto;">
+<div id="myOutput_buttons" class="portugol-buttons" style="overflow-x:auto;white-space:nowrap;width: auto;">
 <input type="button" id="btn-run" value="Executar" onclick="executar(this)"/>
 
-<input type="button" style="background-image: url(icons/FontPlus.png);" id="btn-fonteMaior" value=" " onclick="fonteAumentar()"/>
-<input type="button" style="background-image: url(icons/FontMinus.png);" id="btn-fonteMenor" value=" " onclick="fonteDiminuir()"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/FontPlus.png);" id="btn-fonteMaior" value=" " onclick="fonteAumentar()" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/FontMinus.png);" id="btn-fonteMenor" value=" " onclick="fonteDiminuir()" onfocus="preventFocus(event)"/>
 <input type="button" style="background-image: url(icons/save.png);" id="btn-salvar" value=" " onclick="save()"/>
 <input type="button" style="background-image: url(icons/open.png);"  id="btn-abrir" value=" " onclick="load()"/>
 <input type="button" style="background-image: url(icons/full.png);" id="btn-abrir" value=" " onclick="requestFullScreen(document.documentElement);"/>
@@ -114,42 +114,45 @@ Portugol web no celular
 </div>
 </div>
 <div id="hotbar" class="portugol-buttons" style="width:100%">
-<div style="overflow-x:scroll;white-space:nowrap;width: auto;">
+<div id="hotbar_commands" style="overflow-x:scroll;white-space:nowrap;width: auto;">
+<input tabindex="-1" type="button" value="TAB" onclick="editorCommand(9)" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/arrowL.png);" value=" " onclick="editorCommand(37)" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/arrowR.png);" value=" " onclick="editorCommand(39)" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/arrowU.png);" value=" " onclick="editorCommand(38)" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/arrowD.png);" value=" " onclick="editorCommand(40)" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="DEL" onclick="editorCommand(46)" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/undo.png);" value=" " onclick="editor.undo()" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/redo.png);" value=" " onclick="editor.redo()" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/autocomplete.png);" value=" " onclick="editor.execCommand('startAutocomplete');" onfocus="preventFocus(event)"/>
+</div>
+<div id="hotbar_keys" style="overflow-x:scroll;white-space:nowrap;width: auto;">
 
 
-<input type="button" value="+" onclick='editorType("+")' onfocus="preventFocus(event)"/>
-<input type="button" value="-" onclick='editorType("-")' onfocus="preventFocus(event)"/>
-<input type="button" value="*" onclick='editorType("*")' onfocus="preventFocus(event)"/>
-<input type="button" value="\" onclick="editorType('\\')" onfocus="preventFocus(event)"/>
-<input type="button" value="=" onclick='editorType("=")' onfocus="preventFocus(event)"/>
-<input type="button" value='"' onclick="editorType('&quot;')" onfocus="preventFocus(event)"/>
-<input type="button" value="(" onclick="editorType('(')" onfocus="preventFocus(event)"/>
-<input type="button" value=")" onclick="editorType(')')" onfocus="preventFocus(event)"/>
-<input type="button" value="{" onclick="editorType('{')" onfocus="preventFocus(event)"/>
-<input type="button" value="}" onclick="editorType('}')" onfocus="preventFocus(event)"/>
-<input type="button" value="[" onclick="editorType('[')" onfocus="preventFocus(event)"/>
-<input type="button" value="]" onclick="editorType(']')" onfocus="preventFocus(event)"/>
-<input type="button" value="%" onclick='editorType("%")' onfocus="preventFocus(event)"/>
-<input type="button" value="/" onclick='editorType("/")' onfocus="preventFocus(event)"/>
-<input type="button" value=":" onclick='editorType(":")' onfocus="preventFocus(event)"/>
-<input type="button" value=";" onclick='editorType(";")' onfocus="preventFocus(event)"/>
-<input type="button" value="\n" onclick="editorType('\\n')" onfocus="preventFocus(event)"/>
-<input type="button" value=">" onclick='editorType(">")' onfocus="preventFocus(event)"/>
-<input type="button" value=">=" onclick='editorType(">=")' onfocus="preventFocus(event)"/>
-<input type="button" value="<" onclick='editorType("<")' onfocus="preventFocus(event)"/>
-<input type="button" value="<=" onclick='editorType("<=")' onfocus="preventFocus(event)"/>
-<input type="button" value="==" onclick='editorType("==")' onfocus="preventFocus(event)"/>
-<input type="button" value="!=" onclick='editorType("!=")' onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="+" onclick='editorType("+")' onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="-" onclick='editorType("-")' onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="*" onclick='editorType("*")' onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="\" onclick="editorType('\\')" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="=" onclick='editorType("=")' onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value='"' onclick="editorType('&quot;')" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="(" onclick="editorType('(')" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value=")" onclick="editorType(')')" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="{" onclick="editorType('{')" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="}" onclick="editorType('}')" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="[" onclick="editorType('[')" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="]" onclick="editorType(']')" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="%" onclick='editorType("%")' onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="'" onclick='editorType("&#39;")' onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="/" onclick='editorType("/")' onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value=":" onclick='editorType(":")' onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value=";" onclick='editorType(";")' onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value=">" onclick='editorType(">")' onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value=">=" onclick='editorType(">=")' onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="<" onclick='editorType("<")' onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="<=" onclick='editorType("<=")' onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="==" onclick='editorType("==")' onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="!=" onclick='editorType("!=")' onfocus="preventFocus(event)"/>
 </div>
-<div style="overflow-x:scroll;white-space:nowrap;width: auto;">
-<input type="button" value="TAB" onclick="editorType('\t')" onfocus="preventFocus(event)"/>
-<input type="button" style="background-image: url(icons/arrowL.png);" value=" " onclick="editorMove(-1,0)" onfocus="preventFocus(event)"/>
-<input type="button" style="background-image: url(icons/arrowR.png);" value=" " onclick="editorMove(1,0)" onfocus="preventFocus(event)"/>
-<input type="button" style="background-image: url(icons/arrowU.png);" value=" " onclick="editorMove(0,-1)" onfocus="preventFocus(event)"/>
-<input type="button" style="background-image: url(icons/arrowD.png);" value=" " onclick="editorMove(0,1)" onfocus="preventFocus(event)"/>
-<input type="button" value="DEL" onclick="editorDelete()" onfocus="preventFocus(event)"/>
-<input type="button" style="background-image: url(icons/autocomplete.png);" value=" " onclick="editor.execCommand('startAutocomplete');" onfocus="preventFocus(event)"/>
-</div>
+
 </div>
 
 <!-- coisinhas -->
@@ -221,12 +224,14 @@ Portugol web no celular
 		
 		var myOutput = document.getElementById("myOutput");
 		hotbar.appendChild(myOutput);
+		hotbar.insertBefore(document.getElementById("myOutput_buttons"),document.getElementById("hotbar_commands"));
 				
 		setHotbarPosition(hotbar_middleyOffset);
 
 		document.body.classList.add('mobile');
 		document.getElementById("myEditor").classList.add('mobile');
 		myOutput.classList.add('mobile');
+		document.getElementById("myOutput_buttons").classList.add('mobile');
 		saida.classList.add('mobile');
 		window.addEventListener("resize", resizeEditorToFitHotbar);
 		
@@ -254,13 +259,19 @@ Portugol web no celular
 	if(isMobile) {
 		editor.renderer.setShowGutter(false);
 		resizeEditorToFitHotbar();
+		
+		if(typeof Android === 'undefined')
+		{
+			editor.setValue("programa\n{\n\tfuncao inicio()\n\t{\n\t\t\n\t\tescreva(\"Baixe o aplicativo na play store:\\n\")\n\t\tescreva(\"https://play.google.com/store/apps/details?id=br.erickweil.portugolweb \\n\")\n\t\t\n\t}\n}\n", -1); // moves cursor to the start
+		}
 	}
 	
 	editor.setOptions({
 		enableBasicAutocompletion: true,
-		enableSnippets: true,
-		enableEmmet: true,
-		enableLiveAutocompletion: true
+		enableSnippets: false, // negócio chato demais, tenho que fazer ficar mais intuitivo antes de ativar
+		enableEmmet: false, // oq é Emmet? nem eu sei
+		enableLiveAutocompletion: true,
+		scrollPastEnd: 0.5
 	});
 
 	var last_code = getAutoSave();
@@ -636,11 +647,77 @@ Portugol web no celular
 		}
 	}*/	
 	
+	function editorCommand(keycode)
+	{
+		//var KEY_MODS= {
+        //    "ctrl": 1, "alt": 2, "option" : 2, "shift": 4,
+        //    "super": 8, "meta": 8, "command": 8, "cmd": 8
+        //};
+		/*
+		        FUNCTION_KEYS : {
+            8  : "Backspace",
+            9  : "Tab",
+            13 : "Return",
+            19 : "Pause",
+            27 : "Esc",
+            32 : "Space",
+            33 : "PageUp",
+            34 : "PageDown",
+            35 : "End",
+            36 : "Home",
+            37 : "Left",
+            38 : "Up",
+            39 : "Right",
+            40 : "Down",
+            44 : "Print",
+            45 : "Insert",
+            46 : "Delete",
+            96 : "Numpad0",
+            97 : "Numpad1",
+            98 : "Numpad2",
+            99 : "Numpad3",
+            100: "Numpad4",
+            101: "Numpad5",
+            102: "Numpad6",
+            103: "Numpad7",
+            104: "Numpad8",
+            105: "Numpad9",
+            '-13': "NumpadEnter",
+            112: "F1",
+            113: "F2",
+            114: "F3",
+            115: "F4",
+            116: "F5",
+            117: "F6",
+            118: "F7",
+            119: "F8",
+            120: "F9",
+            121: "F10",
+            122: "F11",
+            123: "F12",
+            144: "Numlock",
+            145: "Scrolllock"
+        },
+
+		*/
+		
+		editor.onCommandKey({}, 0, keycode);
+	}
 	function editorType(c)
 	{
-		isTyping = true;
-		editor.getSession().insert(editor.getCursorPosition(), c);
-		editor.focus();
+		editor.onTextInput(c);
+		
+
+		//isTyping = true;
+		//editor.getSession().insert(editor.getCursorPosition(), c);
+		//editor.focus();
+		
+		//if(shift)
+		//{
+		//	editor.onCommandKey({}, KEY_MODS.shift, keycode);
+		//}//
+		//else
+		//editor.onCommandKey({}, -1, keycode);
 	}
 	
 	function editorMove(column,row)
