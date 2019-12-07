@@ -790,7 +790,13 @@ Portugol web no celular
 	
 	function autoSave()
 	{
-		persistentStoreValue("code",editor.getValue());
+		try {
+			persistentStoreValue("code",editor.getValue());
+		} catch (e) {
+			var myStackTrace = e.stack || e.stacktrace || "";
+
+			console.log(myStackTrace);
+		}
 	}
 	
 	function getAutoSave()

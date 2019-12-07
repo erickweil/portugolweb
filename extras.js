@@ -25,7 +25,7 @@ function eraseCookie(name) {
 
 function persistentStoreValue(key,value){
 
-if (typeof(Storage) !== "undefined") {
+if (typeof(Storage) !== "undefined" && localStorage) {
   // Code for localStorage/sessionStorage.
 	// Store
 	localStorage.setItem(key, value);  
@@ -39,13 +39,13 @@ if (typeof(Storage) !== "undefined") {
 
 function persistentGetValue(key){
 
-if (typeof(Storage) !== "undefined") {
+if (typeof(Storage) !== "undefined" && localStorage) {
   // Code for localStorage/sessionStorage.
-
 	return localStorage.getItem(key);
   
 } else {
   // Sorry! No Web Storage support..
+	return false;
 }
 
 }
