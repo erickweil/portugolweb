@@ -64,26 +64,40 @@ div.portugol-buttons.mobile{
 
 
 #myCanvasModal{
+	
 	z-index: 10; /* Sit on top */
 
 	display:none;
 	position: fixed; /* Stay in place */
 	margin: 0 auto;
-	width: 100%;
+	width: 100vw;
+	height: 100vh;
 	top:0;
 	left:0;
+	
+	pointer-events:none; /* invisible to clicks */
+}
+
+#myCanvasMiddle{
+	display: table-cell;
+	vertical-align: middle;
+	position: relative;
+	
+	pointer-events:none;
 }
 
 #myCanvasWindow{
-	display:block;
+	 margin-left: auto;
+	margin-right: auto;
+	display: block;
 	position: relative;
-	margin: 0 auto;
-	margin-top: 5%;
 	background: #1E2324;
+	min-width:180px;
+	pointer-events:auto;
 }
 
 #myCanvas{
-	display:block;
+
 	position: relative;
 	
 	padding:4px;

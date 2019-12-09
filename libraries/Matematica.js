@@ -14,8 +14,12 @@ class Matematica {
 		"raiz":{id:T_parO,parameters:[T_real,T_real],type:T_real},
 		"seno":{id:T_parO,parameters:[T_real],type:T_real},
 		"tangente":{id:T_parO,parameters:[T_real],type:T_real},
-		"valor_absoluto":{id:T_parO,parameters:[T_real],type:T_real},
+		"valor_absoluto":{id:T_parO,parameters:[T_real],type:T_real}
 		};
+	}
+	
+	resetar()
+	{
 	}
 	
 	arredondar(numero,casas)

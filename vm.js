@@ -448,8 +448,13 @@ function VMrun()
 				if(ret)
 				{
 					var retValue = ret.value;
+					
 					if(typeof retValue !== "undefined")
-					{
+					{	
+						if(typeof retValue == "boolean")
+						{
+							retValue = retValue ? B_TRUE : B_FALSE;
+						}
 						VM_stack[VM_si++] = retValue;
 					}
 					

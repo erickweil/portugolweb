@@ -125,3 +125,66 @@ function simKeyUpEvent(keySelected,shift)
 		//console.log("event:"+document.getElementById("myEditor").dispatchEvent(keyboardEvent));
 	return keyboardEvent;
 }
+
+function openFullscreen(elem) {
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+	return true;
+  } else if (elem.mozRequestFullScreen) { /* Firefox */
+    elem.mozRequestFullScreen();
+	return true;
+  } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+    elem.webkitRequestFullscreen();
+	return true;
+  } else if (elem.msRequestFullscreen) { /* IE/Edge */
+    elem.msRequestFullscreen();
+	return true;
+  }
+  else return false;
+}
+
+/* Close fullscreen */
+function closeFullscreen() {
+	try{
+		
+		if (document.fullscreenElement || 
+		document.webkitFullscreenElement || 
+		document.mozFullScreenElement) {
+		// can use exitFullscreen
+
+			if (document.exitFullscreen) {
+			document.exitFullscreen();
+			} else if (document.mozCancelFullScreen) { /* Firefox */
+			document.mozCancelFullScreen();
+			} else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+			document.webkitExitFullscreen();
+			} else if (document.msExitFullscreen) { /* IE/Edge */
+			document.msExitFullscreen();
+			}
+		}
+	}catch (e) {
+			var myStackTrace = e.stack || e.stacktrace || "";
+
+			console.log(myStackTrace);
+		}
+}
+
+function getScreenDimensions()
+{
+	var width  = window.innerWidth || document.documentElement.clientWidth || 
+	document.body.clientWidth;
+	var height = window.innerHeight|| document.documentElement.clientHeight|| 
+	document.body.clientHeight;
+	
+	return {width:width,height:height};
+}
+
+function addEvent(element, eventName, callback) {
+    if (element.addEventListener) {
+        element.addEventListener(eventName, callback, false);
+    } else if (element.attachEvent) {
+        element.attachEvent("on" + eventName, callback);
+    } else {
+        element["on" + eventName] = callback;
+    }
+}

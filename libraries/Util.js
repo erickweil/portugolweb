@@ -9,6 +9,11 @@ class Util {
 		"tempo_decorrido":{id:T_parO,parameters:[],type:T_inteiro}
 		};
 		
+		this.resetar();
+	}
+	
+	resetar()
+	{
 		this.time = new Date().getTime();
 	}
 	

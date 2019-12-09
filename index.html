@@ -81,12 +81,7 @@ Portugol web no celular
 {
 	funcao inicio()
 	{
-		// Seu código deve vir aqui.
-
-		para(inteiro i =1;i<=20;i++)
-		{
-			escreva("Olá mundo"+i+" \n")
-		}
+		escreva("Olá mundo \n")
 	}
 }
 </div>
@@ -98,7 +93,7 @@ Portugol web no celular
 <input tabindex="-1" type="button" style="background-image: url(icons/FontMinus.png);" id="btn-fonteMenor" value=" " onclick="fonteDiminuir()" onfocus="preventFocus(event)"/>
 <input type="button" style="background-image: url(icons/save.png);" id="btn-salvar" value=" " onclick="save()"/>
 <input type="button" style="background-image: url(icons/open.png);"  id="btn-abrir" value=" " onclick="load()"/>
-<input type="button" style="background-image: url(icons/full.png);" id="btn-abrir" value=" " onclick="requestFullScreen(document.documentElement);"/>
+<!--<input type="button" style="background-image: url(icons/full.png);" id="btn-abrir" value=" " onclick="openFullscreen(document.documentElement);"/> Isso não funcionava direito e no pc tem o F11-->
 <!--<input type="button" id="btn-execErros" value="Ignorar Erros" onclick="check_execErros()"/>-->
 </div>
 <div class="saida" id="saida"><div id="errorArea"></div><textarea id="textAreaSaida" onclick="cursorToEnd(this)" onkeyup="cursorToEnd(this)" oninput="receiveInput(this)">??</textarea></div>
@@ -107,10 +102,14 @@ Portugol web no celular
 </div>
 <!-- Canvas modo Gráfico -->
 <div id="myCanvasModal">
+<div id="myCanvasMiddle">
 <div id="myCanvasWindow">
+<div style="white-space: nowrap;">
 <input type="button" value="Janela Sem Titulo" style="float:left;background: #1E2324;" id="myCanvasWindowTitle"/>
 <input type="button" value="X" style="float:right;background: #1E2324;" onclick="executar(document.getElementById('btn-run'));"/>
+</div>
 <canvas id="myCanvas" width="100" height="100"></canvas>
+</div>
 </div>
 </div>
 <div id="hotbar" class="portugol-buttons" style="width:100%">
@@ -163,9 +162,13 @@ Portugol web no celular
 
 <!-- Bibliotecas -->
 <script src="libraries/Util.js"></script>
+<script src="libraries/Calendario.js"></script>
 <script src="libraries/Matematica.js"></script>
 <script src="libraries/Texto.js"></script>
+<script src="libraries/Tipos.js"></script>
 <script src="libraries/Graficos.js"></script>
+
+<script src="libraries/Mouse.js"></script>
 
 <script src="vm.js"></script> <!-- executa o 'bytecode' -->
 <script src="vmcompiler.js"></script> <!-- compila a árvore em 'bytecode' ( parecido com java só que não é java ) -->
@@ -465,6 +468,17 @@ Portugol web no celular
 	//var lastvm = false;
 	var lastvmState = STATE_ENDED;
 	var lastvmTime = 0;
+	
+	var libraries = {};
+	libraries["Util"] = new Util();
+	libraries["Calendario"] = new Calendario();
+	libraries["Matematica"] = new Matematica();
+	libraries["Texto"] = new Texto();
+	libraries["Graficos"] = new Graficos(myCanvas,myCanvasModal,myCanvasWindow,myCanvasWindowTitle);
+	libraries["Mouse"] = new Mouse(myCanvas);
+	
+	libraries["Tipos"] = new Tipos();
+				
 	function executar(btn)
 	{
 		if(btn.value == "Executar" && lastvmState == STATE_ENDED)
@@ -502,11 +516,10 @@ Portugol web no celular
 					return;
 				}
 				
-				var libraries = {};
-				libraries["Util"] = new Util();
-				libraries["Matematica"] = new Matematica();
-				libraries["Texto"] = new Texto();
-				libraries["Graficos"] = new Graficos(myCanvas,myCanvasModal,myCanvasWindow,myCanvasWindowTitle);
+				for(var i =0;i<libraries.length;i++)
+				{
+					libraries[i].resetar();
+				}
 				
 				var compiler = new Compiler(tree,libraries,relevantTokens,string_cod,div_saida);
 				compiler.compile();
@@ -568,6 +581,10 @@ Portugol web no celular
 		lastvmState = STATE_ENDED;
 		document.getElementById("btn-run").value = "Executar";
 		myCanvasModal.style.display = "none";
+		if(libraries["Graficos"].telaCheia)
+		{
+			libraries["Graficos"].encerrar_modo_grafico();
+		}
 	}
 	
 	function executarVM()
@@ -908,7 +925,37 @@ Portugol web no celular
 	
 	setInterval(autoSave, 30000);
 	
-	window.addEventListener("resize", hideHotBarWhenLandscape);
+	
+	if (document.addEventListener)
+	{
+		window.addEventListener("resize", hideHotBarWhenLandscape);
+		document.addEventListener('fullscreenchange', exitHandler, false);
+		document.addEventListener('mozfullscreenchange', exitHandler, false);
+		document.addEventListener('MSFullscreenChange', exitHandler, false);
+		document.addEventListener('webkitfullscreenchange', exitHandler, false);
+	}
+
+	function exitHandler()
+	{
+		//if (document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement !== null)
+		//{
+		//	// Run code on exit
+		//	console.log("AAA");
+		//}
+		//else{
+		//	console.log("BBB");
+		//}
+		var fullscreenElement = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement;
+		if(!fullscreenElement)
+		{
+			if(lastvmState != STATE_ENDED) {
+				if(libraries["Graficos"].telaCheia)
+				{
+					libraries["Graficos"].sair_modo_tela_cheia();
+				}
+			}
+		}
+	}
 //}
 </script>
 <!--<script src="codetest.js"></script><!-- para testar -->

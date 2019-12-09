@@ -12,6 +12,10 @@ class Texto {
 		};
 	}
 	
+	resetar()
+	{
+	}
+	
 	caixa_alta(cad)
 	{
 		return {value:cad.toUpperCase()};
