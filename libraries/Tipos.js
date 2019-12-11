@@ -107,7 +107,7 @@ class Tipos {
 	
 	caracter_para_inteiro(cad)
 	{
-		return {value:cad.charCodeAt(0)};
+		return {value:cad.charCodeAt(0)-48};
 	}
 	
 	caracter_para_logico(cad)
@@ -130,7 +130,8 @@ class Tipos {
 	
 	inteiro_para_caracter(i)
 	{
-		return {value: String.fromCharCode(i)};
+		if(this.inteiro_e_caracter(i).value) return {value:(""+i).charAt(0)};
+		else throw "o valor '"+i+"' não pode ser convertido para caracter";
 	}
 	
 	inteiro_para_logico(i)

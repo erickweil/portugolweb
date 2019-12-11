@@ -228,6 +228,7 @@ var STATE_BREATHING = 2;
 var STATE_PENDINGSTOP = 3;
 var STATE_RUNNING = 4;
 var STATE_DELAY = 5;
+var STATE_DELAY_REPEAT = 6;
 var VM_delay = false;
 // frame locals
 var VM_code = false;
@@ -375,6 +376,11 @@ function VMrun()
 		VM_codeCount++; // para parar o programa e atualizar a saida em loops muito demorados
 		if(VM_codeCount > VM_codeMax) return STATE_BREATHING;
 		//var code = this.next();
+		
+		
+		var lastVM_i = VM_i;
+		var lastVM_si = VM_si;
+		
 		var code = VM_code[VM_i++];
 		
 		
@@ -431,7 +437,6 @@ function VMrun()
 			case B_IFLE: VM_i = (VM_stack[--VM_si] <= 0 ? VM_code[VM_i++] : VM_i+1); break;
 			
 			case B_LIBINVOKE:
-				// precisa criar um stackFrame
 				var lib = VM_code[VM_i++];
 				var meth = VM_code[VM_i++];
 				var methArgsN = VM_code[VM_i++];
@@ -460,6 +465,12 @@ function VMrun()
 					
 					if(typeof ret.state !== "undefined" && ret.state != STATE_RUNNING)
 					{
+						if(ret.state == STATE_DELAY_REPEAT) // não pode retornar esse estado e um valor ao mesmo tempo, daria comportamento inconsistente
+						{
+							VM_i = lastVM_i;
+							VM_si = lastVM_si;
+						}
+						
 						return ret.state;
 					}
 				}

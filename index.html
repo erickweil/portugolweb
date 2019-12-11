@@ -108,7 +108,7 @@ Portugol web no celular
 <input type="button" value="Janela Sem Titulo" style="float:left;background: #1E2324;" id="myCanvasWindowTitle"/>
 <input type="button" value="X" style="float:right;background: #1E2324;" onclick="executar(document.getElementById('btn-run'));"/>
 </div>
-<canvas id="myCanvas" width="100" height="100"></canvas>
+<canvas tabindex="1" id="myCanvas" width="100" height="100"></canvas>
 </div>
 </div>
 </div>
@@ -169,6 +169,8 @@ Portugol web no celular
 <script src="libraries/Graficos.js"></script>
 
 <script src="libraries/Mouse.js"></script>
+<script src="libraries/Teclado.js"></script>
+<script src="libraries/Objetos.js"></script>
 
 <script src="vm.js"></script> <!-- executa o 'bytecode' -->
 <script src="vmcompiler.js"></script> <!-- compila a árvore em 'bytecode' ( parecido com java só que não é java ) -->
@@ -177,6 +179,7 @@ Portugol web no celular
 <script src="src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
 <script src="src-min-noconflict/ext-language_tools.js"></script>
 <script src="src-min-noconflict/ext-emmet.js"></script>
+<script src="ace_portugol_completer.js"></script>
 <!--<script src="ace_portugol.js"></script>-->
 
 
@@ -245,7 +248,17 @@ Portugol web no celular
 	}
 	
 
-
+	var libraries = {};
+	libraries["Util"] = new Util();
+	libraries["Calendario"] = new Calendario();
+	libraries["Matematica"] = new Matematica();
+	libraries["Texto"] = new Texto();
+	libraries["Graficos"] = new Graficos(myCanvas,myCanvasModal,myCanvasWindow,myCanvasWindowTitle);
+	libraries["Mouse"] = new Mouse(myCanvas);
+	libraries["Teclado"] = new Teclado(myCanvas);
+	libraries["Objetos"] = new Objetos();
+	
+	libraries["Tipos"] = new Tipos();
 	
 	if(isMobile) {
 		fontSize = 9;
@@ -276,6 +289,11 @@ Portugol web no celular
 		enableLiveAutocompletion: true,
 		scrollPastEnd: 0.5
 	});
+	
+	var langTools = ace.require('ace/ext/language_tools');
+	var myPortugolCompleter = new portugolCompleter(libraries);
+	langTools.addCompleter(myPortugolCompleter);
+		
 
 	var last_code = getAutoSave();
 	if(last_code)
@@ -469,15 +487,7 @@ Portugol web no celular
 	var lastvmState = STATE_ENDED;
 	var lastvmTime = 0;
 	
-	var libraries = {};
-	libraries["Util"] = new Util();
-	libraries["Calendario"] = new Calendario();
-	libraries["Matematica"] = new Matematica();
-	libraries["Texto"] = new Texto();
-	libraries["Graficos"] = new Graficos(myCanvas,myCanvasModal,myCanvasWindow,myCanvasWindowTitle);
-	libraries["Mouse"] = new Mouse(myCanvas);
 	
-	libraries["Tipos"] = new Tipos();
 				
 	function executar(btn)
 	{
@@ -529,6 +539,8 @@ Portugol web no celular
 				}
 				//lastvm = new Vm(compiler.functions,string_cod,div_saida);
 				
+				myPortugolCompleter.setCompiler(compiler);
+				
 				VMsetup(compiler.functions,libraries,compiler.globalCount,string_cod,div_saida);
 				document.getElementById("hidden").innerHTML = VMtoString();
 				//lastvmState = lastvm.run();
@@ -545,7 +557,7 @@ Portugol web no celular
 			btn.value = "Parar";
 			executarVM();
 		}
-		else if(btn.value == "Parar" && (lastvmState == STATE_RUNNING || lastvmState == STATE_WAITINGINPUT || lastvmState == STATE_BREATHING || lastvmState == STATE_DELAY))
+		else if(btn.value == "Parar" && (lastvmState == STATE_RUNNING || lastvmState == STATE_WAITINGINPUT || lastvmState == STATE_BREATHING || lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT))
 		{
 			btn.value = "Parando...";
 			if(lastvmState == STATE_WAITINGINPUT)
@@ -553,9 +565,9 @@ Portugol web no celular
 				escreva("\n\nPrograma interrompido pelo usuário. Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
 				executarParou();
 			}
-			else if(lastvmState == STATE_RUNNING || lastvmState == STATE_BREATHING || lastvmState == STATE_DELAY)
+			else if(lastvmState == STATE_RUNNING || lastvmState == STATE_BREATHING || lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT )
 			{
-				lastvmState = STATE_PENDINGSTOP;
+				lastvmState = STATE_PENDINGSTOP; // isso pode dar problema para valores de delay muito altos.
 			}
 			else
 			{
@@ -610,7 +622,7 @@ Portugol web no celular
 		else if(lastvmState == STATE_BREATHING) {
 			setTimeout(executarVM, 0); // permite o navegador ficar responsivo
 		}
-		else if(lastvmState == STATE_DELAY) {
+		else if(lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT) {
 			setTimeout(executarVM, VM_delay);
 		}
 	}

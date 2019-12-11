@@ -17,16 +17,37 @@ class Mouse {
 		"ler_botao":{id:T_parO,parameters:[],type:T_inteiro},
 		};
 
-		var that = this;
-		
 		//this.canvas.addEventListener("mousemove",function(evt) {console.log("LOL");});
-		this.canvas.addEventListener("mousemove",function(evt) {that.mouseMove(evt)});
-		this.canvas.addEventListener("click",function(evt) {that.mouseClick(evt);});
-		this.canvas.addEventListener("mouseenter",function(evt) {that.mouseEnter(evt);});
-		this.canvas.addEventListener("mouseleave",function(evt) {that.mouseLeave(evt);});
+		this.canvas.addEventListener("mousemove",(e) => {this.mouseMove(e)});
+		this.canvas.addEventListener("click",(e) => {this.mouseClick(e);});
+		this.canvas.addEventListener("mouseenter",(e) => {this.mouseEnter(e);});
+		this.canvas.addEventListener("mouseleave",(e) => {this.mouseLeave(e);});
 		
-		this.canvas.addEventListener("mousedown",function(evt) {that.mouseDown(evt);});
-		this.canvas.addEventListener("mouseup",function(evt) {that.mouseUp(evt);});
+		this.canvas.addEventListener("mousedown",(e) => {this.mouseDown(e);});
+		this.canvas.addEventListener("mouseup",(e) => {this.mouseUp(e);});
+		
+		
+		var touchMap = [-1,this.BOTAO_ESQUERDO,this.BOTAO_MEIO,this.BOTAO_DIREITO];
+		this.touchManager = new TouchManager();
+		this.canvas.addEventListener("touchstart",(e) => {this.touchManager.touchstart(e);}, false);
+		this.canvas.addEventListener("touchmove",(e) => {
+			e.preventDefault(); // prevent scrolling
+			this.touchManager.touchmove(e);
+		}, false);
+		this.canvas.addEventListener("touchend", (e) => {
+			
+			e.preventDefault(); // prevent 300ms after a tap event?
+			this.touchManager.touchend(e);
+			
+		}, false);
+		this.canvas.addEventListener("touchcancel",(e) => {this.touchManager.touchcancel(e);}, false);
+		this.canvas.addEventListener("touchleave",(e) => {this.touchManager.touchleave(e);}, false);
+		
+		this.touchManager.addEventListener("onTouchDown",(p,ntouches) => {this.mouseDown({clientX:p.x,clientY:p.y,button:touchMap[ntouches]})}, false);
+		this.touchManager.addEventListener("onTouchMove",(p,ntouches) => {this.mouseMove({clientX:p.x,clientY:p.y,button:touchMap[ntouches]})}, false);
+		this.touchManager.addEventListener("onTouchUp",(p,ntouches) => {this.mouseUp({clientX:p.x,clientY:p.y,button:touchMap[ntouches]})}, false);
+		this.touchManager.addEventListener("onTouchZoom",(p,zoomDelta) => {this.doZoom(p,zoomDelta)}, false);
+		
 		
 		this.resetar();
 	}
@@ -40,6 +61,12 @@ class Mouse {
 		// 1 Middle
 		// 2 Right
 		this.pressionado = [false,false,false];
+		this.touchManager.resetar();
+	}
+	
+	doZoom(p,zoomDelta)
+	{
+		// ??
 	}
 	
 	mouseChanged(evt)
@@ -111,7 +138,14 @@ class Mouse {
 	
 	ler_botao()
 	{
-		// kk isso nem funciona
-		return {state:STATE_WAITINGINPUT};
+		if(this.algum_botao_pressionado())
+		{
+			return {value:this.pressionado[0] ? this.BOTAO_ESQUERDO :( this.pressionado[1] ?  this.BOTAO_MEIO : this.BOTAO_DIREITO)};
+		}
+		else
+		{
+			VM_delay = 1;
+			return {state:STATE_DELAY_REPEAT};
+		}
 	}
 }

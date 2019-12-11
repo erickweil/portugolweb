@@ -592,7 +592,8 @@ class Compiler {
 			case T_lt:
 			case T_ge:
 			case T_gt:
-				return ( tA == tB && (tA != T_logico) && (tB != T_logico));
+				return ( tA == tB && (tA != T_logico) && (tB != T_logico)) 
+				|| ((tA == T_inteiro || tA == T_real) && (tB == T_inteiro || tB == T_real));
 			case T_notequals:
 			case T_equals:
 				return tA == tB;
