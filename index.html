@@ -93,6 +93,8 @@ Portugol web no celular
 <input tabindex="-1" type="button" style="background-image: url(icons/FontMinus.png);" id="btn-fonteMenor" value=" " onclick="fonteDiminuir()" onfocus="preventFocus(event)"/>
 <input type="button" style="background-image: url(icons/save.png);" id="btn-salvar" value=" " onclick="save()"/>
 <input type="button" style="background-image: url(icons/open.png);"  id="btn-abrir" value=" " onclick="load()"/>
+<input type="button" id="btn-exemplos" value="Exemplos" onclick="document.getElementById('modalExemplos').style.display = 'table';"/>
+
 <!--<input type="button" style="background-image: url(icons/full.png);" id="btn-abrir" value=" " onclick="openFullscreen(document.documentElement);"/> Isso não funcionava direito e no pc tem o F11-->
 <!--<input type="button" id="btn-execErros" value="Ignorar Erros" onclick="check_execErros()"/>-->
 </div>
@@ -112,6 +114,31 @@ Portugol web no celular
 </div>
 </div>
 </div>
+
+<!-- Modal Exemplos -->
+<div class="ModalFull" id="modalExemplos">
+<div class="ModalInside">
+<div class="ModalContent">
+<div>
+<input type="button" value="Exemplos" style="float:left;background: #1E2324;" class="ModalTitle"/>
+<input type="button" value="X" style="float:right;background: #1E2324;" onclick="document.getElementById('modalExemplos').style.display = 'none';"/>
+</div>
+<br/>
+<div class="listaExemplos">
+<h2 onclick="exemplo('variaveis');">Variáveis</h2>
+<h2 onclick="exemplo('entrada');">Entrada de dados</h2>
+<h2 onclick="exemplo('condicoes');">Condições</h2>
+<h2 onclick="exemplo('repeticao');">Repetição</h2>
+<h2 onclick="exemplo('vetores');">Vetores</h2>
+<h2 onclick="exemplo('funcoes');">Funções</h2>
+<h2 onclick="exemplo('bibliotecas');">Bibliotecas</h2>
+<h2 onclick="exemplo('graficos');">Graficos</h2>
+<h2 onclick="exemplo('aleatorio');">Aleatorio</h2>
+</div>
+</div>
+</div>
+</div>
+
 <div id="hotbar" class="portugol-buttons" style="width:100%">
 <div id="hotbar_commands" style="overflow-x:scroll;white-space:nowrap;width: auto;">
 <input tabindex="-1" type="button" value="TAB" onclick="editorCommand(9)" onfocus="preventFocus(event)"/>
@@ -257,7 +284,6 @@ Portugol web no celular
 	libraries["Mouse"] = new Mouse(myCanvas);
 	libraries["Teclado"] = new Teclado(myCanvas);
 	libraries["Objetos"] = new Objetos();
-	
 	libraries["Tipos"] = new Tipos();
 	
 	if(isMobile) {
@@ -487,7 +513,21 @@ Portugol web no celular
 	var lastvmState = STATE_ENDED;
 	var lastvmTime = 0;
 	
-	
+	function exemplo(nome)
+	{
+		if(nome == "aleatorio")
+		{
+			nome+=  Math.floor(Math.random() * 4);
+		}
+		httpGetAsync("exemplos/"+nome+".por",
+		function(code)
+		{
+			editor.setValue(code, -1); // moves cursor to the start
+			limparErros();
+		}
+		);
+		document.getElementById('modalExemplos').style.display = 'none';
+	}
 				
 	function executar(btn)
 	{

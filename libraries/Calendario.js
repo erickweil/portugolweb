@@ -127,7 +127,7 @@ class Calendario {
 		return {value:new Date().getMinutes()+1}; 
 	}
 	
-	hora_atual()
+	hora_atual(formato)
 	{
 		return {value:new Date().getHours()+1};		
 	}

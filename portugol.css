@@ -1,5 +1,6 @@
 body {
 	height:100vh;
+	width:100vw;
 }
 
 #hidden{
@@ -61,6 +62,58 @@ body.mobile {
 div.portugol-buttons.mobile{
 	border-top: none;
 }
+
+.ModalFull{
+	
+	z-index: 10; /* Sit on top */
+
+	display:table;
+	position: fixed; /* Stay in place */
+	margin: 0 auto;
+	width: 100vw;
+	height: 100vh;
+	top:0;
+	left:0;
+	
+	pointer-events:none; /* invisible to clicks */
+}
+
+.ModalInside{
+	display: table-cell;
+	vertical-align: middle;
+	position: relative;
+	padding-left: 40px;
+	padding-right: 40px;
+	pointer-events:none;
+}
+
+.ModalContent{
+	margin-left: auto;
+	margin-right: auto;
+	display: table;
+	position: relative;
+	background: #1E2324;
+	min-width:220px;
+	max-width:500px;
+	pointer-events:auto;
+	overflow-y:auto;
+	max-height:75%;
+}
+
+.listaExemplos{
+	color:#01EABC;
+	font-weight: 800;
+	padding:20px;
+	margin-top:20px;
+}
+
+.listaExemplos h2{
+	display: inline-block;
+	padding:14px;
+	margin:0px;
+	font-size: 12pt;
+}
+
 
 
 #myCanvasModal{
@@ -165,7 +218,7 @@ div.portugol-buttons{
 	
 }
 
-div.portugol-buttons input, #myCanvasModal input{
+div.portugol-buttons input, #myCanvasModal input, .ModalContent input{
 	color:#01EABC;
 	font-weight: 800;
 	min-width:35px;

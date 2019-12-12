@@ -134,6 +134,9 @@ class Graficos {
 	
 	definir_dimensoes_janela(w,h)
 	{
+		var screenDim = getScreenDimensions();
+		w = Math.min(screenDim.width-8,w);
+		h = Math.min(screenDim.height-48,h);
 		this.lastWidth = w;
 		this.lastHeight = h;
 		this.canvas.height = h;

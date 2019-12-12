@@ -170,6 +170,16 @@ class Parser {
 			}
 			var tIndex = tokens[i].index;
 			var varType = tokens[i].id;i++;
+			var byRef = false;
+			// ***** Passando por Referência *******
+			
+			if(tokens[i].id == T_bitand)
+			{
+				byRef = true;
+				i++;
+			}
+			
+			// *****                         *******
 			if(tokens[i].id != T_word)
 			{
 				this.erro(tokens[i],"o nome do parâmetro é inválido, deve ser apenas letras");
@@ -197,11 +207,11 @@ class Parser {
 				}
 				while(tokens[i].id == T_squareO);
 				
-				tree.push({id:STATEMENT_declArr,index:tIndex,type:varType,isConst:false,name:varName,size_expr:arrayDimExpr,values:[]});
+				tree.push({id:STATEMENT_declArr,index:tIndex,type:varType,isConst:false,byRef:byRef,name:varName,size_expr:arrayDimExpr,values:[]});
 			}
 			else
 			{
-				tree.push({id:STATEMENT_declVar,index:tIndex,type:varType,isConst:false,name:varName,expr:false});
+				tree.push({id:STATEMENT_declVar,index:tIndex,type:varType,isConst:false,byRef:byRef,name:varName,expr:false});
 			}
 			if(tokens[i].id != T_comma)
 			{
