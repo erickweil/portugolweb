@@ -1,6 +1,11 @@
 body {
-	height:100vh;
+	/*height:100vh;*/
 	width:100vw;
+	
+	background: #263238;
+	height:100%;
+	overflow-y: hidden;
+	overflow-x: hidden;
 }
 
 #hidden{
@@ -9,10 +14,11 @@ body {
 
 #errorArea{
 	color:red;
+	overflow-y: auto;
 }
 #textAreaSaida{
 	height: 100%;
-	min-height: 250px;
+	min-height: 160px;
 	width: 100%;
 	outline: none;
 	border: none;
@@ -27,40 +33,28 @@ body {
 	resize: auto;
 }
 #myEditor{
-	height: 80%;
+	/*height: 80%;*/
+	max-height: 100vh;
+	min-height: 200px;
+	
 }
 #myOutput{
 	height:0px;
-	min-height: 200px;
+	/*min-height: 200px;*/
 	max-height: 600px;
+	min-height: 80px;
 }
 
 /**
 Mobile Only things
 */
 
-body.mobile {
-	background: #263238;
-	height:100%;
-	overflow-y: hidden;
+body.mobile #hotbar{
+	padding-top:0px;	
 }
 
-#myEditor.mobile{
-	max-height: 100vh;
-	min-height: 200px;
-}
-#myOutput.mobile{
-	min-height: 80px;
-}
-#errorArea.mobile{
-	overflow-y: scroll;
-}
-#textAreaSaida.mobile{
-	min-height: 160px;
-}
-
-div.portugol-buttons.mobile{
-	border-top: none;
+body.mobile #myEditor{
+	margin-right: 0px;
 }
 
 .ModalFull{
@@ -158,11 +152,13 @@ div.portugol-buttons.mobile{
 
 #hotbar{
 	z-index:9;
-	display:none;
+	display:block;
 	position: fixed;
 	bottom:-80px;
 	left:0px;
 	border-top: 1px solid #1E2324;
+	padding-top:5px;
+	cursor:grab;
 	touch-action: none;
 }
 
@@ -213,7 +209,8 @@ box-shadow: 0px 13px 21px 0px rgba(207,207,207,1);
 
 div.portugol-buttons{
 	background: #263238;
-	border-top: 1px solid #1E2324;
+	/*border-top: 1px solid #1E2324;*/
+	border-top: none;
 	font-family:Liberation Mono, Courier New, Consolas,Monaco,Lucida Console,DejaVu Sans Mono,Bitstream Vera Sans Mono, monospace;
 	
 }

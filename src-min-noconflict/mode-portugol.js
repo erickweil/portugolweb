@@ -805,7 +805,7 @@ var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 
 var JavaHighlightRules = function() {
     var keywords = (
-    "programa|funcao|inclua|biblioteca|e|ou|nao|se|senao|enquanto|faca|para|escolha|caso|contrario|pare|retorne"
+    "programa|funcao|inclua|biblioteca|e|ou|nao|se|senao|enquanto|faca|para|escolha|caso|contrario|pare|retorne|const"
     );
 
     var buildinConstants = ("Infinity|NaN");

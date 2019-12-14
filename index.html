@@ -85,23 +85,7 @@ Portugol web no celular
 	}
 }
 </div>
-<div id="myOutput" style="position:relative;">
-<div id="myOutput_buttons" class="portugol-buttons" style="overflow-x:auto;white-space:nowrap;width: auto;">
-<input type="button" id="btn-run" value="Executar" onclick="executar(this)"/>
 
-<input tabindex="-1" type="button" style="background-image: url(icons/FontPlus.png);" id="btn-fonteMaior" value=" " onclick="fonteAumentar()" onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/FontMinus.png);" id="btn-fonteMenor" value=" " onclick="fonteDiminuir()" onfocus="preventFocus(event)"/>
-<input type="button" style="background-image: url(icons/save.png);" id="btn-salvar" value=" " onclick="save()"/>
-<input type="button" style="background-image: url(icons/open.png);"  id="btn-abrir" value=" " onclick="load()"/>
-<input type="button" id="btn-exemplos" value="Exemplos" onclick="document.getElementById('modalExemplos').style.display = 'table';"/>
-
-<!--<input type="button" style="background-image: url(icons/full.png);" id="btn-abrir" value=" " onclick="openFullscreen(document.documentElement);"/> Isso não funcionava direito e no pc tem o F11-->
-<!--<input type="button" id="btn-execErros" value="Ignorar Erros" onclick="check_execErros()"/>-->
-</div>
-<div class="saida" id="saida"><div id="errorArea"></div><textarea id="textAreaSaida" onclick="cursorToEnd(this)" onkeyup="cursorToEnd(this)" oninput="receiveInput(this)">??</textarea></div>
-<div class="saida" id="hidden"></div>
-<!--<input type="button" value="mostrar bytecode" style="position:absolute;top:0px;right:0px;background:transparent;z-index: 5;border:none" onclick="document.getElementById('hidden').style.display = 'block';"/>-->
-</div>
 <!-- Canvas modo Gráfico -->
 <div id="myCanvasModal">
 <div id="myCanvasMiddle">
@@ -140,7 +124,20 @@ Portugol web no celular
 </div>
 
 <div id="hotbar" class="portugol-buttons" style="width:100%">
-<div id="hotbar_commands" style="overflow-x:scroll;white-space:nowrap;width: auto;">
+<div id="myOutput_buttons" class="portugol-buttons" style="overflow-x:auto;white-space:nowrap;width: auto;">
+<input type="button" id="btn-run" value="Executar" onclick="executar(this)"/>
+
+<input tabindex="-1" type="button" style="background-image: url(icons/FontPlus.png);" id="btn-fonteMaior" value=" " onclick="fonteAumentar()" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/FontMinus.png);" id="btn-fonteMenor" value=" " onclick="fonteDiminuir()" onfocus="preventFocus(event)"/>
+<input type="button" style="background-image: url(icons/save.png);" id="btn-salvar" value=" " onclick="save()"/>
+<input type="button" style="background-image: url(icons/open.png);"  id="btn-abrir" value=" " onclick="load()"/>
+<input type="button" id="btn-exemplos" value="Exemplos" onclick="document.getElementById('modalExemplos').style.display = 'table';"/>
+
+<!--<input type="button" style="background-image: url(icons/full.png);" id="btn-abrir" value=" " onclick="openFullscreen(document.documentElement);"/> Isso não funcionava direito e no pc tem o F11-->
+<!--<input type="button" id="btn-execErros" value="Ignorar Erros" onclick="check_execErros()"/>-->
+</div>
+
+<div id="hotbar_commands" style="overflow-x:auto;white-space:nowrap;width: auto;">
 <input tabindex="-1" type="button" value="TAB" onclick="editorCommand(9)" onfocus="preventFocus(event)"/>
 <input tabindex="-1" type="button" style="background-image: url(icons/arrowL.png);" value=" " onclick="editorCommand(37)" onfocus="preventFocus(event)"/>
 <input tabindex="-1" type="button" style="background-image: url(icons/arrowR.png);" value=" " onclick="editorCommand(39)" onfocus="preventFocus(event)"/>
@@ -151,7 +148,7 @@ Portugol web no celular
 <input tabindex="-1" type="button" style="background-image: url(icons/redo.png);" value=" " onclick="editor.redo()" onfocus="preventFocus(event)"/>
 <input tabindex="-1" type="button" style="background-image: url(icons/autocomplete.png);" value=" " onclick="editor.execCommand('startAutocomplete');" onfocus="preventFocus(event)"/>
 </div>
-<div id="hotbar_keys" style="overflow-x:scroll;white-space:nowrap;width: auto;">
+<div id="hotbar_keys" style="overflow-x:auto;white-space:nowrap;width: auto;">
 
 
 <input tabindex="-1" type="button" value="+" onclick='editorType("+")' onfocus="preventFocus(event)"/>
@@ -178,7 +175,11 @@ Portugol web no celular
 <input tabindex="-1" type="button" value="==" onclick='editorType("==")' onfocus="preventFocus(event)"/>
 <input tabindex="-1" type="button" value="!=" onclick='editorType("!=")' onfocus="preventFocus(event)"/>
 </div>
-
+<div id="myOutput" style="position:relative;">
+<div class="saida" id="saida"><div id="errorArea"></div><textarea id="textAreaSaida" onclick="cursorToEnd(this)" onkeyup="cursorToEnd(this)" oninput="receiveInput(this)">??</textarea></div>
+<div class="saida" id="hidden"></div>
+<!--<input type="button" value="mostrar bytecode" style="position:absolute;top:0px;right:0px;background:transparent;z-index: 5;border:none" onclick="document.getElementById('hidden').style.display = 'block';"/>-->
+</div>
 </div>
 
 <!-- coisinhas -->
@@ -243,36 +244,62 @@ Portugol web no celular
 	var hotbar_collapsedyOffset = 80;
 	var hotbar_middleyOffset = 120;
 	var hotbar_extendedyOffset = 295;
-	var hotbar_maxyOffset = 300;
+	//var hotbar_maxyOffset = 300;
     var hotbar_yOffset = hotbar_collapsedyOffset;
 	var hotbar_active = false;
 	var hotbar_textarea = false;
+	//var screenDimension = getScreenDimensions();
+	//isMobile = true;
 	
 	if(isMobile)
 	{
-		hotbar.style.display = "block";
-		hotbar.addEventListener("touchstart", hotbar_dragStart, false);
-		hotbar.addEventListener("touchend", hotbar_dragEnd, false);
-		hotbar.addEventListener("touchmove", hotbar_drag, false);
+		//hotbar.style.display = "block";
 		
-		var myOutput = document.getElementById("myOutput");
-		hotbar.appendChild(myOutput);
-		hotbar.insertBefore(document.getElementById("myOutput_buttons"),document.getElementById("hotbar_commands"));
+		//var myOutput = document.getElementById("myOutput");
+		//hotbar.appendChild(myOutput);
+		//hotbar.insertBefore(document.getElementById("myOutput_buttons"),document.getElementById("hotbar_commands"));
 				
-		setHotbarPosition(hotbar_middleyOffset);
-
-		document.body.classList.add('mobile');
-		document.getElementById("myEditor").classList.add('mobile');
-		myOutput.classList.add('mobile');
-		document.getElementById("myOutput_buttons").classList.add('mobile');
-		saida.classList.add('mobile');
-		window.addEventListener("resize", resizeEditorToFitHotbar);
 		
+		document.body.classList.add('mobile');
+		//document.getElementById("myEditor").classList.add('mobile');
+		//myOutput.classList.add('mobile');
+		//document.getElementById("myOutput_buttons").classList.add('mobile');
+		//saida.classList.add('mobile');
+
+		setHotbarPosition(hotbar_middleyOffset);
 	}
 	else
 	{
-		hotbar.style.display = "none";
+		// se mexer nesses numeros tudo para de funcionar deixa assim.
+		hotbar_initialHeight = hotbar_initialHeight - 80;
+		
+		hotbar_minyOffset = hotbar_minyOffset;
+		hotbar_collapsedyOffset = hotbar_collapsedyOffset - 80;
+		hotbar_middleyOffset = hotbar_middleyOffset - 80;
+		hotbar_extendedyOffset = hotbar_extendedyOffset - 80;
+		//hotbar_maxyOffset = hotbar_maxyOffset + 600;
+		hotbar_yOffset = hotbar_collapsedyOffset;
+		//hotbar.style.display = "none";
+		
+		document.getElementById("hotbar_commands").style.display = "none";
+		
+		document.getElementById("hotbar_keys").style.display = "none";
+		
+		setHotbarPosition(hotbar_extendedyOffset);
 	}
+	
+	hotbar.addEventListener("touchstart", hotbar_dragStart, false);
+	hotbar.addEventListener("touchend", hotbar_dragEnd, false);
+	hotbar.addEventListener("touchmove", hotbar_drag, false);
+	
+	hotbar.addEventListener("mousedown",hotbar_dragStart, false);
+	window.addEventListener("mouseup", hotbar_dragEnd, false);
+	//hotbar.addEventListener("mouseleave",hotbar_dragEnd, false);
+	window.addEventListener("mousemove",hotbar_drag, false);
+	
+	
+	
+	window.addEventListener("resize", resizeEditorToFitHotbar);
 	
 
 	var libraries = {};
@@ -298,10 +325,9 @@ Portugol web no celular
 	);
     editor.setTheme("ace/theme/portugol_dark");
     editor.session.setMode("ace/mode/portugol");
+	resizeEditorToFitHotbar();
 	if(isMobile) {
-		editor.renderer.setShowGutter(false);
-		resizeEditorToFitHotbar();
-		
+		editor.renderer.setShowGutter(false);	
 		if(typeof Android === 'undefined')
 		{
 			editor.setValue("programa\n{\n\tfuncao inicio()\n\t{\n\t\t\n\t\tescreva(\"Baixe o aplicativo na play store:\\n\")\n\t\tescreva(\"https://play.google.com/store/apps/details?id=br.erickweil.portugolweb \\n\")\n\t\t\n\t}\n}\n", -1); // moves cursor to the start
@@ -538,11 +564,11 @@ Portugol web no celular
 			limpa();
 			
 			// abrir hotbar e animar
-			if(isMobile)
-			{
+			//if(isMobile)
+			//{
 				if(hotbar_yOffset < hotbar_extendedyOffset)
 				setHotbarPosition(hotbar_extendedyOffset,true);
-			}
+			//}
 			
 			var string_cod = editor.getValue();
 			try{
@@ -566,9 +592,10 @@ Portugol web no celular
 					return;
 				}
 				
-				for(var i =0;i<libraries.length;i++)
+				var librariesNames = Object.keys(libraries);
+				for(var i =0;i<librariesNames.length;i++)
 				{
-					libraries[i].resetar();
+					libraries[librariesNames[i]].resetar();
 				}
 				
 				var compiler = new Compiler(tree,libraries,relevantTokens,string_cod,div_saida);
@@ -657,6 +684,10 @@ Portugol web no celular
 		}
 		else if(lastvmState == STATE_WAITINGINPUT) {
 			div_saida.focus();
+			
+			//if(isMobile)
+			//setTimeout(function(){window.dispatchEvent(new Event('resize'));}, 200); // pq n funciona?
+			
 			cursorToEnd(div_saida);
 		}
 		else if(lastvmState == STATE_BREATHING) {
@@ -687,12 +718,24 @@ Portugol web no celular
 	
 	function editorFocus()
 	{
-		if(isMobile)
-		{
+		//if(isMobile)
+		//{
 			//document.getElementById("hotbar").style.display = "block";
-			if(hotbar_yOffset > hotbar_middleyOffset)
-			setHotbarPosition(hotbar_middleyOffset,true);
-		}
+			if(isMobile)
+			{
+				if(hotbar_yOffset > hotbar_middleyOffset)
+				{
+					setHotbarPosition(hotbar_middleyOffset,true);
+				}
+			}
+			else
+			{
+				if(hotbar_yOffset > hotbar_extendedyOffset)
+				{
+					setHotbarPosition(hotbar_extendedyOffset,true);
+				}
+			}
+		//}
 	}
 	
 	function preventFocus(event) {
@@ -799,21 +842,18 @@ Portugol web no celular
 		var p = editor.getCursorPosition();
 		editor.getSession().replace(new Range(p.row, p.column, p.row, p.column+1), "");
 	}
-	
-	editor.on("focus", editorFocus);
 	//editor.on("blur", editorBlur);
 	
 	// HOTBAR
 	
 	function hideHotBarWhenLandscape()
 	{
+		var screenDimension = getScreenDimensions();
 		if(isMobile)
 		{
-			var w = document.documentElement.clientWidth;
-			var h = document.documentElement.clientHeight;
 			
 			//if(h < 40*2 + 200)
-			if(w > h*1.5)
+			if(screenDimension.width > h*1.5)
 			{
 				document.getElementById("hotbar").style.display = "none";
 			}
@@ -821,6 +861,11 @@ Portugol web no celular
 			{
 				document.getElementById("hotbar").style.display = "block";
 			}
+		}
+		
+		if(hotbar_yOffset > screenDimension.height)
+		{
+			setHotbarPosition(screenDimension.height,false);
 		}
 	}
 	
@@ -835,26 +880,35 @@ Portugol web no celular
 		hotbar_clickY = yValue;
 		hotbar_initialY = yValue - hotbar_yOffset;
 
-		if (e.target === hotbar) {
-			hotbar_active = true;
-		}
-		else if(e.target === saida)
+		//console.log("click:"+hotbar_clickY); 
+		if(e.target === saida)
 		{
 			hotbar_textarea = true;
 		}
+		else if (e.target === hotbar || e.type !== "touchstart") {
+			hotbar_active = true;
+		}
+		
     }
 
     function hotbar_dragEnd(e) {
+		if(e.type !== "touchend")
+		{
+			if(!hotbar_active) return; // só passou o mouse
+			
+			hotbar.style.cursor = "grab";
+		}
 		//initialX = currentX;
 		hotbar_initialY = hotbar_currentY;
 
 		
 		
-		if(hotbar_yOffset > (hotbar_extendedyOffset + 30))
+		/*if(hotbar_yOffset > (hotbar_extendedyOffset + 30))
 		{
 			setHotbarPosition(hotbar_maxyOffset,true);
 		}
-		else if(hotbar_yOffset > (hotbar_middleyOffset + 30))
+		else */
+		if(hotbar_yOffset > (hotbar_middleyOffset + 30) && hotbar_yOffset < hotbar_extendedyOffset)
 		{
 			setHotbarPosition(hotbar_extendedyOffset,true);
 		}
@@ -866,7 +920,7 @@ Portugol web no celular
 		{
 			setHotbarPosition(hotbar_collapsedyOffset,true);
 		}
-		else if(Math.abs(hotbar_yOffset - hotbar_maxyOffset) < 30)
+		else if(Math.abs(hotbar_yOffset - hotbar_minyOffset) < 30)
 		{
 			setHotbarPosition(hotbar_minyOffset,true);
 		}
@@ -882,12 +936,15 @@ Portugol web no celular
 		if (e.type === "touchmove") {
 			yValue = -e.touches[0].clientY;
 		} else {
+			if(!hotbar_active) return; // só passou o mouse
 			yValue = -e.clientY;
+			
+			hotbar.style.cursor = "grabbing";
 		}
 		
 		hotbar_currentY = yValue - hotbar_initialY;
 		var yOff = Math.abs(hotbar_clickY - yValue);
-		//console.log("drag:"+yOff);
+		console.log("drag:"+hotbar_initialY);
 		
 		
 	
@@ -936,7 +993,9 @@ Portugol web no celular
 		
 		
 		//el.style.transform = "translate3d(0px,	  " + yPos + "px, 0)";
-		hotbar_yOffset = Math.max(hotbar_minyOffset,Math.min(hotbar_maxyOffset,yPos));
+		var screenDimension = getScreenDimensions();
+		hotbar_yOffset = Math.max(hotbar_minyOffset,yPos);
+		hotbar_yOffset = Math.min(hotbar_yOffset,screenDimension.height-5);
 		//hotbar_yOffset = Math.min(hotbar_maxyOffset,yPos);
 		hotbar.style.bottom = (hotbar_yOffset - hotbar_initialHeight)+"px";
 		resizeEditorToFitHotbar();
@@ -949,8 +1008,16 @@ Portugol web no celular
 		|| document.documentElement.clientHeight
 		|| document.body.clientHeight;
 		
+		if(!isMobile)
+		document.getElementById("myEditor").style.height = (h-hotbar_yOffset+15)+"px";
+		else
 		document.getElementById("myEditor").style.height = (h-hotbar_yOffset)+"px";
 		editor.resize();
+		
+		if(!isMobile)
+		saida.style.height = (hotbar_yOffset-50)+"px";
+		else
+		saida.style.height = (hotbar_yOffset-130)+"px";
 	}
 	
 	//https://stackoverflow.com/questions/821011/prevent-a-webpage-from-navigating-away-using-javascript
@@ -977,7 +1044,8 @@ Portugol web no celular
 	
 	setInterval(autoSave, 30000);
 	
-	
+	editor.on("focus", editorFocus);
+	editor.focus();
 	if (document.addEventListener)
 	{
 		window.addEventListener("resize", hideHotBarWhenLandscape);
