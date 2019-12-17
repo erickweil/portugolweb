@@ -150,19 +150,38 @@ class Compiler {
 			type:T_vazio
 		},
 		{
-			name:"leia$inteiro",bytecode:[B_WAITINPUT,B_READ_INT,B_RETVALUE],varCount:0,parameters:[],type:T_vazio
+			name:"leia$inteiro",bytecode:[B_WAITINPUT,B_READ_INT,B_RETVALUE,B_RET],varCount:0,parameters:[],type:T_vazio
 		},
 		{
-			name:"leia$real",bytecode:[B_WAITINPUT,B_READ_FLOAT,B_RETVALUE],varCount:0,parameters:[],type:T_vazio
+			name:"leia$real",bytecode:[B_WAITINPUT,B_READ_FLOAT,B_RETVALUE,B_RET],varCount:0,parameters:[],type:T_vazio
 		},
 		{
-			name:"leia$cadeia",bytecode:[B_WAITINPUT,B_READ_STRING,B_RETVALUE],varCount:0,parameters:[],type:T_vazio
+			name:"leia$cadeia",bytecode:[B_WAITINPUT,B_READ_STRING,B_RETVALUE,B_RET],varCount:0,parameters:[],type:T_vazio
 		},
 		{
-			name:"leia$caracter",bytecode:[B_WAITINPUT,B_READ_CHAR,B_RETVALUE],varCount:0,parameters:[],type:T_vazio
+			name:"leia$caracter",bytecode:[B_WAITINPUT,B_READ_CHAR,B_RETVALUE,B_RET],varCount:0,parameters:[],type:T_vazio
 		},
 		{
-			name:"leia$logico",bytecode:[B_WAITINPUT,B_READ_BOOL,B_RETVALUE],varCount:0,parameters:[],type:T_vazio
+			name:"leia$logico",bytecode:[B_WAITINPUT,B_READ_BOOL,B_RETVALUE,B_RET],varCount:0,parameters:[],type:T_vazio
+		}
+		
+		//0:	load	0
+		//2:	load	1
+		//4:	libinvoke	Util	sorteia	2
+		//8:	pop
+		//9:	ret
+		,
+		{
+			name:"sorteia",bytecode:[
+			B_LOAD,0,
+			B_LOAD,1,
+			B_LIBINVOKE,"Util","sorteia",2,
+			B_RETVALUE,
+			B_RET
+			],varCount:2,parameters:[
+			{id: STATEMENT_declVar, index: 0, type: T_inteiro, isConst: false, byRef: false, expr:false, name:"a"},
+			{id: STATEMENT_declVar, index: 0, type: T_inteiro, isConst: false, byRef: false, expr:false, name:"a"}
+			],type:T_inteiro
 		}
 		];
 		
@@ -184,10 +203,12 @@ class Compiler {
 		{
 			this.funcScopeRef = new FunctionScopeRef();
 			this.scope = new Scope(this.scope,false,this.funcScopeRef); // cria um scopo para rodar a funcao, se, enquanto e qualquer coisa...	
-				this.compileStatements(funcoes[i].parameters,this.functions[FuncOff+i]); // declara os parametros da funcao, n vai gerar bytecode nenhum
+				this.compileStatements(funcoes[i].parameters,this.functions[FuncOff+i]); // declara os parametros da funcao, n vai gerar bytecode nenhum, ou vai?
 				this.compileStatements(funcoes[i].statements,this.functions[FuncOff+i]);
+			
+				//this.functions[FuncOff+i].bytecode.push(B_RET); // nao pode esquecer
+				this.compileFunctionRet(this.functions[FuncOff+i],false);
 			this.scope = this.scope.parentScope;
-			this.functions[FuncOff+i].bytecode.push(B_RET); // nao pode esquecer
 			this.functions[FuncOff+i].varCount = this.funcScopeRef.maxVarCount;
 		}
 		
@@ -195,7 +216,8 @@ class Compiler {
 		var funcIndex = this.getFuncIndex("inicio",[]);
 		funcInit.bytecode.push(funcIndex);
 		funcInit.bytecode.push(0); // nenhum argumento
-		funcInit.bytecode.push(B_RET); // nao pode esquecer
+		//funcInit.bytecode.push(B_RET); // nao pode esquecer
+		this.compileFunctionRet(funcInit,false);
 		
 		this.globalCount = this.scope.varCount;
 		
@@ -287,6 +309,47 @@ class Compiler {
 				this.compileDeclArray(values[k],bc,v,arrayDim-1,indexes);
 				indexes.pop();
 			}
+		}
+	}
+	
+	compileFunctionRet(func,expr)
+	{
+		var bc = func.bytecode;
+				
+		if(expr)
+		{
+			var tipoRet = this.compileExpr(expr,bc,-1);
+			if(tipoRet == T_vazio)
+			{
+				this.erro("não pode retornar vazio nesta função, arrume esta expressão.");
+			}
+		}
+		
+		if(func.parameters)
+		{
+			for(var i=0;i<func.parameters.length;i++)
+			{
+				// precisa empurrar os valores das variáveis de referência na stack
+				if(func.parameters[i].byRef && func.parameters[i].id == STATEMENT_declVar)
+				{
+					var v = this.getVar(func.parameters[i].name);
+					
+					bc.push(B_LOAD);
+					bc.push(v.index);
+					
+					bc.push(B_RETVALUE);
+				}
+			}
+		}
+		
+		if(expr)
+		{
+			bc.push(B_RETVALUE);
+			bc.push(B_RET);
+		}
+		else
+		{
+			bc.push(B_RET);
 		}
 	}
 	
@@ -496,19 +559,7 @@ class Compiler {
 					}
 				break;
 				case STATEMENT_ret:
-					if(stat.expr)
-					{
-						var tipoRet = this.compileExpr(stat.expr,bc,-1);
-						if(tipoRet == T_vazio)
-						{
-							this.erro("não pode retornar vazio nesta função, arrume esta expressão.");
-						}
-						bc.push(B_RETVALUE);
-					}
-					else
-					{
-						bc.push(B_RET);
-					}
+					this.compileFunctionRet(func,stat.expr);
 				break;
 			}
 		}
@@ -818,7 +869,7 @@ class Compiler {
 	
 	compileMemberAttrib(member,v,bc)
 	{
-		if(v.isArray && member.expr) // se está indexando
+		if(v.isArray && member && member.expr) // se está indexando
 		{
 			for(var k = 0;k<member.expr.length;k++)
 			{
@@ -1098,15 +1149,48 @@ class Compiler {
 					{
 						var methName= expr.name;
 						var funcArgs = [];
+											
 						for(var i =0;i<args.length;i++)
 						{
 							funcArgs.push(this.compileExpr(args[i],bc,-1));
+							/*if(func.parameters[i].byRef)
+							{
+								var refFake_v = this.createVar(methName+"$"+i+"$"+bc.length,func.parameters[i].type,false,true,1);
+								refVars[i] = {fakeV:refFake_v,realV:args[i]};
+								// criando array de 1 dimensão
+								bc.push(B_NEWARRAY);
+								bc.push(refFake_v.index);
+								bc.push(1); // tamanho
+								bc.push(getDefaultValue(refFake_v.arrayType));
+								
+								// guardando valor da stack no index 0 do array
+								bc.push(0);
+								bc.push(B_ASTORE);
+								bc.push(refFake_v.index);
+								bc.push(1);
+							}*/
 						}
 						bc.push(B_INVOKE);
+						
 						var funcIndex = this.getFuncIndex(methName,funcArgs);
+						var func = this.functions[funcIndex];
+						
 						bc.push(funcIndex);
 						bc.push(args.length);
-						return this.functions[funcIndex].type;
+						
+						// a stack estará com as variáveis por referência, caso houver
+						for(var i =0;i<args.length;i++)
+						{
+							if(func.parameters[i].byRef && func.parameters[i].id != STATEMENT_declArr)
+							{							
+								// guardando valor da stack na variável
+								var refV = this.getVar(args[i].name);
+								this.compileMemberAttrib(args[i],refV,bc);
+							}
+						}
+						
+						
+						return func.type;
 					}
 				}
 				case T_word: 

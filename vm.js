@@ -546,20 +546,20 @@ function VMrun()
 				if(VM_frame.length > 0)
 				{
 					var vI = VM_frame.length -1;
-					VM_funcIndex = VM_frame[vI].funcIndex;
-					VM_code = VM_functions[VM_funcIndex].bytecode;
-					VM_i = VM_frame[vI].i;
-					VM_stack = VM_frame[vI].stack;
-					VM_si = VM_frame[vI].si;
-					VM_vars = VM_frame[vI].vars;
+					//VM_funcIndex = VM_frame[vI].funcIndex;
+					//VM_code = VM_functions[VM_funcIndex].bytecode;
+					//VM_i = VM_frame[vI].i;
+					//VM_stack = VM_frame[vI].stack;
+					//VM_si = VM_frame[vI].si;
+					//VM_vars = VM_frame[vI].vars;
 					
-					VM_frame.pop();
-					//push 
-					VM_stack[VM_si++] = v;
+					//VM_frame.pop();
+					//push on the parent stack
+					VM_frame[vI].stack[VM_frame[vI].si++] = v;
 				}
 				else
 				{
-					console.log("retornou:"+v);
+					console.log("Não pode retornar valor:"+v);
 					return STATE_ENDED;
 				}
 			break;
@@ -711,7 +711,7 @@ function VMtoString()
 {
 	var str = "";
 	
-	for(var i =8;i<VM_functions.length;i++)
+	for(var i =9;i<VM_functions.length;i++)
 	{
 		var f = VM_functions[i];
 		str+= i+": "+f.name+"\n";

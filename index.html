@@ -609,15 +609,25 @@ Portugol web no celular
 				myPortugolCompleter.setCompiler(compiler);
 				
 				VMsetup(compiler.functions,libraries,compiler.globalCount,string_cod,div_saida);
-				document.getElementById("hidden").innerHTML = VMtoString();
+				
+				try{
+					document.getElementById("hidden").innerHTML = VMtoString();
+				}
+				catch(e){
+					var myStackTrace = e.stack || e.stacktrace || "";
+					console.log(myStackTrace);
+				}
 				//lastvmState = lastvm.run();
 				lastvmTime = performance.now();
 				
 			}
-			catch(err)
+			catch(e)
 			{
-				//console.log(err.stack);
-				enviarErro(string_cod,{index:0},"Erro na compilação:"+err);
+				var myStackTrace = e.stack || e.stacktrace || "";
+
+				console.log(myStackTrace);
+			
+				enviarErro(string_cod,{index:0},"Erro na compilação:"+e);
 				return;
 			}
 			
@@ -944,7 +954,7 @@ Portugol web no celular
 		
 		hotbar_currentY = yValue - hotbar_initialY;
 		var yOff = Math.abs(hotbar_clickY - yValue);
-		console.log("drag:"+hotbar_initialY);
+		//console.log("drag:"+hotbar_initialY);
 		
 		
 	

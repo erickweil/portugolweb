@@ -231,7 +231,7 @@ class Graficos {
 	
 	altura_texto(texto)
 	{
-		return {value:this.ctx.measureText(texto).height};
+		return this.largura_texto(texto.charAt(0));
 	}
 	
 	desenhar_elipse(x,y,largura,altura,preencher)
