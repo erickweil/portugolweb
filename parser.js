@@ -8,6 +8,8 @@ var STATEMENT_facaEnquanto = 6;
 var STATEMENT_para = 7;
 var STATEMENT_pare = 8;
 var STATEMENT_ret = 9;
+var STATEMENT_escolha = 11;
+var STATEMENT_caso = 12;
 
 function pmatch(index,tokens)
 {
@@ -468,12 +470,63 @@ class Parser {
 		}
 		
 		//escolha
-		// "escolha" ( ....
+		// "escolha" ( expression ) { // body }
 		else if(t == T_escolha)
 		{
-			this.erro(tokens[i],"escolha não implementado ainda");
+			var escolha_Expr = [];
+			var statements = [];
+			// i -->
+			// escolha (   expr   )
+			i++;
+			if(tokens[i].id != T_parO)
+			{
+				this.erro(tokens[i],"esqueceu de abrir os parênteses do escolha");
+			}
+			i = this.parseExpressao(i,tokens,escolha_Expr,0);
+
+			if(tokens[i].id != T_parC)
+			{
+				this.erro(tokens[i],"esqueceu de fechar os parênteses do escolha");
+			}
+			//                       i -->
+			// escolha   (   expr   )  { // corpo }
+			i++;
+			
+			i = this.parseStatementOrBlock(i,tokens,statements);
+			
+			tree.push({id:STATEMENT_escolha,index:tIndex,expr:escolha_Expr[0],statements:statements});
 		}
 		
+		// corpo do escolha
+		// "caso" expression :
+		// "caso" "contrario" :
+		else if(t == T_caso)
+		{
+			var caso_Expr = [];
+			var caso_contrario = false;
+			// i -->
+			// caso expr :
+			i++;
+			
+			if(tokens[i].id == T_contrario)
+			{
+				caso_Expr = false;
+				caso_contrario = true;
+			}
+			else
+			{
+				i = this.parseExpressao(i,tokens,caso_Expr,0);
+			}
+			//          i -->
+			// caso   expr   :
+			i++;
+			if(tokens[i].id != T_colon)
+			{
+				this.erro(tokens[i],"esqueceu dos dois-pontos depois do caso:"+tokens[i].id);
+			}
+			
+			tree.push({id:STATEMENT_caso,contrario:caso_contrario,index:tIndex,expr:caso_Expr[0]});
+		}
 		//chamadas de funções
 		//chamadas de funções de bibliotecas
 		//atribuições

@@ -29,6 +29,34 @@ class LoopScope {
 	}
 }
 
+class SwitchScope {
+	constructor(parentScope,endJumps,casoJumps) {
+		this.parentScope = parentScope;
+		this.endJumps = endJumps;
+		this.casoJumps = casoJumps;
+		this.casoJumpsIndex = 0;
+		this.contrario = false;
+	}
+	
+	addJump(index)
+	{
+		this.endJumps.push(index);
+	}
+	
+	getNextCasoJump()
+	{
+		var ret = this.casoJumps[this.casoJumpsIndex];
+		this.casoJumpsIndex++;
+		return ret;
+	}
+	
+	getContrarioJump()
+	{
+		this.contrario = true;
+		return this.casoJumps[this.casoJumps.length-1];
+	}
+}
+
 class Scope {
 	constructor(parentScope,globalScope,funcScopeRef) {
 		this.parentScope = parentScope;
@@ -353,6 +381,24 @@ class Compiler {
 		}
 	}
 	
+	shallowExtract(statements,statID)
+	{
+		var statsExtracred = [];
+		for(var i =0;i<statements.length;i++)
+		{
+			if(statements[i].id == STATEMENT_block)
+			{
+				statsExtracred = statsExtracred.concat(this.shallowExtract(statements[i].statements,statID));
+			}
+			else if(statements[i].id == statID)
+			{
+				statsExtracred.push(statements[i]);
+			}
+		}
+		
+		return statsExtracred;
+	}
+	
 	compileStatements(statements,func)
 	{
 		//,this.functions[FuncOff+i].bytecode,this.functions[FuncOff+i].variableMap);
@@ -560,6 +606,91 @@ class Compiler {
 				break;
 				case STATEMENT_ret:
 					this.compileFunctionRet(func,stat.expr);
+				break;
+				case STATEMENT_escolha:
+					//console.log("escolha não funciona ainda");	
+
+					var tipoRet = this.compileExpr(stat.expr,bc,-1);
+					if(tipoRet == T_vazio)
+					{
+						this.erro("A expressão do escolha deveria retornar um valor...");
+					}
+					
+					var falseJumps = [];
+					
+					var casosExpressions = this.shallowExtract(stat.statements,STATEMENT_caso);
+					
+					if(casosExpressions.length == 0)
+					{
+						this.erro("escolha-caso sem casos? não faz sentido algum.");
+					}
+					
+					var casoJumps = [];
+					for(var k=0;k<casosExpressions.length;k++)
+					{
+						if(casosExpressions[k].contrario)
+						{
+							// nada para fazer aqui...
+						}
+						else
+						{
+							if(k < casosExpressions.length-1)
+							bc.push(B_DUP);// duplica o valor da expressão na stack
+							
+							// deveria checar o tipo?
+							var casoTipoRet = this.compileExpr(casosExpressions[k].expr,bc,tipoRet);
+							if(casoTipoRet != tipoRet)
+							{
+								this.erro("O caso deveria ter o mesmo tipo que o valor do escolha");
+							}
+							
+							bc.push(B_IFCMPEQ); // compara se é igual
+							bc.push(0);
+							casoJumps.push(bc.length-1);
+						}
+					}
+					
+					// caso contrário
+					bc.push(B_GOTO);
+					bc.push(0);
+					casoJumps.push(bc.length-1);
+					
+								
+					this.loopScope = new SwitchScope(this.loopScope,falseJumps,casoJumps);
+					
+						this.compileStatements(stat.statements,func);
+					
+					if(!this.loopScope.contrario)
+					{ // se não tem o caso contrário
+						var jumpIndex = this.loopScope.getContrarioJump();
+						bc[jumpIndex] = bc.length;
+					}
+					
+					this.loopScope = this.loopScope.parentScope;
+										
+					this.replaceAllBy(bc,falseJumps,bc.length); // determina onde ir para sair do escolha, nos pare's
+				break;
+				case STATEMENT_caso:
+					//console.log("caso não funciona ainda");
+					
+					if(this.loopScope && this.loopScope instanceof SwitchScope)
+					{
+						var jumpIndex = false;
+						if(stat.contrario)
+						{
+							jumpIndex = this.loopScope.getContrarioJump();
+						}
+						else
+						{
+							jumpIndex = this.loopScope.getNextCasoJump();
+						}
+						//console.log("replaced "+jumpIndex+" --> "+bc.length);
+						bc[jumpIndex] = bc.length;
+					}
+					else
+					{
+						this.erro("o 'caso' não faz sentido aqui, deve ser colocado em uma estrutura escolha.");
+					}
 				break;
 			}
 		}
@@ -1179,7 +1310,8 @@ class Compiler {
 						bc.push(args.length);
 						
 						// a stack estará com as variáveis por referência, caso houver
-						for(var i =0;i<args.length;i++)
+						// em ordem reversa!
+						for(var i =args.length-1;i>=0;i--)
 						{
 							if(func.parameters[i].byRef && func.parameters[i].id != STATEMENT_declArr)
 							{							

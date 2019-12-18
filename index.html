@@ -890,8 +890,12 @@ Portugol web no celular
 		hotbar_clickY = yValue;
 		hotbar_initialY = yValue - hotbar_yOffset;
 
-		//console.log("click:"+hotbar_clickY); 
-		if(e.target === saida)
+		//console.log("click:"+hotbar_clickY);
+		if(e.target === errosSaida)
+		{
+			// nada. deixa quieto
+		}
+		else if(e.target === saida)
 		{
 			hotbar_textarea = true;
 		}
@@ -1018,9 +1022,9 @@ Portugol web no celular
 		|| document.documentElement.clientHeight
 		|| document.body.clientHeight;
 		
-		if(!isMobile)
-		document.getElementById("myEditor").style.height = (h-hotbar_yOffset+15)+"px";
-		else
+		//if(!isMobile)
+		//document.getElementById("myEditor").style.height = (h-hotbar_yOffset+15)+"px";
+		//else
 		document.getElementById("myEditor").style.height = (h-hotbar_yOffset)+"px";
 		editor.resize();
 		

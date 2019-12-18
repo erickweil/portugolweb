@@ -49,10 +49,6 @@ body {
 Mobile Only things
 */
 
-body.mobile #hotbar{
-	padding-top:0px;	
-}
-
 body.mobile #myEditor{
 	margin-right: 0px;
 }
@@ -157,7 +153,7 @@ body.mobile #myEditor{
 	bottom:-80px;
 	left:0px;
 	border-top: 1px solid #1E2324;
-	padding-top:5px;
+	padding-top:0px;
 	cursor:grab;
 	touch-action: none;
 }

@@ -123,7 +123,7 @@ var T_parO = 21;
 var T_parC = 22;
 var T_squareO = 23;
 var T_squareC = 24;
-var T_colon = 53;
+var T_colon = 25;//53;
 
 
 

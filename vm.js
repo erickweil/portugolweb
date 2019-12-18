@@ -247,7 +247,7 @@ var VM_saida = false;
 var VM_saidaDiv = false;
 var VM_textInput = false;
 var VM_codeCount = 0;
-var VM_codeMax = 100000;
+var VM_codeMax = 500000; // se for um valor baixo dá flickering no canvas, valor alto trava tudo. (Resolvido, alterado esse máximo só quando usar a biblioteca Gráficos)
 var VM_escrevaCount = 0;
 var VM_escrevaMax = 1000;
 

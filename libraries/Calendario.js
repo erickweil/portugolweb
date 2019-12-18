@@ -114,22 +114,29 @@ class Calendario {
 	
 	milisegundo_atual()
 	{
-		return {value:new Date().getMilliseconds()+1}; 
+		return {value:new Date().getMilliseconds()}; 
 	}
 	
 	segundo_atual()
 	{
-		return {value:new Date().getSeconds()+1}; 
+		return {value:new Date().getSeconds()}; 
 	}
 	
 	minuto_atual()
 	{
-		return {value:new Date().getMinutes()+1}; 
+		return {value:new Date().getMinutes()}; 
 	}
 	
 	hora_atual(formato)
 	{
-		return {value:new Date().getHours()+1};		
+		if(formato)
+		{
+			return {value:new Date().getHours()};		
+		}
+		else
+		{
+			return {value:(new Date().getHours())%12};	
+		}
 	}
 	
 	dia_semana_atual()

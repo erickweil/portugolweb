@@ -19,6 +19,13 @@ class Graficos {
 		this.CANAL_B = 2;
 		
 		this.GRADIENTE_DIREITA = 0;
+		this.GRADIENTE_ESQUERDA = 1;
+		this.GRADIENTE_ACIMA = 2;
+		this.GRADIENTE_ABAIXO = 3;
+		this.GRADIENTE_INFERIOR_DIREITO = 4;
+		this.GRADIENTE_INFERIOR_ESQUERDO = 5;
+		this.GRADIENTE_SUPERIOR_DIREITO = 6;
+		this.GRADIENTE_SUPERIOR_ESQUERDO = 7;
 		
 		this.members = {
 		"COR_AMARELO":{id:T_word,type:T_inteiro},
@@ -34,6 +41,13 @@ class Graficos {
 		
 		
 		"GRADIENTE_DIREITA":{id:T_word,type:T_inteiro},
+		"GRADIENTE_ESQUERDA":{id:T_word,type:T_inteiro},
+		"GRADIENTE_ACIMA":{id:T_word,type:T_inteiro},
+		"GRADIENTE_ABAIXO":{id:T_word,type:T_inteiro},
+		"GRADIENTE_INFERIOR_DIREITO":{id:T_word,type:T_inteiro},
+		"GRADIENTE_INFERIOR_ESQUERDO":{id:T_word,type:T_inteiro},
+		"GRADIENTE_SUPERIOR_DIREITO":{id:T_word,type:T_inteiro},
+		"GRADIENTE_SUPERIOR_ESQUERDO":{id:T_word,type:T_inteiro},
 		
 		"iniciar_modo_grafico":{id:T_parO,parameters:[T_logico],type:T_vazio},
 		"encerrar_modo_grafico":{id:T_parO,parameters:[],type:T_vazio},
@@ -77,26 +91,29 @@ class Graficos {
 		"redimensionar_imagem":{id:T_parO,parameters:[T_inteiro,T_inteiro,T_inteiro,T_logico],type:T_inteiro},
 		};
 		
+		
+		
 		this.resetar();
 	}
 	
 	updateText()
 	{
-		this.ctx.font = (this.textoItalico ? "italic" : "")+" "+(this.textoNegrito ? "bold" : "")+" "+this.textoTamanho+"pt "+this.textoFonte;
+		this.ctx.font = (this.textoItalico ? "italic" : "")+" "+(this.textoNegrito ? "bold" : "")+" "+(this.textoTamanho)+"px "+this.textoFonte;
 	}
 	
 	resetar()
 	{
+		VM_codeMax = 10000000; // para não dar flickering na tela
 		this.telaCheia = false;
 		this.title.value = "Janela sem Título";
 		this.lastWidth = 100;
 		this.lastHeight = 100;
 		
-		this.textoTamanho = 16;
+		this.textoTamanho = 15;
 		this.textoItalico = false;
 		this.textoNegrito = false;
 		this.textoSublinhado = false;
-		this.textoFonte = "Arial";
+		this.textoFonte = "Calibri";
 		
 		this.imgs = [];
 	}
@@ -154,7 +171,9 @@ class Graficos {
 	renderizar()
 	{
 		// lol. deveria fazer algo aqui? talvez implementar o requestAnimationFrame?
+		// Double Buffering com dois canvas deixaria tudo mais lento ainda...
 		// respira para não travar tudo
+		// a forma que o javascript funciona é que ele só vai atualizar a tela quando der uma pausinha
 		return {state:STATE_BREATHING};
 	}
 	
@@ -214,7 +233,8 @@ class Graficos {
 	
 	desenhar_texto(x,y,texto)
 	{
-		this.ctx.fillText(texto, x, y);
+		var yOff = this.altura_texto(texto).value*0.8;
+		this.ctx.fillText(texto, x, y+yOff);
 	}
 	
 	definir_tamanho_texto(tamanho)
@@ -231,7 +251,8 @@ class Graficos {
 	
 	altura_texto(texto)
 	{
-		return this.largura_texto(texto.charAt(0));
+		//return {value:this.largura_texto("W").value};
+		return {value:this.textoTamanho};
 	}
 	
 	desenhar_elipse(x,y,largura,altura,preencher)
@@ -477,8 +498,8 @@ class Graficos {
 	{
 		var hexcor1 =  "#"+Number(cor1).toString(16).padStart(6, '0');
 		var hexcor2 =  "#"+Number(cor2).toString(16).padStart(6, '0');
-		if(tipo == this.GRADIENTE_DIREITA)
-		{
+		//if(tipo == this.GRADIENTE_DIREITA)
+		//{
 			// Create gradient
 			var grd = this.ctx.createLinearGradient(0, 0, this.canvas.width, 0);
 			grd.addColorStop(0, hexcor1);
@@ -486,7 +507,7 @@ class Graficos {
 
 			// Fill with gradient
 			this.ctx.fillStyle = grd;
-		}
+		//}
 	}
 	
 	definir_opacidade(opacidade)
