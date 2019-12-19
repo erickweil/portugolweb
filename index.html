@@ -248,6 +248,7 @@ Portugol web no celular
     var hotbar_yOffset = hotbar_collapsedyOffset;
 	var hotbar_active = false;
 	var hotbar_textarea = false;
+	var hotbar_isDragging = false;
 	//var screenDimension = getScreenDimensions();
 	//isMobile = true;
 	
@@ -903,6 +904,7 @@ Portugol web no celular
 			hotbar_active = true;
 		}
 		
+		
     }
 
     function hotbar_dragEnd(e) {
@@ -938,11 +940,15 @@ Portugol web no celular
 		{
 			setHotbarPosition(hotbar_minyOffset,true);
 		}
-		
+		else
+		{
+			resizeEditorToFitHotbar();
+		}
 
 
 		hotbar_active = false;
 		hotbar_textarea = false;
+		hotbar_isDragging = false;
     }
 
     function hotbar_drag(e) {
@@ -956,6 +962,7 @@ Portugol web no celular
 			hotbar.style.cursor = "grabbing";
 		}
 		
+		var hotbar_lastY = hotbar_currentY;
 		hotbar_currentY = yValue - hotbar_initialY;
 		var yOff = Math.abs(hotbar_clickY - yValue);
 		//console.log("drag:"+hotbar_initialY);
@@ -992,10 +999,15 @@ Portugol web no celular
 		
 
 		//setTranslate(hotbar_currentY, hotbar);
-		setHotbarPosition(hotbar_currentY,false);
+		setHotbarPosition(hotbar_currentY,false,true);
+		
+		if(!hotbar_isDragging)
+		resizeEditorMax();
+		
+		hotbar_isDragging = true;
     }
 
-    function setHotbarPosition(yPos,animate) {
+    function setHotbarPosition(yPos,animate,fastUpdates) {
 		if(animate)
 		{
 			hotbar.classList.add('animate');
@@ -1012,10 +1024,12 @@ Portugol web no celular
 		hotbar_yOffset = Math.min(hotbar_yOffset,screenDimension.height-5);
 		//hotbar_yOffset = Math.min(hotbar_maxyOffset,yPos);
 		hotbar.style.bottom = (hotbar_yOffset - hotbar_initialHeight)+"px";
-		resizeEditorToFitHotbar();
+		
+		if(!fastUpdates)
+		resizeEditorToFitHotbar(false);
     }
 
-	function resizeEditorToFitHotbar()
+	function resizeEditorToFitHotbar(e)
 	{
 		if(!editor) return;
 		var h = window.innerHeight
@@ -1032,6 +1046,17 @@ Portugol web no celular
 		saida.style.height = (hotbar_yOffset-50)+"px";
 		else
 		saida.style.height = (hotbar_yOffset-130)+"px";
+	}
+	
+	function resizeEditorMax()
+	{
+		var screenDimension = getScreenDimensions();
+		
+		document.getElementById("myEditor").style.height = (screenDimension.height)+"px";
+		editor.resize();
+		
+		
+		saida.style.height = (screenDimension.height)+"px";
 	}
 	
 	//https://stackoverflow.com/questions/821011/prevent-a-webpage-from-navigating-away-using-javascript
