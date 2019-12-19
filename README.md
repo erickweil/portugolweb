@@ -53,15 +53,38 @@ segue uma lista de funcionalidades que são suportadas
 - Mensagens de erros que definem melhor o que aconteceu e como corrigir
 - Adicionar suporte às bibliotecas Sons, Arquivos, Internet, ServiçosWeb.
 	- só que essas bibliotecas só vão funcionar no celular, pois javascript puro não permite acessar arquivos nem a internet
-
+- Sistema de Inspeção de Variáveis em tempo de execução
+- Permitir executar o código passo-a-passo e inserir pontos de depuração
+- Hierarquia do código na lateral
+- Mais exemplos de código
+- Sistema de Ajuda
+- Permitir compartilhar o código usando um link compartilhável
+- Adaptar para que possa incluir o editor em um iframe em sites externos ( Moodle )
+- Realizar compilação para javascript e não utilizar máquia virtual, para deixar mais rápido
+- Exportar código para Java ou C++
 
 Aceito ajuda! 
   inicie uma discussão com uma nova Issue ou mande email para erickweil2@gmail.com caso queira conversar.
-  
+
+### Como funciona
+
+Quando você clica em "Executar", todo o código que estiver no editor será compilado e executado, passando por etapas que lembram um pouco como Java funciona
+
+1. Tokenizer: 
+	Esta é a análise léxica, onde o código é dividido em 'tokens', isto é, partes elementares como palavras, números, símbolos, etc... 
+2. Parser:
+	Esta é a análise sintática, Os tokens são estruturados em uma árvore sintática. esta árvore contém todos os elementos do código organizados de forma que o compilador possa atravessar corretamente e gerar o código
+3. Compiler:
+	A árvore sintática é atravessada pelo compilador, e são gerados instruções chamadas de 'bytecode', semelhantes porém não iguais ao bytecode do Java.
+4. Virtual Machine:
+	Uma vez que o bytecode está gerado, a máquina virtual é iniciada e executa cada instrução uma após a outra.
+	
+Devido ao código ser executado em uma máquina virtual, o mesmo código executado aqui e no programa Portugol Studio, pode ser de 10 a 100 vezes mais lento ( se você usar para aprender a programar isso não será um problema )
+
   
 ## Bibliotecas e Frameworks
 
-* [Ace editor](https://github.com/ajaxorg/ace) - O editor do código, onde que foi criado um tema para as cores do Portugol
+* [Ace editor](https://github.com/ajaxorg/ace) - O editor do código.
 
 é isso! todo o código é escrito em html e javascript, não é utilizado JQuery nem nenhuma outra biblioteca.
 
@@ -80,4 +103,4 @@ GPL-3.0 - Veja o arquivo da licença: [Licença](LICENSE)
 
 ## Agradecimentos
 
-* Estes projeto foi inspirado pelo Projeto [Portugol Studio](https://github.com/UNIVALI-LITE/Portugol-Studio), e tem como objetivo trazer a programação nesta linguagem Portugol até os dispositivos móveis.
+* Este projeto foi inspirado pelo Projeto [Portugol Studio](https://github.com/UNIVALI-LITE/Portugol-Studio), e tem como objetivo trazer a programação nesta linguagem Portugol até os dispositivos móveis.
