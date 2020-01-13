@@ -349,7 +349,12 @@ class Compiler {
 			var tipoRet = this.compileExpr(expr,bc,-1);
 			if(tipoRet == T_vazio)
 			{
-				this.erro("não pode retornar vazio nesta função, arrume esta expressão.");
+				this.erro("não usar esta expressão para retornar, pois ela não produz valor nenhum, arrume esta expressão.");
+			}
+			
+			if(tipoRet != func.type)
+			{
+				this.erro("não pode retornar "+getTypeWord(tipoRet)+" nesta função, ela é do tipo "+getTypeWord(func.type));
 			}
 		}
 		
@@ -1230,10 +1235,15 @@ class Compiler {
 				case T_pre_autoinc:
 					var v = this.getVar(expr[0].name);
 					var tExpr = this.compileExpr(expr[0],bc,-1);
+					
+					if(expr.op == T_autoinc && typeExpected != T_vazio)
+						bc.push(B_DUP); // o valor ANTERIOR fica na stack.
+					
 					bc.push(B_PUSH);
 					bc.push(1);
 					bc.push(B_ADD);
-					if(typeExpected != T_vazio)
+					
+					if(expr.op == T_pre_autoinc && typeExpected != T_vazio)
 						bc.push(B_DUP); // o valor fica na stack. mds isso vai da o maior problema
 						
 					this.compileMemberAttrib(expr[0],v,bc);
@@ -1245,10 +1255,15 @@ class Compiler {
 				case T_pre_autodec:
 					var v = this.getVar(expr[0].name);
 					var tExpr = this.compileExpr(expr[0],bc,-1);
+					
+					if(expr.op == T_autodec && typeExpected != T_vazio)
+						bc.push(B_DUP);  // o valor ANTERIOR fica na stack.
+					
 					bc.push(B_PUSH);
 					bc.push(1);
 					bc.push(B_SUB);
-					if(typeExpected != T_vazio)
+					
+					if(expr.op == T_pre_autodec && typeExpected != T_vazio)
 						bc.push(B_DUP); // o valor fica na stack. mds isso vai da o maior problema
 					
 					this.compileMemberAttrib(expr[0],v,bc);
