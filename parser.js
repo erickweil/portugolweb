@@ -1,5 +1,6 @@
 var STATEMENT_declVar = 1;
 var STATEMENT_declArr = 10;
+var STATEMENT_declArrValues = 13;
 var STATEMENT_expr = 2;
 var STATEMENT_block = 3;
 var STATEMENT_se = 4;
@@ -663,16 +664,32 @@ class Parser {
 				}
 				while(tokens[i+1].id == T_squareO);
 				
+				var declExpr = false;
 				
-				var ArrayValuesExpr = [];
-				if(tokens[i+1].id == T_attrib)
-				{
 					//                         i ------->
 					//  type word [ expression ]    =   {  expression, ... }
-					i = this.parseDeclArray(i+2,tokens,ArrayValuesExpr);
+				if(tokens[i+1].id == T_attrib)
+				{
+					declExpr = {index:tIndex};
+					i++;
+					if(tokens[i+1].id == T_bracesO)
+					{
+						var ArrayValuesExpr = [];
+						i = this.parseDeclArray(i+1,tokens,ArrayValuesExpr);
+						declExpr.id = STATEMENT_declArrValues;
+						declExpr.expr = ArrayValuesExpr;
+					}
+					else
+					{
+						var exprTree = [];
+						i = this.parseExpressao(i+1,tokens,exprTree,0); // NAO ESQUECER!
+						
+						declExpr.id = STATEMENT_expr;
+						declExpr.expr = exprTree[0];
+					}
 				}
 				
-				tree.push({id:STATEMENT_declArr,index:tIndex,type:varType,isConst:isConst,name:varName,size_expr:arrayDimExpr,values:ArrayValuesExpr});
+				tree.push({id:STATEMENT_declArr,index:tIndex,type:varType,isConst:isConst,name:varName,size_expr:arrayDimExpr,expr:declExpr});
 			}
 			else if(tokens[i+1].id == T_word && tokens[i+2].id == T_attrib)
 			{

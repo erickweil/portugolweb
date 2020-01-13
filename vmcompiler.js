@@ -438,7 +438,7 @@ class Compiler {
 						bc.push(declared);
 						bc.push(getDefaultValue(v.arrayType));
 					}
-					else if(stat.values.length > 0 && declared == 0)
+					else if(stat.expr && stat.expr.id == STATEMENT_declArrValues && declared == 0)
 					{
 						var valuesLeng = stat.values;
 						for(var k =0;k<arrayDim;k++)
@@ -454,9 +454,25 @@ class Compiler {
 						bc.push(getDefaultValue(v.arrayType));
 					}
 					
-					
-					if(stat.values.length > 0)
-					this.compileDeclArray(stat.values,bc,v,arrayDim,[]);
+					if(stat.expr)
+					{
+						if(stat.expr.id == STATEMENT_declArrValues)
+						{
+							this.compileDeclArray(stat.expr.expr,bc,v,arrayDim,[]);
+						}
+						else if(stat.expr.id == STATEMENT_expr)
+						{
+							var tExpr = this.compileExpr(stat.expr.expr,bc,T_squareO);
+														
+							if(!this.checarCompatibilidadeTipo(T_squareO,tExpr,T_attrib))
+							{
+								this.erro("não pode colocar "+getTypeWord(tExpr)+" em uma variável do tipo "+getTypeWord(v.type));
+							}
+							
+							bc.push(v.global ? B_STOREGLOBAL : B_STORE);
+							bc.push(v.index);
+						}
+					}
 				break;
 				case STATEMENT_declVar:
 					var v = this.createVar(stat.name,stat.type,stat.isConst,false);
