@@ -52,6 +52,7 @@ var T_space = 2;
 
 // ++ += +
 var T_autoinc = 51;
+var T_pre_autoinc = 57;
 var T_attrib_plus = 32;
 var T_unary_plus = 54;
 var T_plus = 3;
@@ -59,6 +60,7 @@ var T_plus = 3;
 // --> -- -= -
 var T_arrow = 56;
 var T_autodec = 52;
+var T_pre_autodec = 58;
 var T_attrib_minus = 33;
 var T_unary_minus = 55;
 var T_minus = 4;
@@ -205,6 +207,8 @@ function getOpPrecedence(code) //Larger number means higher precedence.
 		case T_autodec:
 			return 14;
 		
+		case T_pre_autoinc: 
+		case T_pre_autodec:
 		case T_unary_plus:
 		case T_unary_minus:
 		case T_not:
@@ -268,6 +272,10 @@ function canBePreUnary(code)
 {
 	switch(code)
 	{
+		case T_autoinc:
+		case T_autodec:
+		case T_pre_autoinc:
+		case T_pre_autodec:
 		case T_unary_plus:
 		case T_unary_minus:
 		case T_plus:

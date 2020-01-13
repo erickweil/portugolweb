@@ -478,6 +478,8 @@ class Compiler {
 					if(!isAttribOp(stat.expr.op) 
 					&& stat.expr.op != T_autoinc
 					&& stat.expr.op != T_autodec
+					&& stat.expr.op != T_pre_autoinc
+					&& stat.expr.op != T_pre_autodec
 					&& stat.expr.op != T_parO
 					&& stat.expr.op != T_dot)
 					{
@@ -765,6 +767,8 @@ class Compiler {
 			case T_unary_plus:
 			case T_autoinc:
 			case T_autodec:
+			case T_pre_autoinc:
+			case T_pre_autodec:
 				return (tA == T_inteiro || tA == T_real);
 			case T_and:
 			case T_or:
@@ -1021,8 +1025,9 @@ class Compiler {
 		}
 		else
 		{
-			if(v.isArray)
-				this.erro("você deve indicar a posição do vetor que deseja acessar, não pode usar um vetor assim");
+			//if(v.isArray)
+			//	this.erro("você deve indicar a posição do vetor que deseja acessar, não pode usar um vetor assim");
+			// bom agora pode usar o vetor assim...
 			bc.push(v.global ? B_STOREGLOBAL : B_STORE);
 			bc.push(v.index);
 		}
@@ -1206,6 +1211,7 @@ class Compiler {
 				case T_unary_plus:return this.compileExpr(expr[0],bc,-1);
 				case T_unary_minus:var tExpr = this.compileExpr(expr[0],bc,-1);bc.push(B_NEG);return tExpr;
 				case T_autoinc:
+				case T_pre_autoinc:
 					var v = this.getVar(expr[0].name);
 					var tExpr = this.compileExpr(expr[0],bc,-1);
 					bc.push(B_PUSH);
@@ -1220,6 +1226,7 @@ class Compiler {
 						return tExpr;
 					else return T_vazio; // não deu DUP
 				case T_autodec:
+				case T_pre_autodec:
 					var v = this.getVar(expr[0].name);
 					var tExpr = this.compileExpr(expr[0],bc,-1);
 					bc.push(B_PUSH);

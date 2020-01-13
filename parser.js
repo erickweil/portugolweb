@@ -82,12 +82,14 @@ class Parser {
 			else if(t == T_funcao)
 			{
 				var funcType = T_vazio;
+				var funcArrType = false;
+				var funcArrDim = false;
 				
 				var funcPars = [];
 				var funcStats = [];
 				i++;// n entendeu?
 				//          i
-				// funcao <tipo> nome ( <pars> ) { <bloco> }
+				// funcao <tipo>[] nome ( <pars> ) { <bloco> }
 				
 				if(isTypeWord(tokens[i].id))
 				{
@@ -95,6 +97,27 @@ class Parser {
 					//          i -->
 					// funcao <tipo> nome ( <pars> ) { <bloco> }
 					i++;
+					if(tokens[i].id == T_squareO)
+					{
+						funcArrType = funcType;
+						funcType = T_squareO;
+						funcArrDim = 0;
+						do
+						{
+							//            i --->
+							//  type word [    ] [? ]?
+							i++;
+														
+							if(tokens[i].id != T_squareC) this.erro(tokens[i],"esqueceu de fechar os colchetes na declaração de vetor");
+							
+							//                 i->
+							//  type word [    ] [? ]?
+							i++;
+							
+							funcArrDim++;
+						}
+						while(tokens[i].id == T_squareO);
+					}
 				}
 				
 				this.processingFuncType = funcType; // para decidir sobre os retorne
@@ -112,7 +135,7 @@ class Parser {
 				i = this.parseStatementOrBlock(i,tokens,funcStats);
 				
 				
-				programaTree.funcoes.push({name:funcName,type:funcType,parameters:funcPars,statements:funcStats});
+				programaTree.funcoes.push({name:funcName,type:funcType,arrayType:funcArrType,arrayDim:funcArrDim,parameters:funcPars,statements:funcStats});
 				
 			}
 			else
@@ -158,12 +181,20 @@ class Parser {
 		}
 		
 		// i -->
-		// ( tipo nome [, tipo nome]* )
-		//  tipo &nome
-		//  tipo nome[]
+		// ( const? tipo nome [, const? tipo nome]* )
+		//  const? tipo &nome
+		//  const? tipo nome[]
 		i++;
 		while(tokens[i].id != T_parC) // se tem alguma coisa
 		{
+			var isConst = false;
+			
+			if(tokens[i].id == T_const)
+			{
+				isConst = true;
+				i++;
+			}
+			
 			if(!isTypeWord(tokens[i].id))
 			{
 				this.erro(tokens[i],"uma declaração de parâmetro deve começar com um tipo de variável");
@@ -209,11 +240,11 @@ class Parser {
 				}
 				while(tokens[i].id == T_squareO);
 				
-				tree.push({id:STATEMENT_declArr,index:tIndex,type:varType,isConst:false,byRef:byRef,name:varName,size_expr:arrayDimExpr,values:[]});
+				tree.push({id:STATEMENT_declArr,index:tIndex,type:varType,isConst:isConst,byRef:byRef,name:varName,size_expr:arrayDimExpr,values:[]});
 			}
 			else
 			{
-				tree.push({id:STATEMENT_declVar,index:tIndex,type:varType,isConst:false,byRef:byRef,name:varName,expr:false});
+				tree.push({id:STATEMENT_declVar,index:tIndex,type:varType,isConst:isConst,byRef:byRef,name:varName,expr:false});
 			}
 			if(tokens[i].id != T_comma)
 			{
@@ -694,6 +725,8 @@ class Parser {
 			{
 				if(t == T_plus) t = T_unary_plus;
 				if(t == T_minus) t = T_unary_minus;
+				if(t == T_autoinc) t = T_pre_autoinc;
+				if(t == T_autodec) t = T_pre_autodec;
 				i++;
 				
 				if(tokens.length > i)
