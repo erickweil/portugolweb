@@ -445,7 +445,7 @@ class Compiler {
 					}
 					else if(stat.expr && stat.expr.id == STATEMENT_declArrValues && declared == 0)
 					{
-						var valuesLeng = stat.values;
+						var valuesLeng = stat.expr.expr;
 						for(var k =0;k<arrayDim;k++)
 						{
 							if(k > 0) valuesLeng = valuesLeng[0];
