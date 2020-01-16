@@ -229,6 +229,7 @@ var STATE_PENDINGSTOP = 3;
 var STATE_RUNNING = 4;
 var STATE_DELAY = 5;
 var STATE_DELAY_REPEAT = 6;
+var STATE_STEP = 7;
 var VM_delay = false;
 // frame locals
 var VM_code = false;
@@ -315,6 +316,8 @@ function leia()
 function getTokenIndex(bcIndex,funcIndex)
 {
 	var func = VM_functions[funcIndex];
+	if(!func || !func.bytecodeIndexes) return 0;
+	
 	var indexKeys = Object.keys(func.bytecodeIndexes);
 	if(!indexKeys) return 0;
 	var tokenIndex = 0;
@@ -367,14 +370,14 @@ function VMsetup(functions,libraries,globalCount,textInput,saida_div)
 }
 
 // testando performance
-function VMrun()
+function VMrun(execMax)
 {
 	try {
 	VM_codeCount = 0;
 	while(true)
 	{
 		VM_codeCount++; // para parar o programa e atualizar a saida em loops muito demorados
-		if(VM_codeCount > VM_codeMax) return STATE_BREATHING;
+		if(VM_codeCount > execMax) return STATE_BREATHING;
 		//var code = this.next();
 		
 		

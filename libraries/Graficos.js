@@ -103,7 +103,6 @@ class Graficos {
 	
 	resetar()
 	{
-		VM_codeMax = 10000000; // para não dar flickering na tela
 		this.telaCheia = false;
 		this.title.value = "Janela sem Título";
 		this.lastWidth = 100;
@@ -120,6 +119,7 @@ class Graficos {
 	
 	iniciar_modo_grafico(manter_visivel)
 	{
+		VM_codeMax = 10000000; // para não dar flickering na tela
 		this.manter_visivel = manter_visivel == 0;
 		
 		var screenDim = getScreenDimensions();

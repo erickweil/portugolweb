@@ -120,6 +120,11 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
    background-color: #59262A;\
    z-index: 0; /* back of all other markers */ \
 }\
+.ace_realceportugol-marker {\
+   position: absolute; /* without this positions will be erong */\
+   background-color: #7B6A22;\
+   z-index: 0; /* back of all other markers */ \
+}\
 ";
 
 var dom = require("../lib/dom");

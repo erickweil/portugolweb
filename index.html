@@ -125,7 +125,9 @@ Portugol web no celular
 
 <div id="hotbar" class="portugol-buttons" style="width:100%">
 <div id="myOutput_buttons" class="portugol-buttons" style="overflow-x:auto;white-space:nowrap;width: auto;">
-<input type="button" id="btn-run" value="Executar" onclick="executar(this)"/>
+<input type="button" id="btn-run" value="Executar" onclick="executar(this,false)"/>
+
+<input type="button" style="background-image: url(icons/step.png);" value=" " onclick="executar(document.getElementById('btn-run'),true)"/>
 
 <input tabindex="-1" type="button" style="background-image: url(icons/FontPlus.png);" id="btn-fonteMaior" value=" " onclick="fonteAumentar()" onfocus="preventFocus(event)"/>
 <input tabindex="-1" type="button" style="background-image: url(icons/FontMinus.png);" id="btn-fonteMenor" value=" " onclick="fonteDiminuir()" onfocus="preventFocus(event)"/>
@@ -437,6 +439,25 @@ Portugol web no celular
 		errosMarkers = [];
 	}
 	
+	function realcarLinha(textInput,index)
+	{
+		var linha = numberOfLinesUntil(index,textInput);
+		var prev_line = textInput.substring(textInput.lastIndexOf('\n', index)+1,index).replace(/\t/g,'    ');
+		var next_line = textInput.substring(index,textInput.indexOf('\n', index));
+		var coluna = prev_line.length;
+		var colunaFim = coluna+next_line.length;
+		
+		errosAnnot.push({
+		  row: linha-1,
+		  column: coluna,
+		  text: "", // Or the Json reply from the parser 
+		  type: "information" // also warning and information
+		});
+		editor.getSession().setAnnotations(errosAnnot);
+		
+		errosMarkers.push(editor.getSession().addMarker(new Range(linha-1, 0, linha-1, colunaFim), 'ace_realceportugol-marker', 'screenLine'));
+	}
+	
 	function enviarErro(textInput,token,msg)
 	{
 		var lineNumber = numberOfLinesUntil(token.index,textInput);
@@ -539,6 +560,7 @@ Portugol web no celular
 	//var lastvm = false;
 	var lastvmState = STATE_ENDED;
 	var lastvmTime = 0;
+	var lastvmStep = false;
 	
 	function exemplo(nome)
 	{
@@ -555,9 +577,16 @@ Portugol web no celular
 		);
 		document.getElementById('modalExemplos').style.display = 'none';
 	}
-				
-	function executar(btn)
+	
+	function executar(btn,passoapasso)
 	{
+		if(passoapasso && lastvmState == STATE_STEP)
+		{
+			executarVM();
+			return;
+		}
+	
+		lastvmStep = passoapasso;
 		if(btn.value == "Executar" && lastvmState == STATE_ENDED)
 		{
 			autoSave();
@@ -635,10 +664,10 @@ Portugol web no celular
 			btn.value = "Parar";
 			executarVM();
 		}
-		else if(btn.value == "Parar" && (lastvmState == STATE_RUNNING || lastvmState == STATE_WAITINGINPUT || lastvmState == STATE_BREATHING || lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT))
+		else if(btn.value == "Parar" && (lastvmState == STATE_RUNNING || lastvmState == STATE_WAITINGINPUT || lastvmState == STATE_BREATHING || lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT || lastvmState == STATE_STEP))
 		{
 			btn.value = "Parando...";
-			if(lastvmState == STATE_WAITINGINPUT)
+			if(lastvmState == STATE_WAITINGINPUT || lastvmState == STATE_STEP)
 			{
 				escreva("\n\nPrograma interrompido pelo usuário. Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
 				executarParou();
@@ -675,6 +704,7 @@ Portugol web no celular
 		{
 			libraries["Graficos"].encerrar_modo_grafico();
 		}
+		limparErros();
 	}
 	
 	function executarVM()
@@ -686,7 +716,38 @@ Portugol web no celular
 			return;
 		}
 		lastvmState = STATE_RUNNING;
-		lastvmState = VMrun();
+		
+		if(lastvmStep)
+		{
+
+			i = getTokenIndex(VM_i,VM_funcIndex);
+			ui = i;
+			
+			limparErros();
+			realcarLinha(VM_textInput,i);
+			
+			do
+			{
+				lastvmState = VMrun(1);
+			
+				//console.log(i+","+ui+","+lastvmState);
+				
+				ui = i;
+				i = getTokenIndex(VM_i,VM_funcIndex);
+			}
+			while( (i == 0 || i == ui) && lastvmState == STATE_BREATHING);
+			
+			//console.log(i+","+ui+","+lastvmState);
+			
+			if(lastvmState == STATE_BREATHING)
+			{
+				lastvmState = STATE_STEP;
+			}
+		}
+		else
+		{	
+			lastvmState = VMrun(VM_codeMax);
+		}
 		//VM_saidaDiv.value = VM_saida;
 		if(lastvmState == STATE_ENDED)
 		{
