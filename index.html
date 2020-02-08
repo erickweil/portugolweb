@@ -214,8 +214,21 @@ Portugol web no celular
 
 
 <script>
+	function checkECMA6() {
+		"use strict";
 
+		if (typeof Symbol == "undefined") return false;
+		try {
+			eval("class Foo {}");
+		} catch (e) { return false; }
 
+		return true;
+	}
+
+	if (!checkECMA6()) {
+		document.getElementsByTagName('body')[0].innerHTML = "<h1 style='color:#FFFFFF;'>Ops!</h1> <p style='padding:20px;color:#FFFFFF;'>Esta página depende de funcionalidades JavaScript ES6, porém seu navegador não é capaz de executar. <br/> Se você está usando o Aplicativo, experimente usar um navegador mais recente para abrir este link: <h2 style='padding:20px;'><a href='https://erickweil.github.io/portugolweb'>https://erickweil.github.io/portugolweb</a></h2> </p>";
+		throw new Error("Esta página depende de funcionalidades JavaScript ES6, porém seu navegador não é capaz de executar.");
+	}
 
 	
 
