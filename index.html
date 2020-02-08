@@ -127,7 +127,7 @@ Portugol web no celular
 <div id="myOutput_buttons" class="portugol-buttons" style="overflow-x:auto;white-space:nowrap;width: auto;">
 <input type="button" id="btn-run" value="Executar" onclick="executar(this,false)"/>
 
-<input type="button" style="background-image: url(icons/step.png);" value=" " onclick="executar(document.getElementById('btn-run'),true)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/step.png);" value=" " onclick="executar(document.getElementById('btn-run'),true)" />
 
 <input tabindex="-1" type="button" style="background-image: url(icons/FontPlus.png);" id="btn-fonteMaior" value=" " onclick="fonteAumentar()" onfocus="preventFocus(event)"/>
 <input tabindex="-1" type="button" style="background-image: url(icons/FontMinus.png);" id="btn-fonteMenor" value=" " onclick="fonteDiminuir()" onfocus="preventFocus(event)"/>
@@ -582,6 +582,14 @@ Portugol web no celular
 	{
 		if(passoapasso && lastvmState == STATE_STEP)
 		{
+		
+			// abrir hotbar e animar
+			//if(isMobile)
+			//{
+				if(hotbar_yOffset < hotbar_extendedyOffset)
+				setHotbarPosition(hotbar_extendedyOffset,true);
+			//}
+		
 			executarVM();
 			return;
 		}
