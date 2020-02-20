@@ -117,6 +117,7 @@ Portugol web no celular
 <h2 onclick="exemplo('funcoes');">Funções</h2>
 <h2 onclick="exemplo('bibliotecas');">Bibliotecas</h2>
 <h2 onclick="exemplo('graficos');">Graficos</h2>
+<h2 onclick="exemplo('jogodavida');">Jogo da Vida</h2>
 <h2 onclick="exemplo('aleatorio');">Aleatorio</h2>
 </div>
 </div>
@@ -156,6 +157,7 @@ Portugol web no celular
 <input tabindex="-1" type="button" value="+" onclick='editorType("+")' onfocus="preventFocus(event)"/>
 <input tabindex="-1" type="button" value="-" onclick='editorType("-")' onfocus="preventFocus(event)"/>
 <input tabindex="-1" type="button" value="*" onclick='editorType("*")' onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="/" onclick='editorType("/")' onfocus="preventFocus(event)"/>
 <input tabindex="-1" type="button" value="\" onclick="editorType('\\')" onfocus="preventFocus(event)"/>
 <input tabindex="-1" type="button" value="=" onclick='editorType("=")' onfocus="preventFocus(event)"/>
 <input tabindex="-1" type="button" value='"' onclick="editorType('&quot;')" onfocus="preventFocus(event)"/>
@@ -167,7 +169,6 @@ Portugol web no celular
 <input tabindex="-1" type="button" value="]" onclick="editorType(']')" onfocus="preventFocus(event)"/>
 <input tabindex="-1" type="button" value="%" onclick='editorType("%")' onfocus="preventFocus(event)"/>
 <input tabindex="-1" type="button" value="'" onclick='editorType("&#39;")' onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value="/" onclick='editorType("/")' onfocus="preventFocus(event)"/>
 <input tabindex="-1" type="button" value=":" onclick='editorType(":")' onfocus="preventFocus(event)"/>
 <input tabindex="-1" type="button" value=";" onclick='editorType(";")' onfocus="preventFocus(event)"/>
 <input tabindex="-1" type="button" value=">" onclick='editorType(">")' onfocus="preventFocus(event)"/>
@@ -487,11 +488,11 @@ Portugol web no celular
 			console.log(myStackTrace);
 		}
 		
-		console.log(msg);
-		_enviarErro(lineNumber,colNumber,colNumber+next_line.length,msg);
+		console.log(lineNumber+":"+colNumber+" -> "+msg);
 		errosSaida.innerHTML += htmlEntities(msg)+"\n";
 		errosSaida.innerHTML += htmlEntities(logprev+next_line)+"\n";
 		errosSaida.innerHTML += " ".repeat(logprev.length)+"^\n\n";
+		_enviarErro(lineNumber,colNumber,colNumber+next_line.length,msg);
 	}
 	
 	function _enviarErro(linha,coluna,colunaFim,msg)
@@ -725,7 +726,7 @@ Portugol web no celular
 		{
 			libraries["Graficos"].encerrar_modo_grafico();
 		}
-		limparErros();
+		//limparErros();
 	}
 	
 	function executarVM()

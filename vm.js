@@ -418,8 +418,8 @@ function VMrun(execMax)
 			case B_iDIV: VM_stack[VM_si-2] = Math.trunc(VM_stack[VM_si-2]/VM_stack[VM_si-1]); VM_si--; break;
 			case B_iREM: VM_stack[VM_si-2] = Math.trunc(VM_stack[VM_si-2]%VM_stack[VM_si-1]); VM_si--; break;
 			
-			case B_SHL: VM_stack[VM_si-2] = VM_stack[VM_si-2]>>VM_stack[VM_si-1]; VM_si--; break;
-			case B_SHR: VM_stack[VM_si-2] = VM_stack[VM_si-2]<<VM_stack[VM_si-1]; VM_si--; break;
+			case B_SHL: VM_stack[VM_si-2] = VM_stack[VM_si-2]<<VM_stack[VM_si-1]; VM_si--; break;
+			case B_SHR: VM_stack[VM_si-2] = VM_stack[VM_si-2]>>VM_stack[VM_si-1]; VM_si--; break;
 			case B_XOR: VM_stack[VM_si-2] = VM_stack[VM_si-2]^VM_stack[VM_si-1]; VM_si--; break;
 			case B_AND: VM_stack[VM_si-2] = VM_stack[VM_si-2]&VM_stack[VM_si-1]; VM_si--; break;
 			case B_OR:  VM_stack[VM_si-2] = VM_stack[VM_si-2]|VM_stack[VM_si-1]; VM_si--; break;

@@ -84,7 +84,7 @@ body.mobile #myEditor{
 	position: relative;
 	background: #1E2324;
 	min-width:220px;
-	max-width:500px;
+	max-width:420px;
 	pointer-events:auto;
 	overflow-y:auto;
 	max-height:75%;
