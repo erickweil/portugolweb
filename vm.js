@@ -691,7 +691,14 @@ function VMrun(execMax)
 				VM_stack[VM_si++] = leia();
 			break;
 			case B_READ_CHAR:
-				VM_stack[VM_si++] = leia()[0];
+				var charRead = leia()
+				if(!charRead || 0 === charRead.length)
+				{
+					VMerro("Deveria inserir um caractere, mas inseriu nada");
+					return STATE_ENDED;
+				}
+				
+				VM_stack[VM_si++] = charRead[0];
 			break;
 			case B_READ_BOOL:
 				VM_stack[VM_si++] = leia().trim() == "verdadeiro";
