@@ -73,6 +73,7 @@ class Graficos {
 		"carregar_imagem":{id:T_parO,parameters:[T_cadeia],type:T_inteiro},
 		"liberar_imagem":{id:T_parO,parameters:[T_inteiro],type:T_vazio},
 		"desenhar_imagem":{id:T_parO,parameters:[T_inteiro,T_inteiro,T_inteiro],type:T_vazio},
+		"desenhar_porcao_imagem":{id:T_parO,parameters:[T_inteiro,T_inteiro,T_inteiro,T_inteiro,T_inteiro,T_inteiro,T_inteiro],type:T_vazio},
 		
 		"altura_imagem":{id:T_parO,parameters:[T_inteiro],type:T_inteiro},
 		"largura_imagem":{id:T_parO,parameters:[T_inteiro],type:T_inteiro},
@@ -436,6 +437,26 @@ class Graficos {
 		}
 	}
 	
+	desenhar_porcao_imagem(x,y,xi,yi,w,h, endereco)
+	{
+		if(this.imgs[endereco] && this.imgs[endereco].loaded)
+		{
+			var imgObject = this.imgs[endereco];
+			if(!imgObject.rescale)
+			{
+				this.ctx.drawImage(imgObject.img, xi, yi, w, h, x, y, w, h);
+			}
+			else
+			{
+				this.ctx.drawImage(imgObject.img, x, y,imgObject.rescaleX,imgObject.rescaleY);
+			}
+		}
+		else
+		{
+			throw "Imagem "+endereco+" não existe ou não foi carregada";
+		}
+	}
+
 	altura_imagem(endereco)
 	{
 		if(this.imgs[endereco] && this.imgs[endereco].loaded)
