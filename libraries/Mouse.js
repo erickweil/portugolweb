@@ -94,11 +94,13 @@ class Mouse {
 	}
 	mouseDown(evt)
 	{
+		console.log("mouseDown["+evt.button+"]");
 		this.mouseChanged(evt);
 		this.pressionado[evt.button] = true;
 	}	
 	mouseUp(evt)
 	{
+		console.log("mouseUp["+evt.button+"]");
 		this.mouseChanged(evt);
 		this.pressionado[evt.button] = false;
 	}

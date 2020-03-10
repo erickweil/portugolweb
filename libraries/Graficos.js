@@ -448,7 +448,14 @@ class Graficos {
 			}
 			else
 			{
-				this.ctx.drawImage(imgObject.img, x, y,imgObject.rescaleX,imgObject.rescaleY);
+				// Remapear para operar na imagem não escalonada.
+				var sw = w/imgObject.rescaleX * imgObject.img.width
+				var sh = h/imgObject.rescaleY * imgObject.img.height
+				
+				var sxi = xi/imgObject.rescaleX * imgObject.img.width
+				var syi = yi/imgObject.rescaleY * imgObject.img.height
+				
+				this.ctx.drawImage(imgObject.img, sxi, syi, sw, sh, x, y, w,h);
 			}
 		}
 		else

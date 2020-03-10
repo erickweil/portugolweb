@@ -1,7 +1,8 @@
 programa
 {
 	// Joguinho de puzzle para demonstrar a funcionalidade de desenhar parte da imagem
-	// Feito por Alisson (alissonsteffens.com) / Versão original disponível em https://github.com/UNIVALI-LITE/Portugol-Studio/tree/master/ide/src/main/assets/exemplos/jogos/slide
+	// Feito por Alisson (alissonsteffens.com) 
+	// Versão original disponível em https://github.com/UNIVALI-LITE/Portugol-Studio/tree/master/ide/src/main/assets/exemplos/jogos/slide
 	
 	inclua biblioteca Graficos --> g
 	inclua biblioteca Util --> u
@@ -9,7 +10,7 @@ programa
 	inclua biblioteca Mouse --> m
 
 	//
-	const inteiro TAMANHO_TELA = 600
+	inteiro TAMANHO_TELA = 600
 
 	const inteiro TAMANHO_PRANCHA = 3
 	
@@ -34,10 +35,20 @@ programa
 				ct++
 			}		  
 		}
-		carregar()
+	
 		embaralhar(prancha)
 		g.iniciar_modo_grafico(verdadeiro)
+		//g.definir_dimensoes_janela(TAMANHO_TELA, TAMANHO_TELA)
+		
+		TAMANHO_TELA = g.altura_janela()
+	
 		g.definir_dimensoes_janela(TAMANHO_TELA, TAMANHO_TELA)
+		
+		tile = TAMANHO_TELA/TAMANHO_PRANCHA
+		
+		carregar()
+		
+		escreva(TAMANHO_TELA+":"+tile)
 	}
 	funcao resolver(inteiro mat[][]){
 		inteiro ct = 0
@@ -61,8 +72,9 @@ programa
     }
     
 	funcao carregar(){
-		img = g.carregar_imagem("https://raw.githubusercontent.com/UNIVALI-LITE/Portugol-Studio/master/ide/src/main/assets/exemplos/jogos/slide/img.jpg")
-		inteiro temp = g.carregar_imagem("https://raw.githubusercontent.com/UNIVALI-LITE/Portugol-Studio/master/ide/src/main/assets/exemplos/jogos/slide/refresh.png")
+		inteiro temp = g.carregar_imagem("https://raw.githubusercontent.com/UNIVALI-LITE/Portugol-Studio/master/ide/src/main/assets/exemplos/jogos/slide/img.jpg")
+		img = g.redimensionar_imagem(temp,TAMANHO_TELA,TAMANHO_TELA,verdadeiro)
+		temp = g.carregar_imagem("https://raw.githubusercontent.com/UNIVALI-LITE/Portugol-Studio/master/ide/src/main/assets/exemplos/jogos/slide/refresh.png")
 		refresh = g.redimensionar_imagem(temp, btn_size-16, btn_size-16, verdadeiro)
 		g.liberar_imagem(temp)
 		temp = g.carregar_imagem("https://raw.githubusercontent.com/UNIVALI-LITE/Portugol-Studio/master/ide/src/main/assets/exemplos/jogos/slide/puz.png")
@@ -130,16 +142,17 @@ programa
 			inteiro j = m.posicao_x()/tile
 			inteiro aux
 			
-			se(m.posicao_x()>TAMANHO_TELA-2*btn_size-32 e m.posicao_x()<TAMANHO_TELA-btn_size-16 e m.posicao_y()>TAMANHO_TELA-2*btn_size-16){
-				resolver(prancha)
+			se(m.posicao_x()>TAMANHO_TELA-2*btn_size-32 e m.posicao_x()<TAMANHO_TELA-btn_size-16 e m.posicao_y()>TAMANHO_TELA-btn_size-16){
+				desenhar_pronto()
+				g.renderizar()
 				enquanto(m.botao_pressionado(m.BOTAO_ESQUERDO)){
-					
+					u.aguarde(10)
 				}
 			}
 			se(m.posicao_x()>TAMANHO_TELA-btn_size-16 e m.posicao_y()>TAMANHO_TELA-btn_size-16){
 				embaralhar(prancha)
 				enquanto(m.botao_pressionado(m.BOTAO_ESQUERDO)){
-					
+					u.aguarde(10)
 				}
 			}
 			se(i>0){

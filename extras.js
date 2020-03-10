@@ -207,7 +207,7 @@ class TouchManager {
 	constructor()
 	{
 		
-		this.TOUCH_DELAY = 150;
+		this.TOUCH_DELAY = 80;
 		
 		this.events = {};
 		this.resetar();
@@ -282,7 +282,16 @@ class TouchManager {
 			this.numTouches= Math.max(this.numTouches,this.touches.length);
 		}
 		
-		//this.events["onTouchDown"](this.getCenterTouchPos(),this.touches);
+		var that = this;
+		var t_ntouches = this.numTouches;
+		setTimeout(function(){
+		if(!that.touchDownIssued && that.numTouches == t_ntouches)
+		{
+			if(that.events["onTouchDown"])
+			that.events["onTouchDown"](that.getCenterTouchPos(),that.numTouches);
+			that.touchDownIssued = true;
+		}
+		}, this.TOUCH_DELAY);
 	}
 	
 	touchmove(e)
