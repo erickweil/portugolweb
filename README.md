@@ -48,6 +48,9 @@ segue uma lista de funcionalidades que são suportadas
 	- Tipos
 	- Util
 	
+Testes Apenas:
+	- Avaliador Automático ( acesse https://erickweil.github.io/portugolweb/avaliar.html )
+	
 ### O que falta
 	
 - Mensagens de erros que definem melhor o que aconteceu e como corrigir
