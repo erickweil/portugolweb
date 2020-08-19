@@ -108,6 +108,8 @@ Portugol web no celular
 </div>
 <br/>
 <div class="listaExemplos">
+<h2 onclick="exemplo('branco');">Novo Programa em Branco</h2>
+<hr style="border: 1px solid #01EABC;"/>
 <h2 onclick="exemplo('variaveis');">Variáveis</h2>
 <h2 onclick="exemplo('entrada');">Entrada de dados</h2>
 <h2 onclick="exemplo('condicoes');">Condições</h2>
@@ -134,8 +136,8 @@ Portugol web no celular
 <input tabindex="-1" type="button" style="background-image: url(icons/FontMinus.png);" id="btn-fonteMenor" value=" " onclick="fonteDiminuir()" onfocus="preventFocus(event)"/>
 <input type="button" style="background-image: url(icons/save.png);" id="btn-salvar" value=" " onclick="save()"/>
 <input type="button" style="background-image: url(icons/open.png);"  id="btn-abrir" value=" " onclick="load()"/>
+<input type="button" tabindex="-1" id="btn-mostrar-hotbar" value="Ocultar" onclick='toggleHotbar();' onfocus="preventFocus(event)"/>
 <input type="button" id="btn-exemplos" value="Exemplos" onclick="document.getElementById('modalExemplos').style.display = 'table';"/>
-
 <!--<input type="button" style="background-image: url(icons/full.png);" id="btn-abrir" value=" " onclick="openFullscreen(document.documentElement);"/> Isso não funcionava direito e no pc tem o F11-->
 <!--<input type="button" id="btn-execErros" value="Ignorar Erros" onclick="check_execErros()"/>-->
 </div>
@@ -177,6 +179,7 @@ Portugol web no celular
 <input tabindex="-1" type="button" value="<=" onclick='editorType("<=")' onfocus="preventFocus(event)"/>
 <input tabindex="-1" type="button" value="==" onclick='editorType("==")' onfocus="preventFocus(event)"/>
 <input tabindex="-1" type="button" value="!=" onclick='editorType("!=")' onfocus="preventFocus(event)"/>
+
 </div>
 <div id="myOutput" style="position:relative;">
 <div class="saida" id="saida"><div id="errorArea"></div><textarea id="textAreaSaida" onclick="cursorToEnd(this)" onkeyup="cursorToEnd(this)" oninput="receiveInput(this)">??</textarea></div>
@@ -282,27 +285,11 @@ Portugol web no celular
 		//myOutput.classList.add('mobile');
 		//document.getElementById("myOutput_buttons").classList.add('mobile');
 		//saida.classList.add('mobile');
-
-		setHotbarPosition(hotbar_middleyOffset);
+		mostrarHotbar();
 	}
 	else
 	{
-		// se mexer nesses numeros tudo para de funcionar deixa assim.
-		hotbar_initialHeight = hotbar_initialHeight - 80;
-		
-		hotbar_minyOffset = hotbar_minyOffset;
-		hotbar_collapsedyOffset = hotbar_collapsedyOffset - 80;
-		hotbar_middleyOffset = hotbar_middleyOffset - 80;
-		hotbar_extendedyOffset = hotbar_extendedyOffset - 80;
-		//hotbar_maxyOffset = hotbar_maxyOffset + 600;
-		hotbar_yOffset = hotbar_collapsedyOffset;
-		//hotbar.style.display = "none";
-		
-		document.getElementById("hotbar_commands").style.display = "none";
-		
-		document.getElementById("hotbar_keys").style.display = "none";
-		
-		setHotbarPosition(hotbar_extendedyOffset);
+		ocultarHotbar();
 	}
 	
 	hotbar.addEventListener("touchstart", hotbar_dragStart, false);
@@ -535,6 +522,68 @@ Portugol web no celular
 		
 		div_saida.style.fontSize = fontSize+"pt";
 		errosSaida.style.fontSize = fontSize+"pt";
+	}
+	
+	function toggleHotbar()
+	{
+		if(document.getElementById("hotbar_commands").style.display == "block")
+		{
+			ocultarHotbar();
+			if(isMobile)
+			{
+				if(hotbar_yOffset > hotbar_middleyOffset)
+				{
+					setHotbarPosition(hotbar_middleyOffset,true);
+				}
+			}
+		}
+		else
+		{
+			mostrarHotbar();
+		}
+	}
+	
+	function mostrarHotbar()
+	{
+		// se mexer nesses numeros tudo para de funcionar deixa assim.
+		hotbar_initialHeight = 200;
+		
+		
+		hotbar_minyOffset = 40;
+		hotbar_collapsedyOffset = 80;
+		hotbar_middleyOffset = 120;
+		hotbar_extendedyOffset = 295;
+		hotbar_yOffset = hotbar_collapsedyOffset;
+		
+		document.getElementById("hotbar_commands").style.display = "block";
+		
+		document.getElementById("hotbar_keys").style.display = "block";
+		
+		document.getElementById("btn-mostrar-hotbar").value = "Ocultar";
+		
+		setHotbarPosition(hotbar_middleyOffset);
+	}
+	
+	function ocultarHotbar()
+	{
+		// se mexer nesses numeros tudo para de funcionar deixa assim.
+		hotbar_initialHeight = 200 - 80;
+		
+		hotbar_minyOffset = 40;
+		hotbar_collapsedyOffset = 80 - 80;
+		hotbar_middleyOffset = 120 - 80;
+		hotbar_extendedyOffset = 295 - 80;
+		//hotbar_maxyOffset = hotbar_maxyOffset + 600;
+		hotbar_yOffset = 0;
+		//hotbar.style.display = "none";
+		
+		document.getElementById("hotbar_commands").style.display = "none";
+		
+		document.getElementById("hotbar_keys").style.display = "none";
+		
+		document.getElementById("btn-mostrar-hotbar").value = "Mostrar";
+		
+		setHotbarPosition(hotbar_extendedyOffset);
 	}
 	
 	var execMesmoComErros = false;
@@ -943,17 +992,17 @@ Portugol web no celular
 	function hideHotBarWhenLandscape()
 	{
 		var screenDimension = getScreenDimensions();
+		
+		console.log("hideHotBarWhenLandscape :screenDimension");
 		if(isMobile)
 		{
-			
-			//if(h < 40*2 + 200)
-			if(screenDimension.width > h*1.5)
+			if(screenDimension.width > screenDimension.height)
 			{
-				document.getElementById("hotbar").style.display = "none";
-			}
-			else
-			{
-				document.getElementById("hotbar").style.display = "block";
+				ocultarHotbar();
+				if(hotbar_yOffset > hotbar_middleyOffset)
+				{
+					setHotbarPosition(hotbar_middleyOffset,true);
+				}
 			}
 		}
 		
@@ -1125,10 +1174,16 @@ Portugol web no celular
 		document.getElementById("myEditor").style.height = (h-hotbar_yOffset)+"px";
 		editor.resize();
 		
-		if(!isMobile)
+		
+		var isHotbarVisible = document.getElementById("hotbar_commands").style.display != "none";
+		
+		
+		
+		if(!isHotbarVisible)
 		saida.style.height = (hotbar_yOffset-50)+"px";
 		else
 		saida.style.height = (hotbar_yOffset-130)+"px";
+		
 	}
 	
 	function resizeEditorMax()
@@ -1151,6 +1206,8 @@ Portugol web no celular
 	{
 		try {
 			persistentStoreValue("code",editor.getValue());
+			var hideHotbar = document.getElementById("hotbar_commands").style.display == "none";
+			persistentStoreValue("hideHotbar",hideHotbar);
 		} catch (e) {
 			var myStackTrace = e.stack || e.stacktrace || "";
 
@@ -1161,6 +1218,14 @@ Portugol web no celular
 	function getAutoSave()
 	{
 		var last_code = persistentGetValue("code");
+		var hideHotbar = persistentGetValue("hideHotbar");
+		if(typeof(hideHotbar) != "undefined")
+		{
+			if(hideHotbar)
+			{
+				ocultarHotbar();
+			}
+		}
 		return last_code;
 	}
 	

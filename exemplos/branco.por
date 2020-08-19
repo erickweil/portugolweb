@@ -1,0 +1,18 @@
+programa
+{
+	funcao inicio ()
+	{
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	}
+}
