@@ -5,16 +5,16 @@ class Matematica {
 		
 		this.members = {
 		"PI":{id:T_word,type:T_real},
-		"potencia":{id:T_parO,parameters:[T_real,T_real],type:T_real},
-		"arredondar":{id:T_parO,parameters:[T_real,T_real],type:T_real},
-		"cosseno":{id:T_parO,parameters:[T_real],type:T_real},
-		"logaritmo":{id:T_parO,parameters:[T_real,T_real],type:T_real},
-		"maior_numero":{id:T_parO,parameters:[T_real,T_real],type:T_real},
-		"menor_numero":{id:T_parO,parameters:[T_real,T_real],type:T_real},
-		"raiz":{id:T_parO,parameters:[T_real,T_real],type:T_real},
-		"seno":{id:T_parO,parameters:[T_real],type:T_real},
-		"tangente":{id:T_parO,parameters:[T_real],type:T_real},
-		"valor_absoluto":{id:T_parO,parameters:[T_real],type:T_real}
+		"potencia":{id:T_parO,parameters:[T_real,T_real],type:T_real,jsSafe:true},
+		"arredondar":{id:T_parO,parameters:[T_real,T_real],type:T_real,jsSafe:true},
+		"cosseno":{id:T_parO,parameters:[T_real],type:T_real,jsSafe:true},
+		"logaritmo":{id:T_parO,parameters:[T_real,T_real],type:T_real,jsSafe:true},
+		"maior_numero":{id:T_parO,parameters:[T_real,T_real],type:T_real,jsSafe:true},
+		"menor_numero":{id:T_parO,parameters:[T_real,T_real],type:T_real,jsSafe:true},
+		"raiz":{id:T_parO,parameters:[T_real,T_real],type:T_real,jsSafe:true},
+		"seno":{id:T_parO,parameters:[T_real],type:T_real,jsSafe:true},
+		"tangente":{id:T_parO,parameters:[T_real],type:T_real,jsSafe:true},
+		"valor_absoluto":{id:T_parO,parameters:[T_real],type:T_real,jsSafe:true}
 		};
 	}
 	

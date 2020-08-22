@@ -8,13 +8,13 @@ class Mouse {
 		"BOTAO_DIREITO":{id:T_word,type:T_inteiro},
 		"BOTAO_MEIO":{id:T_word,type:T_inteiro},
 		"BOTAO_ESQUERDO":{id:T_word,type:T_inteiro},
-		"posicao_x":{id:T_parO,parameters:[],type:T_inteiro},
-		"posicao_y":{id:T_parO,parameters:[],type:T_inteiro},
-		"botao_pressionado":{id:T_parO,parameters:[T_inteiro],type:T_logico},
-		"algum_botao_pressionado":{id:T_parO,parameters:[],type:T_logico},
-		"exibir_cursor":{id:T_parO,parameters:[],type:T_vazio},
-		"ocultar_cursor":{id:T_parO,parameters:[],type:T_vazio},
-		"ler_botao":{id:T_parO,parameters:[],type:T_inteiro},
+		"posicao_x":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true},
+		"posicao_y":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true},
+		"botao_pressionado":{id:T_parO,parameters:[T_inteiro],type:T_logico,jsSafe:true},
+		"algum_botao_pressionado":{id:T_parO,parameters:[],type:T_logico,jsSafe:true},
+		"exibir_cursor":{id:T_parO,parameters:[],type:T_vazio,jsSafe:true},
+		"ocultar_cursor":{id:T_parO,parameters:[],type:T_vazio,jsSafe:true},
+		"ler_botao":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:false},
 		};
 
 		//this.canvas.addEventListener("mousemove",function(evt) {console.log("LOL");});

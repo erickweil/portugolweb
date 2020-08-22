@@ -1,4 +1,4 @@
-function getDefaultValue(code)
+function getDefaultValue(code,global)
 {
 	switch(code)
 	{
@@ -6,14 +6,102 @@ function getDefaultValue(code)
 		case T_caracter: return '\0';
 		case T_cadeia: return "";
 		case T_real: return 0.0;
-		case T_logico: return false;
+		case T_logico: return (global ? 1 : false);
 		case T_squareO: return [];
 	}
+}
+
+function checarCompatibilidadeTipo(tA,tB,op)
+{
+	switch(op)
+	{
+		case T_attrib:
+		case T_attrib_plus:
+		case T_plus:
+		case T_attrib_minus:
+		case T_minus:
+		case T_attrib_mul:
+		case T_mul:
+		case T_attrib_div:
+		case T_div:
+		case T_attrib_rem:
+		case T_rem:
+		case T_attrib_shiftright:
+		case T_shiftright:
+		case T_attrib_shiftleft:
+		case T_shiftleft:
+		case T_attrib_bitand:
+		case T_bitand:
+		case T_attrib_bitor:
+		case T_bitor:
+		case T_attrib_xor:
+		case T_xor:
+			switch(tA)
+			{
+				case T_squareO: return op == T_attrib && tB == T_squareO;
+				case T_inteiro: return (tB == T_inteiro || tB == T_real || ((op == T_plus || op == T_attrib_plus) && tB == T_cadeia));
+				case T_real: return (tB == T_inteiro || tB == T_real || ((op == T_plus || op == T_attrib_plus) && tB == T_cadeia));
+				case T_cadeia: return (op == T_attrib || op == T_plus || op == T_attrib_plus);
+				case T_caracter: return (op == T_attrib || op == T_plus || op == T_attrib_plus) && (tB == T_cadeia || tB == T_caracter);
+				case T_logico: 
+				return (op == T_attrib 
+				|| op == T_bitor || op == T_bitand || op == T_xor 
+				|| op == T_attrib_bitand || op == T_attrib_bitor || op == T_attrib_bitxor);
+			}
+		break;
+		case T_attrib_bitnot:
+		case T_bitnot:
+			return true;
+		case T_unary_minus:
+		case T_unary_plus:
+		case T_autoinc:
+		case T_autodec:
+		case T_pre_autoinc:
+		case T_pre_autodec:
+			return (tA == T_inteiro || tA == T_real);
+		case T_and:
+		case T_or:
+			return tA == T_logico && tB == T_logico;
+		case T_not: return tA == T_logico;
+		case T_le:
+		case T_lt:
+		case T_ge:
+		case T_gt:
+			return ( tA == tB && (tA != T_logico) && (tB != T_logico)) 
+			|| ((tA == T_inteiro || tA == T_real) && (tB == T_inteiro || tB == T_real));
+		case T_notequals:
+		case T_equals:
+			return tA == tB;
+		case T_squareO: // operador de indexagem ?
+			return tB == T_inteiro;
+	}
+}
+
+function getTipoRetorno(tA,tB)
+{
+	if(tA == tB) return tA;
+	if(tA == T_cadeia || tB == T_cadeia) return T_cadeia;
+	if(tA == T_caracter || tB == T_caracter) return T_cadeia;
+	if(tA == T_logico || tB == T_logico) return T_logico;
+	if(tA == T_real || tB == T_real) return T_real;
+	return tA;
 }
 
 class FunctionScopeRef {
 	constructor() {
 		this.maxVarCount = 0;
+		this.jsSafe = true;
+		this.funCalls = [];
+	}
+	
+	addFuncCall(func)
+	{
+		this.funCalls.push(func);
+		if(!func.jsSafe)
+		{
+			console.log("Marcou como unsafe porque chamou a função "+func.name);
+			this.jsSafe = false;
+		}
 	}
 }
 
@@ -136,7 +224,7 @@ class Compiler {
 				
 				for(var k=0;k<funcPars.length;k++)
 				{
-					if(!this.checarCompatibilidadeTipo(funcPars[k].type,funcArgs[k].type,T_attrib)) 
+					if(!checarCompatibilidadeTipo(funcPars[k].type,funcArgs[k].type,T_attrib)) 
 						continue; // deve ter os mesmos tipos, ou compatíveis
 				}
 				return i;
@@ -144,6 +232,44 @@ class Compiler {
 		}
 		this.erro("a função '"+name+"' com "+funcArgs.length+" argumentos e tipos:"+funcArgs+" não foi encontrada");
 		return 0;
+	}
+	
+	checkFuncJsSafety(func,depth)
+	{
+		if(!func.jsSafe)
+			return false;
+		
+		if(func.name.startsWith("_unsafe_"))
+			return false;
+
+		if(depth > 10)
+		{
+			func.jsSafe = false;
+			return false;	
+		}
+		
+		if(func.parameters)
+		for(var i=0;i<func.parameters.length;i++)
+		{
+			if(func.parameters[i].byRef)
+			{
+				func.jsSafe = false;
+				return false;
+			}
+		}
+		
+		if(!func.funCalls || func.funCalls.length == 0) return true;
+	
+		for(var i=0;i<func.funCalls.length;i++)
+		{
+			if(!this.checkFuncJsSafety(func.funCalls[i],depth+1))
+			{
+				func.jsSafe = false;
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
 	compile()
@@ -155,7 +281,7 @@ class Compiler {
 		
 		this.functions = [
 		{
-			name:"$undefined",bytecode:[B_PUSH,"<Função desconhecida>",B_WRITE,B_RET],varCount:0,parameters:[],type:T_vazio // para ignorar chamadas a funcoes que nao existem
+			name:"$undefined",bytecode:[B_PUSH,"<Função desconhecida>",B_WRITE,B_RET],varCount:0,parameters:[],type:T_vazio,jsSafe:false // para ignorar chamadas a funcoes que nao existem
 		},
 		{
 			name:"escreva",
@@ -166,7 +292,7 @@ class Compiler {
 			],
 			varCount:1,
 			parameters:[],
-			type:T_vazio
+			type:T_vazio,jsSafe:true
 		},
 		{
 			name:"limpa",
@@ -175,22 +301,22 @@ class Compiler {
 			],
 			varCount:0,
 			parameters:[],
-			type:T_vazio
+			type:T_vazio,jsSafe:true
 		},
 		{
-			name:"leia$inteiro",bytecode:[B_WAITINPUT,B_READ_INT,B_RETVALUE,B_RET],varCount:0,parameters:[],type:T_vazio
+			name:"leia$inteiro",bytecode:[B_WAITINPUT,B_READ_INT,B_RETVALUE,B_RET],varCount:0,parameters:[],type:T_vazio,jsSafe:false
 		},
 		{
-			name:"leia$real",bytecode:[B_WAITINPUT,B_READ_FLOAT,B_RETVALUE,B_RET],varCount:0,parameters:[],type:T_vazio
+			name:"leia$real",bytecode:[B_WAITINPUT,B_READ_FLOAT,B_RETVALUE,B_RET],varCount:0,parameters:[],type:T_vazio,jsSafe:false
 		},
 		{
-			name:"leia$cadeia",bytecode:[B_WAITINPUT,B_READ_STRING,B_RETVALUE,B_RET],varCount:0,parameters:[],type:T_vazio
+			name:"leia$cadeia",bytecode:[B_WAITINPUT,B_READ_STRING,B_RETVALUE,B_RET],varCount:0,parameters:[],type:T_vazio,jsSafe:false
 		},
 		{
-			name:"leia$caracter",bytecode:[B_WAITINPUT,B_READ_CHAR,B_RETVALUE,B_RET],varCount:0,parameters:[],type:T_vazio
+			name:"leia$caracter",bytecode:[B_WAITINPUT,B_READ_CHAR,B_RETVALUE,B_RET],varCount:0,parameters:[],type:T_vazio,jsSafe:false
 		},
 		{
-			name:"leia$logico",bytecode:[B_WAITINPUT,B_READ_BOOL,B_RETVALUE,B_RET],varCount:0,parameters:[],type:T_vazio
+			name:"leia$logico",bytecode:[B_WAITINPUT,B_READ_BOOL,B_RETVALUE,B_RET],varCount:0,parameters:[],type:T_vazio,jsSafe:false
 		}
 		
 		//0:	load	0
@@ -209,14 +335,15 @@ class Compiler {
 			],varCount:2,parameters:[
 			{id: STATEMENT_declVar, index: 0, type: T_inteiro, isConst: false, byRef: false, expr:false, name:"a"},
 			{id: STATEMENT_declVar, index: 0, type: T_inteiro, isConst: false, byRef: false, expr:false, name:"a"}
-			],type:T_inteiro
+			],type:T_inteiro,jsSafe:true
 		}
 		];
 		
 		
 		this.scope = new Scope(this.scope,true,false); // cria um scopo para as variaveis globais
 		
-		var funcInit = {name:"#globalInit",bytecode:[],bytecodeIndexes:{},varCount:0 };
+		var funcInit = {name:"#globalInit",bytecode:[],bytecodeIndexes:{},varCount:0,jsSafe:false };
+		this.funcScopeRef = new FunctionScopeRef();
 		this.compileStatements(variaveisGlobais,funcInit);
 		this.functions.push(funcInit);
 		
@@ -225,7 +352,7 @@ class Compiler {
 		
 		for(var i=0;i<funcoes.length;i++)
 		{
-			this.functions.push({name:funcoes[i].name,parameters:funcoes[i].parameters,type:funcoes[i].type,bytecode:[],bytecodeIndexes:{},varCount:0 });
+			this.functions.push({name:funcoes[i].name,parameters:funcoes[i].parameters,type:funcoes[i].type,bytecode:[],bytecodeIndexes:{},varCount:0,jsSafe:true });
 		}
 		for(var i=0;i<funcoes.length;i++)
 		{
@@ -238,7 +365,19 @@ class Compiler {
 				this.compileFunctionRet(this.functions[FuncOff+i],false);
 			this.scope = this.scope.parentScope;
 			this.functions[FuncOff+i].varCount = this.funcScopeRef.maxVarCount;
+			this.functions[FuncOff+i].jsSafe = this.funcScopeRef.jsSafe;
+			this.functions[FuncOff+i].funCalls = this.funcScopeRef.funCalls;
+			
+			
 		}
+		for(var i=0;i<this.functions.length;i++)
+		{
+			var func = this.functions[i];
+			func.jsSafe = this.checkFuncJsSafety(func,0);
+			
+			console.log(func.name+" is jsSafe:"+func.jsSafe);
+		}
+		
 		
 		funcInit.bytecode.push(B_INVOKE);
 		var funcIndex = this.getFuncIndex("inicio",[]);
@@ -313,7 +452,7 @@ class Compiler {
 				var tExpr = this.compileExpr(values[k],bc,v.arrayType);
 				this.tryConvertType(v.arrayType,tExpr,bc);
 				
-				if(!this.checarCompatibilidadeTipo(v.arrayType,tExpr,T_attrib))
+				if(!checarCompatibilidadeTipo(v.arrayType,tExpr,T_attrib))
 				{
 					this.erro("não pode colocar "+getTypeWord(tExpr)+" em uma variável do tipo "+getTypeWord(v.arrayType));
 				}
@@ -441,7 +580,7 @@ class Compiler {
 						bc.push(v.global ? B_NEWARRAYGLOBAL : B_NEWARRAY);
 						bc.push(v.index);
 						bc.push(declared);
-						bc.push(getDefaultValue(v.arrayType));
+						bc.push(getDefaultValue(v.arrayType,v.global));
 					}
 					else if(stat.expr && stat.expr.id == STATEMENT_declArrValues && declared == 0)
 					{
@@ -456,7 +595,7 @@ class Compiler {
 						bc.push(v.global ? B_NEWARRAYGLOBAL : B_NEWARRAY);
 						bc.push(v.index);
 						bc.push(arrayDim);
-						bc.push(getDefaultValue(v.arrayType));
+						bc.push(getDefaultValue(v.arrayType,v.global));
 					}
 					
 					if(stat.expr)
@@ -469,7 +608,7 @@ class Compiler {
 						{
 							var tExpr = this.compileExpr(stat.expr.expr,bc,T_squareO);
 														
-							if(!this.checarCompatibilidadeTipo(T_squareO,tExpr,T_attrib))
+							if(!checarCompatibilidadeTipo(T_squareO,tExpr,T_attrib))
 							{
 								this.erro("não pode colocar "+getTypeWord(tExpr)+" em uma variável do tipo "+getTypeWord(v.type));
 							}
@@ -486,7 +625,7 @@ class Compiler {
 						var tExpr = this.compileExpr(stat.expr,bc,stat.type);
 						this.tryConvertType(v.type,tExpr,bc);
 						
-						if(!this.checarCompatibilidadeTipo(v.type,tExpr,T_attrib))
+						if(!checarCompatibilidadeTipo(v.type,tExpr,T_attrib))
 						{
 							this.erro("não pode colocar "+getTypeWord(tExpr)+" em uma variável do tipo "+getTypeWord(v.type));
 						}
@@ -719,15 +858,7 @@ class Compiler {
 		}
 	}
 	
-	getTipoRetorno(tA,tB)
-	{
-		if(tA == tB) return tA;
-		if(tA == T_cadeia || tB == T_cadeia) return T_cadeia;
-		if(tA == T_caracter || tB == T_caracter) return T_cadeia;
-		if(tA == T_logico || tB == T_logico) return T_logico;
-		if(tA == T_real || tB == T_real) return T_real;
-		return tA;
-	}
+
 	
 	tryConvertType(tRet,tA,bc)
 	{
@@ -743,71 +874,7 @@ class Compiler {
 		}
 	}
 	
-	checarCompatibilidadeTipo(tA,tB,op)
-	{
-		switch(op)
-		{
-			case T_attrib:
-			case T_attrib_plus:
-			case T_plus:
-			case T_attrib_minus:
-			case T_minus:
-			case T_attrib_mul:
-			case T_mul:
-			case T_attrib_div:
-			case T_div:
-			case T_attrib_rem:
-			case T_rem:
-			case T_attrib_shiftright:
-			case T_shiftright:
-			case T_attrib_shiftleft:
-			case T_shiftleft:
-			case T_attrib_bitand:
-			case T_bitand:
-			case T_attrib_bitor:
-			case T_bitor:
-			case T_attrib_xor:
-			case T_xor:
-				switch(tA)
-				{
-					case T_squareO: return op == T_attrib && tB == T_squareO;
-					case T_inteiro: return (tB == T_inteiro || tB == T_real || ((op == T_plus || op == T_attrib_plus) && tB == T_cadeia));
-					case T_real: return (tB == T_inteiro || tB == T_real || ((op == T_plus || op == T_attrib_plus) && tB == T_cadeia));
-					case T_cadeia: return (op == T_attrib || op == T_plus || op == T_attrib_plus);
-					case T_caracter: return (op == T_attrib || op == T_plus || op == T_attrib_plus) && (tB == T_cadeia || tB == T_caracter);
-					case T_logico: 
-					return (op == T_attrib 
-					|| op == T_bitor || op == T_bitand || op == T_xor 
-					|| op == T_attrib_bitand || op == T_attrib_bitor || op == T_attrib_bitxor);
-				}
-			break;
-			case T_attrib_bitnot:
-			case T_bitnot:
-				return true;
-			case T_unary_minus:
-			case T_unary_plus:
-			case T_autoinc:
-			case T_autodec:
-			case T_pre_autoinc:
-			case T_pre_autodec:
-				return (tA == T_inteiro || tA == T_real);
-			case T_and:
-			case T_or:
-				return tA == T_logico && tB == T_logico;
-			case T_not: return tA == T_logico;
-			case T_le:
-			case T_lt:
-			case T_ge:
-			case T_gt:
-				return ( tA == tB && (tA != T_logico) && (tB != T_logico)) 
-				|| ((tA == T_inteiro || tA == T_real) && (tB == T_inteiro || tB == T_real));
-			case T_notequals:
-			case T_equals:
-				return tA == tB;
-			case T_squareO: // operador de indexagem ?
-				return tB == T_inteiro;
-		}
-	}
+
 	
 	compileLogicalExpr(expr,bc,trueJumps,falseJumps)
 	{
@@ -937,7 +1004,7 @@ class Compiler {
 			}
 			else
 			{
-				if(!this.checarCompatibilidadeTipo(tExprA,tExprB,expr.op))
+				if(!checarCompatibilidadeTipo(tExprA,tExprB,expr.op))
 				{
 					this.erro("não pode aplicar a operação "+expr.op+" com os tipos "+getTypeWord(tExprA)+" e "+getTypeWord(tExprB));
 				}
@@ -961,7 +1028,7 @@ class Compiler {
 			}
 			else
 			{
-				if(!this.checarCompatibilidadeTipo(tExprA,tExprB,expr.op))
+				if(!checarCompatibilidadeTipo(tExprA,tExprB,expr.op))
 				{
 					this.erro("não pode aplicar a operação "+expr.op+" com os tipos "+getTypeWord(tExprA)+" e "+getTypeWord(tExprB));
 				}
@@ -1101,7 +1168,7 @@ class Compiler {
 				
 				this.compileMemberAttrib(expr[0],v,bc);
 				
-				if(!this.checarCompatibilidadeTipo(tExprA,tExprB,expr.op))
+				if(!checarCompatibilidadeTipo(tExprA,tExprB,expr.op))
 				{
 					this.erro("não pode colocar "+getTypeWord(tExprB)+" em uma variável do tipo "+getTypeWord(tExprA));
 				}
@@ -1134,13 +1201,13 @@ class Compiler {
 				}
 				else
 				{
-					if(!this.checarCompatibilidadeTipo(tExprA,tExprB,expr.op))
+					if(!checarCompatibilidadeTipo(tExprA,tExprB,expr.op))
 					{
 						this.erro("não pode aplicar a operação com os tipos "+getTypeWord(tExprA)+" e "+getTypeWord(tExprB));
 					}
 				}
 				
-				var tRet = this.getTipoRetorno(tExprA,tExprB); // quando é divisão retorna real ou inteiro?
+				var tRet = getTipoRetorno(tExprA,tExprB); // quando é divisão retorna real ou inteiro?
 				
 				if(tRet != tExprA && (tRet == T_inteiro || tRet == T_cadeia))
 				{
@@ -1155,7 +1222,7 @@ class Compiler {
 					this.tryConvertType(tRet,tExprB,bc);
 				}
 				
-				if(tRet == T_inteiro && expr.op == T_div)
+				if(tRet == T_inteiro && (expr.op == T_div || expr.op == T_attrib_div))
 				{
 					bc.push(B_iDIV);
 				}
@@ -1213,7 +1280,12 @@ class Compiler {
 					if(typeExpected != T_vazio)
 						bc.push(B_DUP); // o valor fica na stack. mds isso vai da o maior problema
 					
-					this.tryConvertType(tExprA,tExprB,bc);
+					// cadeia a = "teste "
+					// a += verdadeiro
+					// escreva(a)
+					// ___________
+					// teste verdadeiro
+					//this.tryConvertType(tExprA,tExprB,bc);
 					
 					this.compileMemberAttrib(expr[0],v,bc);
 					
@@ -1291,6 +1363,8 @@ class Compiler {
 					}
 					else if(expr.name == "leia")
 					{
+						console.log("Marcou como unsafe porque chamou a função leia");
+						this.funcScopeRef.jsSafe = false;
 						var methName= expr.name;
 						if(args.length == 1)
 						{
@@ -1343,6 +1417,8 @@ class Compiler {
 						
 						var funcIndex = this.getFuncIndex(methName,funcArgs);
 						var func = this.functions[funcIndex];
+						
+						this.funcScopeRef.addFuncCall(func);
 						
 						bc.push(funcIndex);
 						bc.push(args.length);
@@ -1457,10 +1533,16 @@ class Compiler {
 						
 						for(var k =0;k<campo.args.length;k++)
 						{
-							var tExpr = this.compileExpr(campo.args[k],bc,-1);
+							var tExpr = this.compileExpr(campo.args[k],bc,funcPars[k]);
 							
-							if(!this.checarCompatibilidadeTipo(funcPars[k],tExpr,T_attrib))
+							if(!checarCompatibilidadeTipo(funcPars[k],tExpr,T_attrib))
 							this.erro("a função "+campo.name+" esperava o tipo "+getTypeWord(funcPars[k])+" porém foi fornecido o tipo "+getTypeWord(tExpr));
+						}
+						
+						if(!libObj.members[campo.name].jsSafe)
+						{
+							console.log("Marcou como unsafe porque chamou a função da biblioteca "+campo.name);
+							this.funcScopeRef.jsSafe = false;
 						}
 						
 						bc.push(B_LIBINVOKE);

@@ -1,33 +1,33 @@
 class Tipos {
 	constructor() {
 		this.members = {
-		"cadeia_e_caracter":{id:T_parO,parameters:[T_cadeia],type:T_logico},
-		"cadeia_e_inteiro":{id:T_parO,parameters:[T_cadeia,T_inteiro],type:T_logico},
-		"cadeia_e_logico":{id:T_parO,parameters:[T_cadeia],type:T_logico},
-		"cadeia_e_real":{id:T_parO,parameters:[T_cadeia],type:T_logico},
-		"cadeia_para_caracter":{id:T_parO,parameters:[T_cadeia],type:T_caracter},
-		"cadeia_para_inteiro":{id:T_parO,parameters:[T_cadeia,T_inteiro],type:T_inteiro},
-		"cadeia_para_logico":{id:T_parO,parameters:[T_cadeia],type:T_logico},
-		"cadeia_para_real":{id:T_parO,parameters:[T_cadeia],type:T_real},
+		"cadeia_e_caracter":{id:T_parO,parameters:[T_cadeia],type:T_logico,jsSafe:true},
+		"cadeia_e_inteiro":{id:T_parO,parameters:[T_cadeia,T_inteiro],type:T_logico,jsSafe:true},
+		"cadeia_e_logico":{id:T_parO,parameters:[T_cadeia],type:T_logico,jsSafe:true},
+		"cadeia_e_real":{id:T_parO,parameters:[T_cadeia],type:T_logico,jsSafe:true},
+		"cadeia_para_caracter":{id:T_parO,parameters:[T_cadeia],type:T_caracter,jsSafe:true},
+		"cadeia_para_inteiro":{id:T_parO,parameters:[T_cadeia,T_inteiro],type:T_inteiro,jsSafe:true},
+		"cadeia_para_logico":{id:T_parO,parameters:[T_cadeia],type:T_logico,jsSafe:true},
+		"cadeia_para_real":{id:T_parO,parameters:[T_cadeia],type:T_real,jsSafe:true},
 		
-		"caracter_e_inteiro":{id:T_parO,parameters:[T_caracter],type:T_logico},
-		"caracter_e_logico":{id:T_parO,parameters:[T_caracter],type:T_logico},
-		"caracter_para_cadeia":{id:T_parO,parameters:[T_caracter],type:T_cadeia},
-		"caracter_para_inteiro":{id:T_parO,parameters:[T_caracter],type:T_inteiro},
-		"caracter_para_logico":{id:T_parO,parameters:[T_caracter],type:T_logico},
+		"caracter_e_inteiro":{id:T_parO,parameters:[T_caracter],type:T_logico,jsSafe:true},
+		"caracter_e_logico":{id:T_parO,parameters:[T_caracter],type:T_logico,jsSafe:true},
+		"caracter_para_cadeia":{id:T_parO,parameters:[T_caracter],type:T_cadeia,jsSafe:true},
+		"caracter_para_inteiro":{id:T_parO,parameters:[T_caracter],type:T_inteiro,jsSafe:true},
+		"caracter_para_logico":{id:T_parO,parameters:[T_caracter],type:T_logico,jsSafe:true},
 		
-		"inteiro_e_caracter":{id:T_parO,parameters:[T_inteiro],type:T_logico},
-		"inteiro_para_cadeia":{id:T_parO,parameters:[T_inteiro,T_inteiro],type:T_cadeia},
-		"inteiro_para_caracter":{id:T_parO,parameters:[T_inteiro],type:T_caracter},
-		"inteiro_para_logico":{id:T_parO,parameters:[T_inteiro],type:T_logico},
-		"inteiro_para_real":{id:T_parO,parameters:[T_inteiro],type:T_real},
+		"inteiro_e_caracter":{id:T_parO,parameters:[T_inteiro],type:T_logico,jsSafe:true},
+		"inteiro_para_cadeia":{id:T_parO,parameters:[T_inteiro,T_inteiro],type:T_cadeia,jsSafe:true},
+		"inteiro_para_caracter":{id:T_parO,parameters:[T_inteiro],type:T_caracter,jsSafe:true},
+		"inteiro_para_logico":{id:T_parO,parameters:[T_inteiro],type:T_logico,jsSafe:true},
+		"inteiro_para_real":{id:T_parO,parameters:[T_inteiro],type:T_real,jsSafe:true},
 		
-		"logico_para_cadeia":{id:T_parO,parameters:[T_logico],type:T_cadeia},
-		"logico_para_caracter":{id:T_parO,parameters:[T_logico],type:T_caracter},
-		"logico_para_inteiro":{id:T_parO,parameters:[T_logico],type:T_inteiro},
+		"logico_para_cadeia":{id:T_parO,parameters:[T_logico],type:T_cadeia,jsSafe:true},
+		"logico_para_caracter":{id:T_parO,parameters:[T_logico],type:T_caracter,jsSafe:true},
+		"logico_para_inteiro":{id:T_parO,parameters:[T_logico],type:T_inteiro,jsSafe:true},
 		
-		"real_para_cadeia":{id:T_parO,parameters:[T_real],type:T_cadeia},
-		"real_para_inteiro":{id:T_parO,parameters:[T_real],type:T_inteiro}
+		"real_para_cadeia":{id:T_parO,parameters:[T_real],type:T_cadeia,jsSafe:true},
+		"real_para_inteiro":{id:T_parO,parameters:[T_real],type:T_inteiro,jsSafe:true}
 		};
 		
 	}

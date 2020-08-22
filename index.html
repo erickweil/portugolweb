@@ -138,6 +138,9 @@ Portugol web no celular
 <input type="button" style="background-image: url(icons/open.png);"  id="btn-abrir" value=" " onclick="load()"/>
 <input type="button" tabindex="-1" id="btn-mostrar-hotbar" value="Ocultar" onclick='toggleHotbar();' onfocus="preventFocus(event)"/>
 <input type="button" id="btn-exemplos" value="Exemplos" onclick="document.getElementById('modalExemplos').style.display = 'table';"/>
+
+<input type="button" id="btn-run" value="Modo Normal" onclick="VM_execJS = (lastvmState == STATE_ENDED) && !VM_execJS;this.value = VM_execJS ? 'Modo Turbo' : 'Modo Normal';"/>
+
 <!--<input type="button" style="background-image: url(icons/full.png);" id="btn-abrir" value=" " onclick="openFullscreen(document.documentElement);"/> Isso não funcionava direito e no pc tem o F11-->
 <!--<input type="button" id="btn-execErros" value="Ignorar Erros" onclick="check_execErros()"/>-->
 </div>
@@ -208,6 +211,9 @@ Portugol web no celular
 
 <script src="vm.js"></script> <!-- executa o 'bytecode' -->
 <script src="vmcompiler.js"></script> <!-- compila a árvore em 'bytecode' ( parecido com java só que não é java ) -->
+<script src="jsgenerator.js"></script> <!-- gera javascript a partir da árvore ( apenas funções que não pausam por não usar leia, u.aguarde, g.renderizar ) -->
+
+
 
 <!--<script src="treeview.js"></script>< ! - -  para visuzalizar a árvore -->
 <script src="src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
@@ -705,11 +711,25 @@ Portugol web no celular
 				{
 					return;
 				}
+				
+				var jsgenerator = {"functions":false};
+				if(VM_execJS)
+				{
+					try{
+						jsgenerator = new JsGenerator(tree,libraries,relevantTokens,string_cod,div_saida);
+						jsgenerator.compile();
+						
+					}
+					catch(e){
+						var myStackTrace = e.stack || e.stacktrace || "";
+						console.log(myStackTrace);
+					}
+				}
 				//lastvm = new Vm(compiler.functions,string_cod,div_saida);
 				
 				myPortugolCompleter.setCompiler(compiler);
 				
-				VMsetup(compiler.functions,libraries,compiler.globalCount,string_cod,div_saida);
+				VMsetup(compiler.functions,jsgenerator.functions,libraries,compiler.globalCount,string_cod,div_saida);
 				
 				try{
 					document.getElementById("hidden").innerHTML = VMtoString();

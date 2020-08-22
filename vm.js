@@ -231,6 +231,7 @@ var STATE_DELAY = 5;
 var STATE_DELAY_REPEAT = 6;
 var STATE_STEP = 7;
 var VM_delay = false;
+var VM_execJS = false;
 // frame locals
 var VM_code = false;
 var VM_i = 0;
@@ -243,6 +244,7 @@ var VM_funcIndex = 0;
 var VM_frame = false;
 var VM_globals = false;
 var VM_functions = false;
+var VM_jsfunctions = false;
 var VM_libraries = false;
 var VM_saida = false;
 var VM_saidaDiv = false;
@@ -280,14 +282,16 @@ function recursiveDeclareArray(sizes,defaultValue,i)
 	return arr;
 }
 
-function escreva(txt)
+function escreva(...txt)
 {
 	if(VM_escrevaCount > VM_escrevaMax)
 	{
 		VM_escrevaCount = 0;
 		VM_saida = "<MAIS DE "+VM_escrevaMax+" ESCREVAS, REINICIANDO LOG...>\n";
 	}
-	VM_saida += txt;
+	for(var i=0;i<txt.length;i++)
+		VM_saida += txt[i];
+	
 	VM_saidaDiv.value = VM_saida;
 	VM_saidaDiv.scrollTop = VM_saidaDiv.scrollHeight;
 	VM_escrevaCount++;
@@ -311,6 +315,33 @@ function leia()
 	}
 	VM_saida = saidadiv;
 	return entrada;
+}
+
+function sorteia(a,b)
+{
+	return VM_libraries["Util"].sorteia(a,b).value;
+}
+
+function VM_i2s(value)
+{
+	return value.toLocaleString('fullwide', { useGrouping: false });
+}
+
+function VM_f2s(value)
+{
+	var strFloat = ""+value;
+	if(!strFloat.includes(".")) strFloat += ".0";
+	return strFloat;
+}
+
+function VM_b2s(value)
+{
+	return (value == 0 ? "verdadeiro" : "falso");
+}
+
+function VM_realbool2s(value)
+{
+	return (value ? "verdadeiro" : "falso");
 }
 
 function getTokenIndex(bcIndex,funcIndex)
@@ -337,9 +368,10 @@ function VMerro(msg)
 	enviarErro(VM_textInput,{index:i},msg);
 }
 
-function VMsetup(functions,libraries,globalCount,textInput,saida_div) 
+function VMsetup(functions,jsfunctions,libraries,globalCount,textInput,saida_div) 
 {
 	VM_functions = functions;
+	VM_jsfunctions = jsfunctions;
 	VM_textInput = textInput;
 	VM_libraries = libraries;
 	
@@ -479,7 +511,7 @@ function VMrun(execMax)
 				}
 			break;
 			case B_INVOKE:
-				// precisa criar um stackFrame
+								
 				var methIndex = VM_code[VM_i++];
 				var methArgsN = VM_code[VM_i++];
 				var methArgs = [];
@@ -490,15 +522,17 @@ function VMrun(execMax)
 				methArgs.reverse();
 				
 				if(
-				methIndex < 0
-				|| !VM_functions[methIndex]
-				|| !VM_functions[methIndex].bytecode
-				)
+					methIndex < 0
+					|| !VM_functions[methIndex]
+					|| !VM_functions[methIndex].bytecode
+					)
 				{
-					VMerro("Function not found");
+					VMerro("Function '"+methIndex+"' not found");
 				}
-				else
+				else if(!VM_execJS || !VM_functions[methIndex].jsSafe)
 				{
+					// precisa criar um stackFrame
+					
 					//this.frame = new StackFrame(this.frame,this.frame.globalVars,methIndex,100,methArgs);
 					VM_frame.push(
 					{
@@ -520,7 +554,35 @@ function VMrun(execMax)
 					{
 						VM_vars[i] = methArgs[i];
 					}
+				}
+				else
+				{
+					var jsfuncName = VM_jsfunctions[methIndex].jsName;
+					if(!jsfuncName)
+					{
+						VMerro("Function '"+methIndex+"' has no name");
+					}
 					
+					
+					var jsfunc = window[jsfuncName];
+					
+					if(!jsfunc)
+					{
+						VMerro("Function '"+jsfuncName+"' not found");
+					}
+					else
+					{
+						//console.log("chamou "+jsfuncName);
+						var ret = jsfunc.apply(null,methArgs);
+						if(typeof ret !== "undefined")
+						{
+							if(typeof ret == "boolean")
+							{
+								ret = ret ? B_TRUE : B_FALSE;
+							}
+							VM_stack[VM_si++] = ret;
+						}
+					}
 				}
 			break;
 			

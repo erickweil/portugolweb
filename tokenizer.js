@@ -37,11 +37,27 @@ var separators_names =
 "sep-semi","sep-colon","sep-dot","sep-bracesO","sep-bracesC","sep-parO","sep-parC","sep-squareO","sep-squareC"
 ];
 
+var separator_tokens =
+[
+
+// 0-25
+"\n","\t"," ","+","-","*","/","%",">","<","!","=","&","|","^","~",";",",",".","{","}","(",")","[","]",":",
+// 26-31
+"","","","","","",
+// 32-63
+"+=","-=","*=","/=","%=",">>=",">>",">=","<<=","<<","<=","!=","==","e","&=","ou","|=","^=","~=","++","--","","+","-","-->","++","--","","","","",""
+];
+
 
 //var separatorsIgnore = "\n\r\t ";
 
 // SEPARATOR 
 var T_SEPARATOROFF = 0;
+function getSeparator(c)
+{
+	return separator_tokens[c-T_SEPARATOROFF];
+}
+
 function getSeparatorCode(c)
 {
 	return T_SEPARATOROFF + separators.indexOf(c);
@@ -376,6 +392,17 @@ function isLiteral(code)
 function isAnyWord(code)
 {
 	return code >= T_word && code <= T_falso;
+}
+
+function stringEscapeSpecials(str)
+{
+	str = str.replace(/\\/g,"\\"+"\\");
+	str = str.replace(/\n/g,"\\"+"n");
+	str = str.replace(/\t/g,"\\"+"t");
+	str = str.replace(/\"/g,"\\"+"\"");
+	str = str.replace(/\'/g,"\\"+"'");
+	
+	return str;
 }
 
 class Tokenizer {

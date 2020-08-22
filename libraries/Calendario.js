@@ -43,17 +43,17 @@ class Calendario {
 		"MES_OUTUBRO":{id:T_word,type:T_inteiro},
 		"MES_NOVEMBRO":{id:T_word,type:T_inteiro},
 		"MES_DEZEMBRO":{id:T_word,type:T_inteiro},
-		"ano_atual":{id:T_parO,parameters:[],type:T_inteiro},
-		"mes_atual":{id:T_parO,parameters:[],type:T_inteiro},
-		"dia_mes_atual":{id:T_parO,parameters:[],type:T_inteiro},
-		"dia_semana_abreviado":{id:T_parO,parameters:[T_inteiro,T_logico,T_logico],type:T_inteiro},
-		"dia_semana_atual":{id:T_parO,parameters:[],type:T_inteiro},
-		"dia_semana_completo":{id:T_parO,parameters:[T_inteiro,T_logico,T_logico],type:T_inteiro},
-		"dia_semana_curto":{id:T_parO,parameters:[T_inteiro,T_logico,T_logico],type:T_inteiro},
-		"hora_atual":{id:T_parO,parameters:[T_logico],type:T_inteiro},		
-		"minuto_atual":{id:T_parO,parameters:[],type:T_inteiro},
-		"segundo_atual":{id:T_parO,parameters:[],type:T_inteiro},
-		"milisegundo_atual":{id:T_parO,parameters:[],type:T_inteiro}
+		"ano_atual":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true},
+		"mes_atual":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true},
+		"dia_mes_atual":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true},
+		"dia_semana_abreviado":{id:T_parO,parameters:[T_inteiro,T_logico,T_logico],type:T_inteiro,jsSafe:true},
+		"dia_semana_atual":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true},
+		"dia_semana_completo":{id:T_parO,parameters:[T_inteiro,T_logico,T_logico],type:T_inteiro,jsSafe:true},
+		"dia_semana_curto":{id:T_parO,parameters:[T_inteiro,T_logico,T_logico],type:T_inteiro,jsSafe:true},
+		"hora_atual":{id:T_parO,parameters:[T_logico],type:T_inteiro,jsSafe:true},		
+		"minuto_atual":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true},
+		"segundo_atual":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true},
+		"milisegundo_atual":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true}
 		};
 		
 		this.diasCompleto = [

@@ -1,14 +1,14 @@
 class Texto {
 	constructor() {
 		this.members = {
-		"caixa_alta":{id:T_parO,parameters:[T_cadeia],type:T_cadeia},
-		"caixa_baixa":{id:T_parO,parameters:[T_cadeia],type:T_cadeia},
-		"extrair_subtexto":{id:T_parO,parameters:[T_cadeia,T_inteiro,T_inteiro],type:T_cadeia},
-		"numero_caracteres":{id:T_parO,parameters:[T_cadeia],type:T_inteiro},
-		"obter_caracter":{id:T_parO,parameters:[T_caracter,T_inteiro],type:T_caracter},
-		"posicao_texto":{id:T_parO,parameters:[T_cadeia,T_cadeia,T_inteiro],type:T_inteiro},
-		"preencher_a_esquerda":{id:T_parO,parameters:[T_caracter,T_inteiro,T_cadeia],type:T_cadeia},
-		"substituir":{id:T_parO,parameters:[T_cadeia,T_cadeia,T_cadeia],type:T_cadeia}
+		"caixa_alta":{id:T_parO,parameters:[T_cadeia],type:T_cadeia,jsSafe:true},
+		"caixa_baixa":{id:T_parO,parameters:[T_cadeia],type:T_cadeia,jsSafe:true},
+		"extrair_subtexto":{id:T_parO,parameters:[T_cadeia,T_inteiro,T_inteiro],type:T_cadeia,jsSafe:true},
+		"numero_caracteres":{id:T_parO,parameters:[T_cadeia],type:T_inteiro,jsSafe:true},
+		"obter_caracter":{id:T_parO,parameters:[T_caracter,T_inteiro],type:T_caracter,jsSafe:true},
+		"posicao_texto":{id:T_parO,parameters:[T_cadeia,T_cadeia,T_inteiro],type:T_inteiro,jsSafe:true},
+		"preencher_a_esquerda":{id:T_parO,parameters:[T_caracter,T_inteiro,T_cadeia],type:T_cadeia,jsSafe:true},
+		"substituir":{id:T_parO,parameters:[T_cadeia,T_cadeia,T_cadeia],type:T_cadeia,jsSafe:true}
 		};
 	}
 	

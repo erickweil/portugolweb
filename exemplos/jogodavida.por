@@ -6,6 +6,10 @@ programa
 	inclua biblioteca Tipos --> t
 	inclua biblioteca Matematica --> mat
 	
+	// MODO TURBO
+	//const inteiro GW = 222
+	//const inteiro GH = 222
+	
 	const inteiro GW = 40
 	const inteiro GH = 40
 	
@@ -65,7 +69,7 @@ programa
 		}
 	}
 	
-	funcao copiar(inteiro &a[][],inteiro &b[][])
+	funcao copiar(inteiro a[][],inteiro b[][])
 	{
 		para(inteiro x=0;x<GH;x++)
 		{
