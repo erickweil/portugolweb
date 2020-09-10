@@ -122,7 +122,7 @@ Portugol web no celular
 <h2 onclick="exemplo('jogodavida');">Jogo da Vida</h2>
 <h2 onclick="exemplo('aleatorio');">Aleatorio</h2>
 <hr class="mobileHidden" style="border: 1px solid #01EABC;"/>
-<h3 class="mobileHidden" title="A TogetherJS possibilita a utilização em grupo de um site. Permitindo editar em conjunto, chat e muito mais" onclick="addTogheterJS();">Ativar TogetherJS</h3>
+<button class="mobileHidden" title="A TogetherJS possibilita a utilização em grupo de um site. Permitindo editar em conjunto, chat e muito mais" onclick="TogetherJS(this);return false;">Ativar TogetherJS</button>
 </div>
 </div>
 </div>
@@ -222,6 +222,9 @@ Portugol web no celular
 <script src="src-min-noconflict/ext-language_tools.js"></script>
 <script src="src-min-noconflict/ext-emmet.js"></script>
 <script src="ace_portugol_completer.js"></script>
+
+<script src="https://togetherjs.com/togetherjs-min.js"></script> <!-- Ferramenta Colaborativa... Não pode carregar depois tem que ser assim -->
+
 <!--<script src="ace_portugol.js"></script>-->
 
 
@@ -1290,24 +1293,26 @@ Portugol web no celular
 		}
 	}
 	
-	var TogetherJSLoaded = false;
+	//var TogetherJSLoaded = false;
 	var TogetherJSConfig_hubBase = "https://togetherjs-hub.glitch.me/"
-	function addTogheterJS()
-	{
-		if(TogetherJSLoaded) {
-			window.alert("TogetherJS já foi carregado");
-			return;
-		}
-		TogetherJSLoaded= true;
-		var script = document.createElement('script');
-		script.onload = function () {
-			//do stuff with the script
-			TogetherJS(document.body);
-		};
-		script.src = "https://togetherjs.com/togetherjs-min.js";
+	//function addTogheterJS(elem)
+	//{
+		//if(TogetherJSLoaded) {
+		//	window.alert("TogetherJS já foi carregado");
+		//	return;
+		//}
+		//TogetherJSLoaded= true;
+		//var script = document.createElement('script');
+		//script.onload = function () {
+		//	//do stuff with the script
+			//TogetherJS(document.body);
+		//};
+		//script.src = "https://togetherjs.com/togetherjs-min.js";
 
-		document.head.appendChild(script); //or something of the likes
-	}
+		//document.head.appendChild(script); //or something of the likes
+		
+
+	//}
 //}
 </script>
 <!--<script src="codetest.js"></script><!-- para testar -->
