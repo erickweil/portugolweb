@@ -431,8 +431,8 @@
 				//lastvm = new Vm(compiler.functions,string_cod,div_saida);
 				
 				//myPortugolCompleter.setCompiler(compiler);
-				
-				VMsetup(compiler.functions,libraries,compiler.globalCount,string_cod,div_saida);
+				var jsgenerator = {"functions":false};
+				VMsetup(compiler.functions,jsgenerator.functions,libraries,compiler.globalCount,string_cod,div_saida);
 				
 				try{
 					document.getElementById("hidden").innerHTML = VMtoString();
