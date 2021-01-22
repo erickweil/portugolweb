@@ -71,7 +71,7 @@ class Tipos {
 	
 	cadeia_para_inteiro(cad,base)
 	{
-		if(this.cadeia_e_inteiro(cad).value) return {value:parseInt(cad,base)};
+		if(this.cadeia_e_inteiro(cad,base).value) return {value:parseInt(cad,base)};
 		else throw "o valor '"+cad+"' não pode ser convertido para inteiro";
 	}
 	
@@ -107,20 +107,22 @@ class Tipos {
 	
 	caracter_para_inteiro(cad)
 	{
+		if(this.caracter_e_inteiro(cad).value)
 		return {value:cad.charCodeAt(0)-48};
+		else throw "o valor '"+cad+"' não pode ser convertido para inteiro";
 	}
 	
 	caracter_para_logico(cad)
 	{
 		cad = cad.toLowerCase();
-		if(cad == "s" || cad == "v") return {value:true};
-		else if(cad == "n" || cad == "f") return {value:false};
+		if(cad == "s") return {value:true};
+		else if(cad == "n") return {value:false};
 		else throw "o valor '"+cad+"' não pode ser convertido para logico";
 	}
 	
 	inteiro_e_caracter(i)
 	{
-		return {value: i >= 0};
+		return {value: i >= 0 && i <= 9};
 	}
 	
 	inteiro_para_cadeia(i,base)
@@ -151,7 +153,7 @@ class Tipos {
 	
 	logico_para_caracter(log)
 	{
-		return {value:log == 0 ? "S" : "N"};
+		return {value:log == 0 ? "s" : "n"};
 	}
 	
 	logico_para_inteiro(log)

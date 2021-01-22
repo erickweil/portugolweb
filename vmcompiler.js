@@ -44,9 +44,9 @@ function checarCompatibilidadeTipo(tA,tB,op)
 				case T_cadeia: return (op == T_attrib || op == T_plus || op == T_attrib_plus);
 				case T_caracter: return (op == T_attrib || op == T_plus || op == T_attrib_plus) && (tB == T_cadeia || tB == T_caracter);
 				case T_logico: 
-				return (op == T_attrib 
-				|| op == T_bitor || op == T_bitand || op == T_xor 
-				|| op == T_attrib_bitand || op == T_attrib_bitor || op == T_attrib_bitxor);
+				return (op == T_attrib || 
+				op == T_bitor || op == T_bitand || op == T_xor || 
+				op == T_attrib_bitand || op == T_attrib_bitor || op == T_attrib_xor);
 			}
 		break;
 		case T_attrib_bitnot:
@@ -67,8 +67,8 @@ function checarCompatibilidadeTipo(tA,tB,op)
 		case T_lt:
 		case T_ge:
 		case T_gt:
-			return ( tA == tB && (tA != T_logico) && (tB != T_logico)) 
-			|| ((tA == T_inteiro || tA == T_real) && (tB == T_inteiro || tB == T_real));
+			return ( tA == tB && (tA != T_logico) && (tB != T_logico)) || 
+			((tA == T_inteiro || tA == T_real) && (tB == T_inteiro || tB == T_real));
 		case T_notequals:
 		case T_equals:
 			return tA == tB;
