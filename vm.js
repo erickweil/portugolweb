@@ -230,6 +230,7 @@ var STATE_RUNNING = 4;
 var STATE_DELAY = 5;
 var STATE_DELAY_REPEAT = 6;
 var STATE_STEP = 7;
+var STATE_ASYNC_RETURN = 8;
 var VM_delay = false;
 var VM_execJS = false;
 // frame locals
@@ -320,6 +321,23 @@ function leia()
 function sorteia(a,b)
 {
 	return VM_libraries["Util"].sorteia(a,b).value;
+}
+
+function VM_async_return(retValue)
+{
+	if(typeof retValue !== "undefined")
+	{	
+		if(typeof retValue == "boolean")
+		{
+			retValue = retValue ? B_TRUE : B_FALSE;
+		}
+	}
+	else
+	{
+		retvalue = null;
+	}
+	
+	VM_stack[VM_si++] = retValue;
 }
 
 function VM_i2s(value)

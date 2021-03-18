@@ -1,10 +1,12 @@
 class Graficos {
-	constructor(canvas,modal,cwindow,title)
+	constructor(canvas,modal,cwindow,title,divKeys,libTeclado)
 	{
 		this.canvas = canvas;
 		this.modal = modal;
 		this.cwindow = cwindow;
 		this.title = title;
+		this.divKeys = divKeys;
+		this.libTeclado = libTeclado;
 		
 		this.COR_AMARELO = 0xFFFF00;
 		this.COR_AZUL = 0x0000FF;
@@ -79,7 +81,8 @@ class Graficos {
 		"largura_imagem":{id:T_parO,parameters:[T_inteiro],type:T_inteiro,jsSafe:true},
 		
 		"criar_cor":{id:T_parO,parameters:[T_inteiro,T_inteiro,T_inteiro],type:T_inteiro,jsSafe:true},
-		"obter_cor":{id:T_parO,parameters:[T_inteiro,T_inteiro],type:T_inteiro,jsSafe:true},
+		"obter_cor":{id:T_parO,parameters:[T_inteiro,T_inteiro],type:T_inteiro,jsSafe:true},// manter o antigo
+		"obter_RGB":{id:T_parO,parameters:[T_inteiro,T_inteiro],type:T_inteiro,jsSafe:true},
 		"definir_estilo_texto":{id:T_parO,parameters:[T_logico,T_logico,T_logico],type:T_vazio,jsSafe:true},
 		"definir_fonte_texto":{id:T_parO,parameters:[T_cadeia],type:T_vazio,jsSafe:true},
 		
@@ -90,6 +93,13 @@ class Graficos {
 		"fechar_janela":{id:T_parO,parameters:[],type:T_vazio,jsSafe:false},
 		
 		"redimensionar_imagem":{id:T_parO,parameters:[T_inteiro,T_inteiro,T_inteiro,T_logico],type:T_inteiro,jsSafe:true},
+		
+		
+		"exibir_borda_janela":{id:T_parO,parameters:[],type:T_vazio,jsSafe:true},
+		"ocultar_borda_janela":{id:T_parO,parameters:[],type:T_vazio,jsSafe:true},
+		"minimizar_janela":{id:T_parO,parameters:[],type:T_vazio,jsSafe:true},
+		"restaurar_janela":{id:T_parO,parameters:[],type:T_vazio,jsSafe:true}
+		
 		};
 		
 		
@@ -139,6 +149,8 @@ class Graficos {
 		this.limpar();
 		
 		this.canvas.focus();
+		
+		this.divKeys.innerHTML = "";
 	}
 	
 	encerrar_modo_grafico()
@@ -175,6 +187,32 @@ class Graficos {
 		// Double Buffering com dois canvas deixaria tudo mais lento ainda...
 		// respira para não travar tudo
 		// a forma que o javascript funciona é que ele só vai atualizar a tela quando der uma pausinha
+		
+		// Vamos aproveitar essa função para atualizar os botões do teclado, caso tenha algum
+		if(isMobile)
+		{
+			var teclas = Object.keys(this.libTeclado.checkMap);
+			var teclaCharMap = Object.keys(this.libTeclado.teclaCharMap);
+			var resHTML = "";
+			
+			if(teclas.length > 0)
+			{
+				for(var i =0;i<teclas.length;i++)
+				{
+					var t = teclas[i];
+					var tvalue = t;
+					if(teclaCharMap.includes(t))
+					{
+						tvalue = this.libTeclado.teclaCharMap[t];
+					}
+					resHTML += "<input type=\"button\" value=\""+tvalue+"\" ontouchstart=\"GraficosBtnTypeDown('"+t+"')\" ontouchend=\"GraficosBtnTypeUp('"+t+"')\" onfocus=\"preventFocusCanvas(event)\" style=\"background: #1E2324;\">";
+				}
+			}
+					
+			if(this.divKeys.innerHTML != resHTML)
+			this.divKeys.innerHTML = resHTML;
+		}
+		
 		return {state:STATE_BREATHING};
 	}
 	
@@ -495,6 +533,17 @@ class Graficos {
 		};
 	}
 	
+	obter_RGB(rgb,canal)
+	{
+		if(canal == this.CANAL_R)
+		return {value: (rgb>>16) & 0xFF};
+		else if(canal == this.CANAL_G)
+		return {value: (rgb>>8) & 0xFF};
+		else if(canal == this.CANAL_B)
+		return {value: (rgb) & 0xFF};
+		else throw "canal deve ser CANAL_R, CANAL_G ou CANAL_B";
+	}
+	
 	obter_cor(rgb,canal)
 	{
 		if(canal == this.CANAL_R)
@@ -554,4 +603,23 @@ class Graficos {
 		return {state:STATE_ENDED};
 	}
 	
+	exibir_borda_janela()
+	{
+		// que borda?
+	}
+	
+	ocultar_borda_janela()
+	{
+		// que borda?
+	}
+	
+	minimizar_janela()
+	{
+		// não faz nada
+	}
+	
+	restaurar_janela()
+	{
+		// não faz nada
+	}
 }

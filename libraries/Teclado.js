@@ -3,11 +3,41 @@ class Teclado {
 		
 		this.canvas = canvas;
 		
+		// para exibir nos botões
+		this.teclaCharMap = {
+			"ENTER":"\u21A9",
+			"BACK_SPACE":"\u2190",
+			"TAB":"\u21B9",
+			"CANCEL":"Cancelar",
+			"CLEAR":"Limpar",
+			"SHIFT":"\u21E7",
+			"CONTROL":"Ctrl",
+			"PAUSE":"Pause",
+			"CAPS_LOCK":"\u21EA",
+			"ESCAPE":"Esc",
+			" ":"\u2423",
+			"PAGEUP":"\u219F",
+			"PAGEDOWN":"\u21A1",
+			"END":"\u21E5",
+			"HOME":"\u21E4",
+			"ARROWLEFT":"\u2190",
+			"ARROWUP":"\u2191",
+			"ARROWRIGHT":"\u2192",
+			"ARROWDOWN":"\u2193",
+			"DELETE":"Del",
+			"NUMLOCK":"Num",
+			"SCROLLOCK":"ScLock",
+			"PRINTSCREEN":"PrtSc",
+			"INSERT":"Insert",
+			"HELP":"Ajuda",
+			"ALGUMA":"Alguma"
+		};
+		
 		this.TECLA_ENTER = "ENTER";
 		this.TECLA_BACKSPACE = "BACK_SPACE";
 		this.TECLA_TAB = "TAB";
-		this.TECLA_CANCELAR = "CANCEL";
-		this.TECLA_LIMPAR = "CLEAR";
+		this.TECLA_CANCELAR = "CANCEL";// que tecla é essa?
+		this.TECLA_LIMPAR = "CLEAR";// numpad 5 com numlock desativado
 		this.TECLA_SHIFT = "SHIFT";
 		this.TECLA_CONTROL = "CONTROL";
 		this.TECLA_ALT = "ALT";
@@ -86,7 +116,7 @@ class Teclado {
 		this.TECLA_DIVISAO = "%";
 		this.TECLA_DELETAR = "DELETE";
 		this.TECLA_NUM_LOCK = "NUMLOCK";
-		this.TECLA_SCROLL_LOCK = "SCROLLLOCK";
+		this.TECLA_SCROLL_LOCK = "SCROLLOCK";
 		this.TECLA_F1 = "F1";
 		this.TECLA_F2 = "F2";
 		this.TECLA_F3 = "F3";
@@ -111,10 +141,15 @@ class Teclado {
 		this.TECLA_F22 = "F22";
 		this.TECLA_F23 = "F23";
 		this.TECLA_F24 = "F24";
-		this.TECLA_PRINTSCREEN = "PRINTSCREEN";
+		this.TECLA_PRINTSCREEN = "PRINTSCREEN";// não detecta
 		this.TECLA_INSERT = "INSERT";
-		this.TECLA_AJUDA = "HELP";
-		
+		this.TECLA_AJUDA = "HELP";// que tecla é essa?
+		// ALTGRAPH?
+		// CONTEXTMENU?
+		// META?
+		// DEAD?
+		// ¹²³£¢¬§ªº°?
+		//!@#$%¨&*()`{^}<>:??
 		
 		this.members = {
 			
@@ -243,7 +278,11 @@ class Teclado {
 	
 	resetar()
 	{
+		// Mapa de teclas pressionadas no momento
 		this.keyMap = {};
+		// Mapa de teclas que foram checadas pelo tecla_pressionada
+		// Para exibir os botões no Mobile
+		this.checkMap = {};
 		this.pressionadas = 0;
 		this.ultimaPressionada = "A";
 	}
@@ -274,6 +313,7 @@ class Teclado {
 
 	alguma_tecla_pressionada()
 	{
+		this.checkMap["ALGUMA"] = true;
 		return {value:this.pressionadas > 0};
 	}
 	
@@ -297,6 +337,8 @@ class Teclado {
 	
 	tecla_pressionada(key)
 	{
+		// marca que foi checada essa tecla
+		this.checkMap[key] = true;
 		return {value:this.keyMap[key]};
 	}
 }
