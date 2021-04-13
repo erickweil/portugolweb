@@ -373,6 +373,7 @@ function getTypeWord(code)
 		case T_real: return "real";
 		case T_logico: return "logico";
 		case T_squareO: return "vetor";
+		case T_vazio: return "vazio";
 		default: return "seila";
 	}
 }
@@ -413,7 +414,7 @@ class Tokenizer {
 	
 	erro(token,msg)
 	{
-		enviarErro(this.input,token,msg);
+		enviarErro(this.input,token,msg,"sintatico");
 	}
 	
 	getRelevantTokens()
@@ -436,6 +437,49 @@ class Tokenizer {
 		}
 		return ret;
 	}
+	
+	getTokenIndexAt(index)
+	{
+		var last = 0;
+		for(var i =0; i< this.tokens.length;i++)
+		{
+			if(this.tokens[i].index > index)
+			{
+				return last;
+			}
+			
+			last = i;
+		}
+		return last;
+	}
+	
+	getTokenIndexAtRowCol(row,col)
+	{
+		var last = 0;
+		var firstIndex = -1;
+		for(var i =0; i< this.tokens.length;i++)
+		{
+			var tokenindex = this.tokens[i].index;
+			var tokenrow = numberOfLinesUntil(tokenindex,this.input);
+			
+			if(tokenrow == row && firstIndex == -1)
+			{
+				firstIndex = tokenindex;
+			}
+			
+			if(firstIndex != -1)
+			{
+				if(tokenindex - firstIndex > col)
+				{
+					return last;
+				}
+				
+				last = i;
+			}
+		}
+		return last;
+	}
+	
 	
 	// Adding a method to the constructor
 	tokenize()

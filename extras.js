@@ -1,3 +1,59 @@
+var _extras_timeouts = {};
+
+function mySetTimeout(name,fun,delay)
+{
+	//_extras_timeouts[name] = setTimeout(fun, delay);
+	if(_extras_timeouts[name])
+	{
+		console.log("Tentando agendar novamente o timeout '"+name+"' antes de executar o anterior");
+		return;
+	}
+	_extras_timeouts[name] = setTimeout( function() {
+        _extras_timeouts[name] = false;
+		fun();
+	}
+	,delay);
+}
+
+function myClearTimeout(name)
+{
+	if (_extras_timeouts[name]) {
+            clearTimeout(_extras_timeouts[name]);
+            _extras_timeouts[name] = false;
+    }
+}
+
+
+function numberOfLinesUntil(index,str)
+{
+	var st = str.substring(0,index);
+	return (st.match(/\r?\n/g) || '').length + 1;
+}
+
+
+//https://gist.github.com/hyamamoto/fd435505d29ebfa3d9716fd2be8d42f0
+/**
+ * Returns a hash code for a string.
+ * (Compatible to Java's String.hashCode())
+ *
+ * The hash code for a string object is computed as
+ *     s[0]*31^(n-1) + s[1]*31^(n-2) + ... + s[n-1]
+ * using number arithmetic, where s[i] is the i th character
+ * of the given string, n is the length of the string,
+ * and ^ indicates exponentiation.
+ * (The hash value of the empty string is zero.)
+ *
+ * @param {string} s a string
+ * @return {number} a hash code value for the given string.
+ */
+stringHashCode = function(s) {
+    for(var i = 0, h = 0; i < s.length; i++)
+        h = Math.imul(31, h) + s.charCodeAt(i) | 0;
+    return h;
+};
+
+
+
 //https://stackoverflow.com/questions/14573223/set-cookie-and-get-cookie-with-javascript
 function setCookie(name,value,days) {
     var expires = "";

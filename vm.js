@@ -383,7 +383,7 @@ function getTokenIndex(bcIndex,funcIndex)
 function VMerro(msg)
 {	
 	var i = getTokenIndex(VM_i,VM_funcIndex);
-	enviarErro(VM_textInput,{index:i},msg);
+	enviarErro(VM_textInput,{index:i},msg,"exec");
 }
 
 function VMsetup(functions,jsfunctions,libraries,globalCount,textInput,saida_div) 

@@ -6,18 +6,16 @@ programa
 	inclua biblioteca Tipos --> t
 	inclua biblioteca Matematica --> mat
 	
-	// MODO TURBO
-	//const inteiro GW = 222
-	//const inteiro GH = 222
-	
-	const inteiro GW = 40
-	const inteiro GH = 40
+	// Mude esses valores para mudar o tamanho da grade
+	const inteiro GW = 80
+	const inteiro GH = 60
 	
 	inteiro grade[GH][GW]
 	inteiro gradea[GH][GW]
 	inteiro gradeInicial[GH][GW]
 	logico jogando = verdadeiro
 	inteiro v = 0
+	inteiro setadox = 0, setadoy = 0
 	funcao inicio()
 	{
 		aleatorioGrade()
@@ -42,9 +40,9 @@ programa
 				execJogo()
 			}
 			desenhar_grade()
-			se(m.botao_pressionado(m.BOTAO_ESQUERDO))
+			se((nao pressionado ou nao jogando) e m.botao_pressionado(m.BOTAO_ESQUERDO))
 			{
-				setar(m.posicao_x(),m.posicao_y(),pressionado)
+				setar(mx,my,pressionado)
 			}
 			se(nao pressionado e m.botao_pressionado(m.BOTAO_DIREITO))
 			{
@@ -62,7 +60,7 @@ programa
 			pressionado = m.algum_botao_pressionado()
 
 			g.renderizar()
-			u.aguarde(10) // bom esperar antes de desenhar denovo
+			u.aguarde(0) // bom esperar antes de desenhar denovo
 			
 			umx = mx
 			umy = my
@@ -106,28 +104,40 @@ programa
 			para(inteiro y=0;y<GW;y++)
 			{
 				grade[x][y] = u.sorteia(0,1)
+			//	grade[x][y] = 1
 			}
 		}
 	}
 	
+	
+	
 	funcao execJogo()
 	{
-		para(inteiro x=1;x<GH-1;x++)
+		para(inteiro x=0;x<GH;x++)
 		{
-			para(inteiro y=1;y<GW-1;y++)
+			para(inteiro y=0;y<GW;y++)
 			{
-				se(x >= 1 e x < GH-1 e y >=1 e y < GW-1)
-				{
-					inteiro vizinhos =
-					grade[x-1][y-1]+
-					grade[x-1][y+1]+
-					grade[x+1][y-1]+
-					grade[x+1][y+1]+
-					grade[x][y-1]+
-					grade[x-1][y]+
-					grade[x+1][y]+
-					grade[x][y+1]
-					
+				inteiro vizinhos = 0
+				inteiro offnx = x-1
+				inteiro offpx = x+1
+				inteiro offny = y-1
+				inteiro offpy = y+1
+	
+				se(offnx < 0) offnx = GH-1
+				se(offpx >= GH) offpx = 0
+				se(offny < 0) offny = GW-1
+				se(offpy >= GW) offpy = 0
+
+					vizinhos =
+					grade[offnx][offny]+
+					grade[offnx][offpy]+
+					grade[offpx][offny]+
+					grade[offpx][offpy]+
+					grade[x][offny]+
+					grade[offnx][y]+
+					grade[offpx][y]+
+					grade[x][offpy]
+
 					se(vizinhos <2)
 					{
 						gradea[x][y] = 0
@@ -144,17 +154,13 @@ programa
 					{
 						gradea[x][y] = grade[x][y]
 					}
-				}
-				senao
-				{
-					gradea[x][y] = grade[x][y]
-				}
 				
 			}
 		}
 		copiar(grade,gradea)
 	
 	}
+	
 	
 	funcao setar(inteiro mx,inteiro my,logico pressionado)
 	{
@@ -165,20 +171,38 @@ programa
 		
 		inteiro gw = telaMax/GH
 		
-		inteiro gx = mat.menor_numero(GH-1,mat.maior_numero(1,mx/gw))
-		inteiro gy = mat.menor_numero(GW-1,mat.maior_numero(1,my/gw))
+		inteiro gx = mat.menor_numero(GH-2,mat.maior_numero(2,mx/gw))
+		inteiro gy = mat.menor_numero(GW-2,mat.maior_numero(2,my/gw))
 		
-		se(nao pressionado)
+		se(setadox != gx ou setadoy != gy)
 		{
-			v = grade[gx][gy]
-			se(v == 1) v = 0
-			senao v = 1
-		}
+			setadox = gx
+			setadoy = gy
 		
-		grade[gx][gy] = v
-		grade[gx][gy-1] = v
-		grade[gx-1][gy] = v
-		grade[gx-1][gy-1] = v
+			//se(nao pressionado)
+			//{
+				v = grade[gx][gy]
+				se(v == 1) v = 0
+				senao v = 1
+			//}
+			
+			
+			
+			
+			se(jogando)
+			{
+				grade[gx][gy] = v
+				grade[gx][gy-1] = v
+				grade[gx][gy-2] = v
+				grade[gx-1][gy-2] = v
+				grade[gx-2][gy-1] = v
+			}
+			senao
+			{
+				grade[gx][gy] = v
+			}
+		
+		}
 	}
 
 }

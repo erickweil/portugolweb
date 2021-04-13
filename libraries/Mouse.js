@@ -10,7 +10,7 @@ class Mouse {
 		"BOTAO_ESQUERDO":{id:T_word,type:T_inteiro},
 		"posicao_x":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true},
 		"posicao_y":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true},
-		"botao_pressionado":{id:T_parO,parameters:[T_inteiro],type:T_logico,jsSafe:true},
+		"botao_pressionado":{id:T_parO,parameters:[{name:"botao",type:T_inteiro}],type:T_logico,jsSafe:true},
 		"algum_botao_pressionado":{id:T_parO,parameters:[],type:T_logico,jsSafe:true},
 		"exibir_cursor":{id:T_parO,parameters:[],type:T_vazio,jsSafe:true},
 		"ocultar_cursor":{id:T_parO,parameters:[],type:T_vazio,jsSafe:true},

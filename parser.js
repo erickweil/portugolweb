@@ -25,10 +25,48 @@ function pmatch(index,tokens)
 	return true;
 }
 
-function numberOfLinesUntil(index,str)
+
+function getAllVariableParserDecl(stats,ret)
 {
-	var st = str.substring(0,index);
-	return (st.match(/\r?\n/g) || '').length + 1;
+	for(var i=0;i<stats.length;i++)
+	{
+		var s = stats[i];
+	
+		if(!s.id)// funcao
+		{
+			if(s.statements)
+			{
+				getAllVariableParserDecl(s.statements,ret);
+			}
+		}
+		else if(s.id == STATEMENT_declArr || s.id == STATEMENT_declVar)
+		{
+			ret.push(s);
+		}
+		else if(s.id == STATEMENT_block 
+		|| s.id == STATEMENT_escolha 
+		|| s.id == STATEMENT_para
+		|| s.id == STATEMENT_enquanto
+		|| s.id == STATEMENT_facaEnquanto)
+		{
+			if(s.statements)
+			{
+				getAllVariableParserDecl(s.statements,ret);
+			}
+		}
+		else if(s.id == STATEMENT_se)
+		{
+			if(s.statements_true)
+			{
+				getAllVariableParserDecl(s.statements_true,ret);
+			}
+			if(s.statements_false)
+			{
+				getAllVariableParserDecl(s.statements_false,ret);
+			}
+		}
+		
+	}
 }
 
 class Parser {
@@ -44,7 +82,7 @@ class Parser {
 		//console.log("linha "+numberOfLinesUntil(token.index,this.textInput)+", erro:"+msg);
 		//console.log("perto de '"+line+"'");
 		//this.errors.push({token:token,msg:msg});
-		enviarErro(this.textInput,token,msg);
+		enviarErro(this.textInput,token,msg,"semantico");
 	}
 	
 
@@ -1019,7 +1057,6 @@ class Parser {
 		this.erro(tokens[index],"não encontrou o fim do bloco iniciado com "+tokens[index].txt);
 		return {block:block,index:i};
 	}
-
 
 }
 

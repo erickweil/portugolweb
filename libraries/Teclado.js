@@ -265,9 +265,9 @@ class Teclado {
 		"TECLA_INSERT":{id:T_word,type:T_cadeia},
 		"TECLA_AJUDA":{id:T_word,type:T_cadeia},
 		"alguma_tecla_pressionada":{id:T_parO,parameters:[],type:T_logico,jsSafe:true},
-		"caracter_tecla":{id:T_parO,parameters:[T_cadeia],type:T_caracter,jsSafe:true},
+		"caracter_tecla":{id:T_parO,parameters:[{name:"tecla",type:T_cadeia}],type:T_caracter,jsSafe:true},
 		"ler_tecla":{id:T_parO,parameters:[],type:T_cadeia,jsSafe:false},
-		"tecla_pressionada":{id:T_parO,parameters:[T_cadeia],type:T_logico,jsSafe:true},
+		"tecla_pressionada":{id:T_parO,parameters:[{name:"tecla",type:T_cadeia}],type:T_logico,jsSafe:true},
 		};
 		var that = this;
 		this.canvas.addEventListener("keydown",function(evt) {that.tecladoDown(evt);});

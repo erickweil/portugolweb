@@ -5,16 +5,16 @@ class Matematica {
 		
 		this.members = {
 		"PI":{id:T_word,type:T_real},
-		"potencia":{id:T_parO,parameters:[T_real,T_real],type:T_real,jsSafe:true},
-		"arredondar":{id:T_parO,parameters:[T_real,T_real],type:T_real,jsSafe:true},
-		"cosseno":{id:T_parO,parameters:[T_real],type:T_real,jsSafe:true},
-		"logaritmo":{id:T_parO,parameters:[T_real,T_real],type:T_real,jsSafe:true},
-		"maior_numero":{id:T_parO,parameters:[T_real,T_real],type:T_real,jsSafe:true},
-		"menor_numero":{id:T_parO,parameters:[T_real,T_real],type:T_real,jsSafe:true},
-		"raiz":{id:T_parO,parameters:[T_real,T_real],type:T_real,jsSafe:true},
-		"seno":{id:T_parO,parameters:[T_real],type:T_real,jsSafe:true},
-		"tangente":{id:T_parO,parameters:[T_real],type:T_real,jsSafe:true},
-		"valor_absoluto":{id:T_parO,parameters:[T_real],type:T_real,jsSafe:true}
+		"potencia":{id:T_parO,parameters:[{name:"base",type:T_real},{name:"expoente",type:T_real}],type:T_real,jsSafe:true},
+		"arredondar":{id:T_parO,parameters:[{name:"numero",type:T_real},{name:"casas",type:T_real}],type:T_real,jsSafe:true},
+		"cosseno":{id:T_parO,parameters:[{name:"numero",type:T_real}],type:T_real,jsSafe:true},
+		"logaritmo":{id:T_parO,parameters:[{name:"numero",type:T_real},{name:"base",type:T_real}],type:T_real,jsSafe:true},
+		"maior_numero":{id:T_parO,parameters:[{name:"a",type:T_real},{name:"b",type:T_real}],type:T_real,jsSafe:true},
+		"menor_numero":{id:T_parO,parameters:[{name:"a",type:T_real},{name:"b",type:T_real}],type:T_real,jsSafe:true},
+		"raiz":{id:T_parO,parameters:[{name:"numero",type:T_real},{name:"potencia",type:T_real}],type:T_real,jsSafe:true},
+		"seno":{id:T_parO,parameters:[{name:"numero",type:T_real}],type:T_real,jsSafe:true},
+		"tangente":{id:T_parO,parameters:[{name:"numero",type:T_real}],type:T_real,jsSafe:true},
+		"valor_absoluto":{id:T_parO,parameters:[{name:"numero",type:T_real}],type:T_real,jsSafe:true}
 		};
 	}
 	

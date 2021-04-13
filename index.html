@@ -124,7 +124,13 @@ Portugol web no celular
 <h2 onclick="exemplo('graficos');">Graficos</h2>
 <h2 onclick="exemplo('slide_puzzle');">Slide Puzzle</h2>
 <h2 onclick="exemplo('jogodavida');">Jogo da Vida</h2>
+<h2 onclick="exemplo('internet');">Internet</h2>
 <h2 onclick="exemplo('aleatorio');">Aleatorio</h2>
+
+<hr style="border: 1px solid #01EABC;"/>
+<span style="white-space:nowrap"><input id="check-mostrar-hotbar" style="height: 20px;" name="mostrar-hotbar" type="checkbox" onchange="toggleHotbar(this.checked);"/><label for="mostrar-hotbar">Mostrar Hotbar</label></span> 
+<span style="white-space:nowrap"><input id="check-modo-turbo" style="height: 20px;" name="modo-turbo" type="checkbox" onchange="setModoTurbo(this);" title="Compila o código para Javascript, executa muito mais rápido. Só vai acelerar se não utilizar nenhuma função que pausa o código, como o leia ou o aguarde da biblioteca Util"/><label for="modo-turbo">Modo Turbo</label></span> 
+<span style="white-space:nowrap"><input id="check-auto-completar" style="height: 20px;" name="auto-completar" type="checkbox" checked="true" onchange="setAutoCompleterState(this.checked);"/><label for="auto-completar">Auto-Completar</label></span> 
 <!--
 <hr class="mobileHidden" style="border: 1px solid #01EABC;"/>
 <button class="mobileHidden" title="A TogetherJS possibilita a utilização em grupo de um site. Permitindo editar em conjunto, chat e muito mais" onclick="TogetherJS(this);return false;">Ativar TogetherJS</button>
@@ -138,16 +144,18 @@ Portugol web no celular
 <div id="myOutput_buttons" class="portugol-buttons" style="overflow-x:auto;white-space:nowrap;width: auto;">
 <input type="button" id="btn-run" value="Executar" onclick="executar(this,false)"/>
 
-<input tabindex="-1" type="button" style="background-image: url(icons/step.png);" value=" " onclick="executar(document.getElementById('btn-run'),true)" />
+<input tabindex="-1" id="btn-step" type="button" style="background-image: url(icons/step.png);" value=" " 
+onmousedown="executarStepStart(this)" onmouseup="executarStepPause(this);" onmouseleave="executarStepPause(this);" 
+/>
 
 <input tabindex="-1" type="button" style="background-image: url(icons/FontPlus.png);" id="btn-fonteMaior" value=" " onclick="fonteAumentar()" onfocus="preventFocus(event)"/>
 <input tabindex="-1" type="button" style="background-image: url(icons/FontMinus.png);" id="btn-fonteMenor" value=" " onclick="fonteDiminuir()" onfocus="preventFocus(event)"/>
 <input type="button" style="background-image: url(icons/save.png);" id="btn-salvar" value=" " onclick="save()"/>
 <input type="button" style="background-image: url(icons/open.png);"  id="btn-abrir" value=" " onclick="load()"/>
-<input type="button" tabindex="-1" id="btn-mostrar-hotbar" value="Ocultar" onclick='toggleHotbar();' onfocus="preventFocus(event)"/>
+<!--<input type="button" tabindex="-1" id="btn-mostrar-hotbar" value="Ocultar" onclick='toggleHotbar();' onfocus="preventFocus(event)"/>-->
 <input type="button" id="btn-exemplos" value="Exemplos" onclick="document.getElementById('modalExemplos').style.display = 'table';"/>
 
-<input type="button" id="btn-run" value="Modo Normal" onclick="VM_execJS = (lastvmState == STATE_ENDED) && !VM_execJS;this.value = VM_execJS ? 'Modo Turbo' : 'Modo Normal';"/>
+<!--<input type="button" id="btn-run" value="Modo Normal" onclick=""/>-->
 
 <!--<input type="button" style="background-image: url(icons/full.png);" id="btn-abrir" value=" " onclick="openFullscreen(document.documentElement);"/> Isso não funcionava direito e no pc tem o F11-->
 <!--<input type="button" id="btn-execErros" value="Ignorar Erros" onclick="check_execErros()"/>-->
@@ -202,6 +210,7 @@ Portugol web no celular
 <!-- coisinhas -->
 <script src="extras.js"></script>
 
+
 <script src="tokenizer.js"></script> <!-- Quebra o texto [para, , tokens, certinho]-->
 <script src="parser.js"></script> <!-- pega os tokens e constroi a árvore -->
 
@@ -223,7 +232,7 @@ Portugol web no celular
 <script src="vmcompiler.js"></script> <!-- compila a árvore em 'bytecode' ( parecido com java só que não é java ) -->
 <script src="jsgenerator.js"></script> <!-- gera javascript a partir da árvore ( apenas funções que não pausam por não usar leia, u.aguarde, g.renderizar ) -->
 
-
+<!-- <script src="portugolrun.js"></script> <!-- A parte que gerencia a compilação e execução do código separado da interface -->
 
 <!--<script src="treeview.js"></script>< ! - -  para visuzalizar a árvore -->
 <script src="src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
@@ -369,9 +378,16 @@ Portugol web no celular
 	
 	var langTools = ace.require('ace/ext/language_tools');
 	var myPortugolCompleter = new portugolCompleter(libraries);
+	langTools.setCompleters();		
 	langTools.addCompleter(myPortugolCompleter);
-		
-
+	
+	editor.commands.on("afterExec", function(e){
+     if (e.command.name == "insertstring" && /^[\.]$/.test(e.args)) {
+         editor.execCommand("startAutocomplete")
+     }
+	})
+	
+	
 	var last_code = getAutoSave();
 	if(last_code)
 		editor.setValue(last_code,-1);
@@ -458,19 +474,39 @@ Portugol web no celular
 		}
 	}
 	
-	function limparErros()
+	function limparErros(tipoErros)
 	{
 		errosSaida.innerHTML = "";
-		errosAnnot = [];
-		editor.getSession().setAnnotations(errosAnnot);
+
+		
 		for(var i=0;i<errosMarkers.length;i++)
 		{
 			editor.getSession().removeMarker(errosMarkers[i]);
 		}
 		errosMarkers = [];
+		
+		if(tipoErros)
+		{
+			// apaga os erros e re-envia os que nao é para apagar
+			_errosAnnot = errosAnnot;
+			errosAnnot = [];
+			editor.getSession().setAnnotations(errosAnnot);
+			for(var i=0;i<_errosAnnot.length;i++)
+			{
+				if(!tipoErros.includes(_errosAnnot[i].myErrorType) && _errosAnnot[i].type == "error")
+				{
+					_enviarErroAnnot(_errosAnnot[i]);
+				}
+			}
+		}
+		else
+		{
+			errosAnnot = [];
+			editor.getSession().setAnnotations(errosAnnot);
+		}
 	}
 	
-	function realcarLinha(textInput,index)
+	function realcarLinha(textInput,index,scrollTo)
 	{
 		var linha = numberOfLinesUntil(index,textInput);
 		var prev_line = textInput.substring(textInput.lastIndexOf('\n', index)+1,index).replace(/\t/g,'    ');
@@ -487,9 +523,14 @@ Portugol web no celular
 		editor.getSession().setAnnotations(errosAnnot);
 		
 		errosMarkers.push(editor.getSession().addMarker(new Range(linha-1, 0, linha-1, colunaFim), 'ace_realceportugol-marker', 'screenLine'));
+		
+		if(scrollTo)
+		{
+			editor.scrollToLine(linha, true, true, function () {});
+		}
 	}
 	
-	function enviarErro(textInput,token,msg)
+	function enviarErro(textInput,token,msg,tipoErro)
 	{
 		var lineNumber = numberOfLinesUntil(token.index,textInput);
 		var prev_line = textInput.substring(textInput.lastIndexOf('\n', token.index)+1,token.index).replace(/\t/g,'    ');
@@ -506,23 +547,51 @@ Portugol web no celular
 		}
 		
 		console.log(lineNumber+":"+colNumber+" -> "+msg);
-		errosSaida.innerHTML += htmlEntities(msg)+"\n";
-		errosSaida.innerHTML += htmlEntities(logprev+next_line)+"\n";
-		errosSaida.innerHTML += " ".repeat(logprev.length)+"^\n\n";
-		_enviarErro(lineNumber,colNumber,colNumber+next_line.length,msg);
+		
+		_enviarErroAnnot(//(lineNumber,colNumber,colNumber+next_line.length,msg,tipoErro);
+		{
+		  row: lineNumber-1,
+		  column: colNumber,
+		  columnFim: colNumber+next_line.length,
+		  textprev: logprev,
+		  textnext: next_line,
+		  text: msg, // Or the Json reply from the parser 
+		  type: "error", // also warning and information
+		  myErrorType: tipoErro
+		});
 	}
 	
-	function _enviarErro(linha,coluna,colunaFim,msg)
+	/*function _enviarErro(linha,coluna,colunaFim,msg,tipoErro)
 	{
-		errosAnnot.push({
-		  row: linha-1,
-		  column: coluna,
-		  text: msg, // Or the Json reply from the parser 
-		  type: "error" // also warning and information
-		});
+
+	}*/
+	
+	function _enviarErroAnnot(annot)
+	{
+		if(!annot) return;
+		
+		if(annot.text)
+		errosSaida.innerHTML += htmlEntities(annot.text)+"\n";
+		if(annot.textprev && annot.textnext)
+		{
+			errosSaida.innerHTML += htmlEntities(annot.textprev+annot.textnext)+"\n";
+			errosSaida.innerHTML += " ".repeat(annot.textprev.length)+"^\n\n";
+		}
+		errosAnnot.push(annot);
 		editor.getSession().setAnnotations(errosAnnot);
 		
-		errosMarkers.push(editor.getSession().addMarker(new Range(linha-1, 0, linha-1, colunaFim), 'ace_erroportugol-marker', 'screenLine'));
+		errosMarkers.push(editor.getSession().addMarker(new Range(annot.row, 0, annot.row, annot.columnFim), 'ace_erroportugol-marker', 'screenLine'));
+	}
+	
+	function setAutoCompleterState(checked)
+	{
+		editor.setOptions({ enableBasicAutocompletion: checked, enableLiveAutocompletion: checked });
+	}
+	
+	function setModoTurbo(checkbox)
+	{
+		VM_execJS = (lastvmState == STATE_ENDED) && checkbox.checked;checkbox.checked = VM_execJS;
+		console.log("Modo: "+(VM_execJS ? 'Modo Turbo' : 'Modo Normal'));
 	}
 	
 	function cursorToEnd(textarea)
@@ -554,9 +623,10 @@ Portugol web no celular
 		errosSaida.style.fontSize = fontSize+"pt";
 	}
 	
-	function toggleHotbar()
+	function toggleHotbar(show)
 	{
-		if(document.getElementById("hotbar_commands").style.display == "block")
+		///if(document.getElementById("hotbar_commands").style.display == "block")
+		if(!show)
 		{
 			ocultarHotbar();
 			if(isMobile)
@@ -589,7 +659,8 @@ Portugol web no celular
 		
 		document.getElementById("hotbar_keys").style.display = "block";
 		
-		document.getElementById("btn-mostrar-hotbar").value = "Ocultar";
+		//document.getElementById("btn-mostrar-hotbar").value = "Ocultar";
+		document.getElementById("check-mostrar-hotbar").checked = true;
 		
 		setHotbarPosition(hotbar_middleyOffset);
 	}
@@ -611,7 +682,8 @@ Portugol web no celular
 		
 		document.getElementById("hotbar_keys").style.display = "none";
 		
-		document.getElementById("btn-mostrar-hotbar").value = "Mostrar";
+		//document.getElementById("btn-mostrar-hotbar").value = "Mostrar";
+		document.getElementById("check-mostrar-hotbar").checked = false;
 		
 		setHotbarPosition(hotbar_extendedyOffset);
 	}
@@ -671,6 +743,65 @@ Portugol web no celular
 		document.getElementById('modalExemplos').style.display = 'none';
 	}
 	
+	function compilar(string_cod,mayCompileJS)
+	{
+		var nErrosInicio = errosAnnot.length;
+		string_cod = string_cod.replace(/\r\n/g,"\n");
+		
+		var tokenizer = new Tokenizer(string_cod);
+		console.log(tokenizer.tokenize());
+		if(!execMesmoComErros && errosAnnot.length > nErrosInicio)
+		{
+			ret = {success:false,"tokenizer":tokenizer};
+			myPortugolCompleter.setCompiler(ret);
+			return ret;
+		}
+		//div_port.innerHTML = tokenizer.formatHTML();
+		
+		var relevantTokens = tokenizer.getRelevantTokens();
+		var tree = new Parser(relevantTokens,string_cod).parse();
+		console.log(tree);
+		if(!execMesmoComErros && errosAnnot.length > nErrosInicio)
+		{
+			ret = {success:false,"tokenizer":tokenizer,"tree":tree};
+			myPortugolCompleter.setCompiler(ret);
+			return ret;
+		}
+		
+		var librariesNames = Object.keys(libraries);
+		for(var i =0;i<librariesNames.length;i++)
+		{
+			libraries[librariesNames[i]].resetar();
+		}
+		
+		var compiler = new Compiler(tree,libraries,relevantTokens,string_cod,div_saida);
+		compiler.compile();
+		if(!execMesmoComErros && errosAnnot.length > nErrosInicio)
+		{
+			ret = {success:false,"tokenizer":tokenizer,"tree":tree,"compiler":compiler};
+			myPortugolCompleter.setCompiler(ret);
+			return ret;
+		}
+		
+		var jsgenerator = {"functions":false};
+		if(mayCompileJS && VM_execJS)
+		{
+			try{
+				jsgenerator = new JsGenerator(tree,libraries,relevantTokens,string_cod,div_saida);
+				jsgenerator.compile();
+				
+			}
+			catch(e){
+				var myStackTrace = e.stack || e.stacktrace || "";
+				console.log(myStackTrace);
+			}
+		}
+		
+		ret = {success:true,"tokenizer":tokenizer,"tree":tree,"compiler":compiler,"jsgenerator":jsgenerator};
+		myPortugolCompleter.setCompiler(ret);
+		return ret;
+	}
+	
 	function executar(btn,passoapasso)
 	{
 		if(passoapasso && lastvmState == STATE_STEP)
@@ -704,56 +835,14 @@ Portugol web no celular
 			var string_cod = editor.getValue();
 			try{
 				
-				
-				string_cod = string_cod.replace(/\r\n/g,"\n");
-				
-				var tokenizer = new Tokenizer(string_cod);
-				console.log(tokenizer.tokenize());
-				if(!execMesmoComErros && errosAnnot.length > 0)
-				{
-					return;
-				}
-				//div_port.innerHTML = tokenizer.formatHTML();
-				
-				var relevantTokens = tokenizer.getRelevantTokens();
-				var tree = new Parser(relevantTokens,string_cod).parse();
-				console.log(tree);
-				if(!execMesmoComErros && errosAnnot.length > 0)
-				{
-					return;
-				}
-				
-				var librariesNames = Object.keys(libraries);
-				for(var i =0;i<librariesNames.length;i++)
-				{
-					libraries[librariesNames[i]].resetar();
-				}
-				
-				var compiler = new Compiler(tree,libraries,relevantTokens,string_cod,div_saida);
-				compiler.compile();
-				if(!execMesmoComErros && errosAnnot.length > 0)
-				{
-					return;
-				}
-				
-				var jsgenerator = {"functions":false};
-				if(VM_execJS)
-				{
-					try{
-						jsgenerator = new JsGenerator(tree,libraries,relevantTokens,string_cod,div_saida);
-						jsgenerator.compile();
-						
-					}
-					catch(e){
-						var myStackTrace = e.stack || e.stacktrace || "";
-						console.log(myStackTrace);
-					}
-				}
+				var compilado = compilar(string_cod,true);
 				//lastvm = new Vm(compiler.functions,string_cod,div_saida);
+				if(!compilado.success)
+				{
+					return;
+				}
 				
-				myPortugolCompleter.setCompiler(compiler);
-				
-				VMsetup(compiler.functions,jsgenerator.functions,libraries,compiler.globalCount,string_cod,div_saida);
+				VMsetup(compilado.compiler.functions,compilado.jsgenerator.functions,libraries,compilado.compiler.globalCount,string_cod,div_saida);
 				
 				try{
 					document.getElementById("hidden").innerHTML = VMtoString();
@@ -772,41 +861,52 @@ Portugol web no celular
 
 				console.log(myStackTrace);
 			
-				enviarErro(string_cod,{index:0},"Erro na compilação:"+e);
+				enviarErro(string_cod,{index:0},"Erro na compilação:"+e,"compilador");
 				return;
 			}
 			
 			btn.value = "Parar";
 			executarVM();
 		}
-		else if(btn.value == "Parar" && (lastvmState == STATE_RUNNING || lastvmState == STATE_WAITINGINPUT || lastvmState == STATE_BREATHING || lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT || lastvmState == STATE_STEP || lastvmState == STATE_ASYNC_RETURN))
+		else if(!passoapasso) // não faz nada se clicar no passo a passo durante algum delay ou entrada de dados
 		{
-			btn.value = "Parando...";
-			if(lastvmState == STATE_WAITINGINPUT || lastvmState == STATE_STEP || lastvmState == STATE_ASYNC_RETURN)
+			if(btn.value == "Parar" && (lastvmState == STATE_RUNNING || lastvmState == STATE_WAITINGINPUT || lastvmState == STATE_BREATHING || lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT || lastvmState == STATE_STEP || lastvmState == STATE_ASYNC_RETURN))
 			{
-				escreva("\n\nPrograma interrompido pelo usuário. Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
-				executarParou();
+				btn.value = "Parando...";
+				if(lastvmState == STATE_WAITINGINPUT || lastvmState == STATE_STEP || lastvmState == STATE_ASYNC_RETURN || lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT)
+				{
+					if(lastvmState == STATE_STEP)
+					{
+						myClearTimeout("STATE_STEP");
+					}
+					if(lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT)
+					{
+						myClearTimeout("STATE_DELAY");
+					}
+					escreva("\n\nPrograma interrompido pelo usuário. Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
+					executarParou();
+				}
+				else if(lastvmState == STATE_RUNNING || lastvmState == STATE_BREATHING)
+				{
+					lastvmState = STATE_PENDINGSTOP; // isso pode dar problema para valores de delay muito altos.
+				}
+				else
+				{
+					console.log("botão estava em estado inconsistente: lastvmState:'"+lastvmState+"' e valor:'"+btn.value+"'");
+				}
 			}
-			else if(lastvmState == STATE_RUNNING || lastvmState == STATE_BREATHING || lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT )
+			else if(btn.value == "Parando..." && lastvmState == STATE_PENDINGSTOP)
 			{
-				lastvmState = STATE_PENDINGSTOP; // isso pode dar problema para valores de delay muito altos.
+				// ta idaí?
+				lastvmState = STATE_PENDINGSTOP; // só para confirmar
 			}
-			else
+			else // para deixar o botao do jeito certo, e corrigir no caso de algum erro.
 			{
 				console.log("botão estava em estado inconsistente: lastvmState:'"+lastvmState+"' e valor:'"+btn.value+"'");
+				if(lastvmState == STATE_ENDED) btn.value = "Executar";
+				else if(lastvmState == STATE_PENDINGSTOP) btn.value = "Parando...";
+				else btn.value = "Parar";
 			}
-		}
-		else if(btn.value == "Parando..." && lastvmState == STATE_PENDINGSTOP)
-		{
-			// ta idaí?
-			lastvmState = STATE_PENDINGSTOP; // só para confirmar
-		}
-		else // para deixar o botao do jeito certo, e corrigir no caso de algum erro.
-		{
-			console.log("botão estava em estado inconsistente: lastvmState:'"+lastvmState+"' e valor:'"+btn.value+"'");
-			if(lastvmState == STATE_ENDED) btn.value = "Executar";
-			else if(lastvmState == STATE_PENDINGSTOP) btn.value = "Parando...";
-			else btn.value = "Parar";
 		}
 	}
 	
@@ -820,6 +920,23 @@ Portugol web no celular
 			libraries["Graficos"].encerrar_modo_grafico();
 		}
 		//limparErros();
+	}
+	
+	function executarStepStart(btn)
+	{
+	    //onmousedown="this.className = 'clicou';executar(document.getElementById('btn-run'),true);this.className = 'segurando';" onmouseup="executarStepPause();this.className = '';"
+		
+		// Assim vai dar um delay maior no primeiro clique, mas se segurar o botão, executa a 10 linhas por segundo
+		btn.className = 'clicou';
+		executar(document.getElementById('btn-run'),true);
+		btn.className = 'segurando';
+	}
+	
+	// soltou o botao
+	function executarStepPause(btn)
+	{
+		myClearTimeout("STATE_STEP");
+		btn.className = '';
 	}
 	
 	function executarVM()
@@ -839,7 +956,7 @@ Portugol web no celular
 			ui = i;
 			
 			limparErros();
-			realcarLinha(VM_textInput,i);
+			realcarLinha(VM_textInput,i,true);
 			
 			do
 			{
@@ -857,6 +974,15 @@ Portugol web no celular
 			if(lastvmState == STATE_BREATHING)
 			{
 				lastvmState = STATE_STEP;
+				var btnStep = document.getElementById('btn-step');
+				if(btnStep.className=="clicou")
+				{
+					mySetTimeout("STATE_STEP",executarVM,1000);
+				}
+				if(btnStep.className=="segurando")
+				{
+					mySetTimeout("STATE_STEP",executarVM,100);
+				}
 			}
 		}
 		else
@@ -878,10 +1004,10 @@ Portugol web no celular
 			cursorToEnd(div_saida);
 		}
 		else if(lastvmState == STATE_BREATHING) {
-			setTimeout(executarVM, 0); // permite o navegador ficar responsivo
+			mySetTimeout("STATE_BREATHING",executarVM, 0); // permite o navegador ficar responsivo
 		}
 		else if(lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT) {
-			setTimeout(executarVM, VM_delay);
+			mySetTimeout("STATE_DELAY",executarVM, VM_delay);
 		}
 	}
 	
@@ -1271,8 +1397,16 @@ Portugol web no celular
 	{
 		try {
 			persistentStoreValue("code",editor.getValue());
-			var hideHotbar = document.getElementById("hotbar_commands").style.display == "none";
-			persistentStoreValue("hideHotbar",hideHotbar);
+			var autoComplete = document.getElementById("check-auto-completar").checked;
+			persistentStoreValue("autoComplete",autoComplete);
+			
+			var modoTurbo = document.getElementById("check-modo-turbo").checked;
+			persistentStoreValue("modoTurbo",modoTurbo);
+			
+			var mostrarHotbar = document.getElementById("check-mostrar-hotbar").checked;
+			persistentStoreValue("mostrarHotbar",mostrarHotbar);
+			
+			
 		} catch (e) {
 			var myStackTrace = e.stack || e.stacktrace || "";
 
@@ -1283,18 +1417,104 @@ Portugol web no celular
 	function getAutoSave()
 	{
 		var last_code = persistentGetValue("code");
-		var hideHotbar = persistentGetValue("hideHotbar");
-		if(typeof(hideHotbar) != "undefined")
+		//var hideHotbar = (""+persistentGetValue("hideHotbar")) == "true";
+		var mostrarHotbar = persistentGetValue("mostrarHotbar");
+		var autoComplete = persistentGetValue("autoComplete");
+		var modoTurbo = persistentGetValue("modoTurbo");
+		
+		if(typeof(autoComplete) == "string")
 		{
-			if(hideHotbar)
-			{
-				ocultarHotbar();
-			}
+			autoComplete = ""+autoComplete == "true";
+			document.getElementById("check-auto-completar").checked = autoComplete;
+			setAutoCompleterState(autoComplete);
 		}
+		else
+		{
+			document.getElementById("check-auto-completar").checked = true; 
+		}
+		
+		if(typeof(modoTurbo) == "string")
+		{
+			modoTurbo = ""+modoTurbo == "true";
+			document.getElementById("check-modo-turbo").checked = modoTurbo;
+			setModoTurbo(document.getElementById("check-modo-turbo"));
+		}
+		else
+		{
+			document.getElementById("check-modo-turbo").checked = VM_execJS; 
+		}
+		
+		if(typeof(mostrarHotbar) == "string")
+		{
+			mostrarHotbar = ""+mostrarHotbar == "true";
+			
+			
+			document.getElementById("check-mostrar-hotbar").checked = mostrarHotbar; 
+			toggleHotbar(mostrarHotbar);
+		}
+		
 		return last_code;
 	}
 	
 	setInterval(autoSave, 30000);
+	
+	
+	var _PreCompileLastHash = -1;
+	var _PreCompileCompileHash = -1;
+	// Para melhorar o auto completar e para não ficar os erros para sempre na tela
+	// Talvez vai deixar um pouco mais lento, mas só compila se ficar uns 4 a 5 segundos sem escrever nada
+	// Também não compila duas vezes seguidas o mesmo código
+	// usa um hash do código para saber se algo mudou. Talvez deveria usar os listeners do Acer ao invés disso
+	function autoPreCompile()
+	{
+		// Essa compilação é para melhorar o auto completar
+		// Não vai precisar fazer nada se o auto completar estiver desativado
+		if(!document.getElementById("check-auto-completar").checked) return;
+	
+		lastvmTime = performance.now();
+		try {
+			// Apenas se não estiver executando
+			if(lastvmState == STATE_ENDED)
+			{
+				var string_cod = editor.getValue();
+				
+				// Vai Detectar se escreveu algo ou nao usando hash mesmo??
+				var codigoHash = stringHashCode(string_cod);
+				// 1. não pre compila se escreveu algo nos últimos 2 segundos
+				if(_PreCompileLastHash != codigoHash)
+				{
+					_PreCompileLastHash = codigoHash;
+					console.log("escreveu, espera... Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
+					return;
+				}
+				
+				// 2. não pre compila se não escreveu nada desde a ultima compilacao
+				
+				if(_PreCompileCompileHash == codigoHash)
+				{
+					console.log("não escreveu nada, espera... Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
+					return;
+				}
+				_PreCompileCompileHash = codigoHash;
+				
+				
+				// não apaga os erros de execução
+				limparErros(["sintatico","semantico","contexto"]);
+				
+				
+				var compilado = compilar(string_cod,false);
+				
+				console.log("Compilou:"+compilado.success+" Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
+			}
+		} catch (e) {
+			var myStackTrace = e.stack || e.stacktrace || "";
+
+			console.log(myStackTrace);
+		}
+	}
+	
+	setInterval(autoPreCompile, 2500);
+	
 	
 	editor.on("focus", editorFocus);
 	editor.focus();

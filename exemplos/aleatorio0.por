@@ -419,10 +419,10 @@ programa
 		}
 		
 		g.iniciar_modo_grafico(verdadeiro)
-		g.entrar_modo_tela_cheia()
-
-		WIDTH2 = g.largura_tela()/2.0
-		HEIGHT2 = g.altura_tela()/2.0
+		//g.entrar_modo_tela_cheia()
+		u.aguarde(100)
+		WIDTH2 = g.largura_janela()/2.0
+		HEIGHT2 = g.altura_janela()/2.0
 		//g.definir_dimensoes_janela(LARGURA_DA_TELA, ALTURA_DA_TELA)
 		g.definir_titulo_janela("O CUBO VERDE")	
 

@@ -36,7 +36,7 @@ class JsGenerator {
 	
 	erro(msg)
 	{	
-		enviarErro(this.textInput,{index:this.lastIndex},msg);
+		enviarErro(this.textInput,{index:this.lastIndex},msg,"exec");
 	}
 	
 	save_gen()
@@ -895,10 +895,10 @@ class JsGenerator {
 						{
 							if(k!=0)
 								this.gen(",");
-							if(funcPars[k] == T_logico)
+							if(funcPars[k].type == T_logico)
 							this.gen("(");
-							this.compileExpr(campo.args[k],funcPars[k]);
-							if(funcPars[k] == T_logico)
+							this.compileExpr(campo.args[k],funcPars[k].type);
+							if(funcPars[k].type == T_logico)
 							this.gen("? 0 : 1)");
 						}
 						

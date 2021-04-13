@@ -1,11 +1,11 @@
 class Util {
 	constructor() {
 		this.members = {
-		"aguarde":{id:T_parO,parameters:[T_inteiro],type:T_vazio,jsSafe:false},
-		"numero_elementos":{id:T_parO,parameters:[T_squareO],type:T_inteiro,jsSafe:true},
-		"numero_colunas":{id:T_parO,parameters:[T_squareO],type:T_inteiro,jsSafe:true},
-		"numero_linhas":{id:T_parO,parameters:[T_squareO],type:T_inteiro,jsSafe:true},
-		"sorteia":{id:T_parO,parameters:[T_inteiro,T_inteiro],type:T_inteiro,jsSafe:true},
+		"aguarde":{id:T_parO,parameters:[{name:"intervalo",type:T_inteiro}],type:T_vazio,jsSafe:false},
+		"numero_elementos":{id:T_parO,parameters:[{name:"vetor",type:T_squareO}],type:T_inteiro,jsSafe:true},
+		"numero_colunas":{id:T_parO,parameters:[{name:"matriz",type:T_squareO}],type:T_inteiro,jsSafe:true},
+		"numero_linhas":{id:T_parO,parameters:[{name:"matriz",type:T_squareO}],type:T_inteiro,jsSafe:true},
+		"sorteia":{id:T_parO,parameters:[{name:"minimo",type:T_inteiro},{name:"maximo",type:T_inteiro}],type:T_inteiro,jsSafe:true},
 		"tempo_decorrido":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true}
 		};
 		

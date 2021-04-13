@@ -2,10 +2,10 @@ class Internet {
 	constructor() {
 		this.members = {
 
-		"baixar_imagem":{id:T_parO,parameters:[T_cadeia,T_cadeia],type:T_cadeia,jsSafe:false},
-		"definir_tempo_limite":{id:T_parO,parameters:[T_inteiro],type:T_vazio,jsSafe:false},
-		"endereco_disponivel":{id:T_parO,parameters:[T_cadeia],type:T_logico,jsSafe:false},
-		"obter_texto":{id:T_parO,parameters:[T_cadeia],type:T_cadeia,jsSafe:false},
+		"baixar_imagem":{id:T_parO,parameters:[{name:"endereco",type:T_cadeia},{name:"caminho",type:T_cadeia}],type:T_cadeia,jsSafe:false},
+		"definir_tempo_limite":{id:T_parO,parameters:[{name:"tempo_limite",type:T_inteiro}],type:T_vazio,jsSafe:true},
+		"endereco_disponivel":{id:T_parO,parameters:[{name:"endereco",type:T_cadeia}],type:T_logico,jsSafe:false},
+		"obter_texto":{id:T_parO,parameters:[{name:"endereco",type:T_cadeia}],type:T_cadeia,jsSafe:false},
 		};
 		
 		

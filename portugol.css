@@ -84,7 +84,7 @@ body.mobile .mobileHidden{
 .ModalContent{
 	margin-left: auto;
 	margin-right: auto;
-	display: table;
+	/*display: table; Parece que n precisava ser table*/
 	position: relative;
 	background: #1E2324;
 	min-width:220px;

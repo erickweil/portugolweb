@@ -208,7 +208,7 @@ class Compiler {
 	
 	erro(msg)
 	{	
-		enviarErro(this.textInput,{index:this.lastIndex},msg);
+		enviarErro(this.textInput,{index:this.lastIndex},msg,"contexto");
 	}
 	
 	getFuncIndex(name,funcArgs)
@@ -333,8 +333,8 @@ class Compiler {
 			B_RETVALUE,
 			B_RET
 			],varCount:2,parameters:[
-			{id: STATEMENT_declVar, index: 0, type: T_inteiro, isConst: false, byRef: false, expr:false, name:"a"},
-			{id: STATEMENT_declVar, index: 0, type: T_inteiro, isConst: false, byRef: false, expr:false, name:"a"}
+			{id: STATEMENT_declVar, index: 0, type: T_inteiro, isConst: false, byRef: false, expr:false, name:"de"},
+			{id: STATEMENT_declVar, index: 0, type: T_inteiro, isConst: false, byRef: false, expr:false, name:"ate"}
 			],type:T_inteiro,jsSafe:true
 		}
 		];
@@ -1533,10 +1533,10 @@ class Compiler {
 						
 						for(var k =0;k<campo.args.length;k++)
 						{
-							var tExpr = this.compileExpr(campo.args[k],bc,funcPars[k]);
+							var tExpr = this.compileExpr(campo.args[k],bc,funcPars[k].type);
 							
-							if(!checarCompatibilidadeTipo(funcPars[k],tExpr,T_attrib))
-							this.erro("a função "+campo.name+" esperava o tipo "+getTypeWord(funcPars[k])+" porém foi fornecido o tipo "+getTypeWord(tExpr));
+							if(!checarCompatibilidadeTipo(funcPars[k].type,tExpr,T_attrib))
+							this.erro("a função "+campo.name+" esperava o tipo "+getTypeWord(funcPars[k].type)+" no parâmetro "+funcPars[k].name+" porém foi fornecido o tipo "+getTypeWord(tExpr));
 						}
 						
 						if(!libObj.members[campo.name].jsSafe)
