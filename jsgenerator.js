@@ -473,9 +473,9 @@ class JsGenerator {
 					
 					this.increaseTabLevel();
 					
-					this.scope = this.scope.parentScope;
-					
 					this.compileStatements(stat.statements);
+					
+					this.scope = this.scope.parentScope;
 					
 					this.decreaseTabLevel();
 					this.genln("}");
