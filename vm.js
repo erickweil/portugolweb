@@ -762,16 +762,43 @@ function VMrun(execMax)
 			case B_WAITINPUT: 
 				return STATE_WAITINGINPUT;
 			case B_READ_INT:
-				VM_stack[VM_si++] = parseInt(leia().trim());
+				var intRead = leia();
+				if(!intRead || 0 === intRead.length)
+				{
+					VMerro("Deveria inserir um número inteiro, mas inseriu nada");
+					return STATE_ENDED;
+				}
+				
+				if(!/^[\+\-]?\d+$/.test(intRead))
+				{
+					VMerro("Deveria inserir um número inteiro, mas inseriu outro tipo");
+					return STATE_ENDED;
+				}
+				
+				VM_stack[VM_si++] = parseInt(intRead);
 			break;
 			case B_READ_FLOAT:
-				VM_stack[VM_si++] = parseFloat(leia().trim());
+				var floatRead = leia();
+				if(!floatRead || 0 === floatRead.length)
+				{
+					VMerro("Deveria inserir um número, mas inseriu nada");
+					return STATE_ENDED;
+				}
+								
+				var floatConverted = parseFloat(floatRead);
+				if(isNaN(floatConverted) || !isFinite(floatConverted))
+				{
+					VMerro("Deveria inserir um número, mas inseriu outro tipo");
+					return STATE_ENDED;
+				}
+				
+				VM_stack[VM_si++] = floatConverted;
 			break;
 			case B_READ_STRING:
 				VM_stack[VM_si++] = leia();
 			break;
 			case B_READ_CHAR:
-				var charRead = leia()
+				var charRead = leia();
 				if(!charRead || 0 === charRead.length)
 				{
 					VMerro("Deveria inserir um caractere, mas inseriu nada");
@@ -781,7 +808,16 @@ function VMrun(execMax)
 				VM_stack[VM_si++] = charRead[0];
 			break;
 			case B_READ_BOOL:
-				VM_stack[VM_si++] = leia().trim() == "verdadeiro";
+				var boolRead = leia();
+				if(boolRead == "verdadeiro")
+				VM_stack[VM_si++] = B_TRUE;
+				else if(boolRead == "falso")
+				VM_stack[VM_si++] = B_FALSE;
+				else
+				{
+					VMerro("Deveria inserir verdadeiro ou falso, mas inseriu outro valor");
+					return STATE_ENDED;
+				}
 			break;
 			default:
 				VMerro("invalid bytecode:"+code);

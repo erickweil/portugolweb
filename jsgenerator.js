@@ -622,8 +622,19 @@ class JsGenerator {
 			
 			retType = getTipoRetorno(tExprA,tExprB); // quando é divisão retorna real ou inteiro?
 	
-			
-			if(isAttribOp(expr.op))
+			if(
+		   expr.op == T_and
+		|| expr.op == T_or
+		|| expr.op == T_ge
+		|| expr.op == T_gt
+		|| expr.op == T_le
+		|| expr.op == T_lt
+		|| expr.op == T_equals
+		|| expr.op == T_notequals) // quando é operador logico o retorno é logico né.
+			{
+				retType = T_logico;
+			}
+			else if(isAttribOp(expr.op))
 			{
 				var v = this.getVar(expr[0].name);
 				retType = tExprA;

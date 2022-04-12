@@ -745,11 +745,27 @@ onmousedown="executarStepStart(this)" onmouseup="executarStepPause(this);" onmou
 	
 	function compilar(string_cod,mayCompileJS)
 	{
+		var first_Time = performance.now();
+		
+		var last_Time = first_Time;
+		var token_Time = 0;
+		var tree_Time = 0;
+		var compiler_Time = 0;
+		
+		try{
 		var nErrosInicio = errosAnnot.length;
 		string_cod = string_cod.replace(/\r\n/g,"\n");
 		
+		
+		last_Time = performance.now();
+		
 		var tokenizer = new Tokenizer(string_cod);
-		console.log(tokenizer.tokenize());
+		//console.log(tokenizer.tokenize());
+		tokenizer.tokenize();
+		
+		token_Time = Math.trunc(performance.now() - last_Time);
+		last_Time = performance.now();
+		
 		if(!execMesmoComErros && errosAnnot.length > nErrosInicio)
 		{
 			ret = {success:false,"tokenizer":tokenizer};
@@ -760,7 +776,11 @@ onmousedown="executarStepStart(this)" onmouseup="executarStepPause(this);" onmou
 		
 		var relevantTokens = tokenizer.getRelevantTokens();
 		var tree = new Parser(relevantTokens,string_cod).parse();
-		console.log(tree);
+		//console.log(tree);
+		
+		tree_Time = Math.trunc(performance.now() - last_Time);
+		last_Time = performance.now();
+		
 		if(!execMesmoComErros && errosAnnot.length > nErrosInicio)
 		{
 			ret = {success:false,"tokenizer":tokenizer,"tree":tree};
@@ -776,6 +796,10 @@ onmousedown="executarStepStart(this)" onmouseup="executarStepPause(this);" onmou
 		
 		var compiler = new Compiler(tree,libraries,relevantTokens,string_cod,div_saida);
 		compiler.compile();
+		
+		compiler_Time = Math.trunc(performance.now() - last_Time);
+		last_Time = performance.now();
+		
 		if(!execMesmoComErros && errosAnnot.length > nErrosInicio)
 		{
 			ret = {success:false,"tokenizer":tokenizer,"tree":tree,"compiler":compiler};
@@ -800,6 +824,13 @@ onmousedown="executarStepStart(this)" onmouseup="executarStepPause(this);" onmou
 		ret = {success:true,"tokenizer":tokenizer,"tree":tree,"compiler":compiler,"jsgenerator":jsgenerator};
 		myPortugolCompleter.setCompiler(ret);
 		return ret;
+		}
+		finally
+		{
+			first_Time = Math.trunc(performance.now()-first_Time);
+			other_Time = first_Time - (token_Time + tree_Time + compiler_Time);
+			console.log("Compilou: Tempo de execução:"+first_Time+" milissegundos \n[token:"+token_Time+" ms,tree:"+tree_Time+" ms,compiler:"+compiler_Time+" ms, other:"+other_Time+"]");
+		}
 	}
 	
 	function executar(btn,passoapasso)
@@ -834,8 +865,9 @@ onmousedown="executarStepStart(this)" onmouseup="executarStepPause(this);" onmou
 			
 			var string_cod = editor.getValue();
 			try{
-				
+			
 				var compilado = compilar(string_cod,true);
+				
 				//lastvm = new Vm(compiler.functions,string_cod,div_saida);
 				if(!compilado.success)
 				{
@@ -1479,7 +1511,8 @@ onmousedown="executarStepStart(this)" onmouseup="executarStepPause(this);" onmou
 				var string_cod = editor.getValue();
 				
 				// Vai Detectar se escreveu algo ou nao usando hash mesmo??
-				var codigoHash = stringHashCode(string_cod);
+				//var codigoHash = stringHashCode(string_cod);
+				var codigoHash = string_cod.length;
 				// 1. não pre compila se escreveu algo nos últimos 2 segundos
 				if(_PreCompileLastHash != codigoHash)
 				{
@@ -1513,7 +1546,7 @@ onmousedown="executarStepStart(this)" onmouseup="executarStepPause(this);" onmou
 		}
 	}
 	
-	setInterval(autoPreCompile, 2500);
+	setInterval(autoPreCompile, 5000);
 	
 	
 	editor.on("focus", editorFocus);

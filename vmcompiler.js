@@ -234,7 +234,7 @@ class Compiler {
 		return 0;
 	}
 	
-	checkFuncJsSafety(func,depth)
+	checkFuncJsSafety(func,depth,prev_funcs)
 	{
 		if(!func.jsSafe)
 			return false;
@@ -244,6 +244,7 @@ class Compiler {
 
 		if(depth > 10)
 		{
+			//console.log("Marcou como unsafe porque o depth chegou em "+depth);
 			func.jsSafe = false;
 			return false;	
 		}
@@ -253,6 +254,7 @@ class Compiler {
 		{
 			if(func.parameters[i].byRef)
 			{
+				//console.log("Marcou como unsafe porque tem parametro por referencia "+depth);
 				func.jsSafe = false;
 				return false;
 			}
@@ -262,11 +264,19 @@ class Compiler {
 	
 		for(var i=0;i<func.funCalls.length;i++)
 		{
-			if(!this.checkFuncJsSafety(func.funCalls[i],depth+1))
-			{
-				func.jsSafe = false;
-				return false;
-			}
+			// dont look again on same func to avoid recursion
+			//if(prev_funcs.indexOf(func.funCalls[i]) == -1)
+			//{
+				var next_funcs = Array.from(prev_funcs);
+				next_funcs.push(func.funCalls[i]);
+				if(!this.checkFuncJsSafety(func.funCalls[i],depth+1,next_funcs))
+				{
+					//console.log("Marcou como unsafe porque chama a funcao "+func.funCalls[i].name);
+					func.jsSafe = false;
+					return false;
+				}
+			
+			//}
 		}
 		
 		return true;
@@ -373,9 +383,10 @@ class Compiler {
 		for(var i=0;i<this.functions.length;i++)
 		{
 			var func = this.functions[i];
-			func.jsSafe = this.checkFuncJsSafety(func,0);
+			func.jsSafe = this.checkFuncJsSafety(func,0,[func]);
 			
-			console.log(func.name+" is jsSafe:"+func.jsSafe);
+			//if(func.jsSafe !== true)
+			//console.log(func.name+" is jsSafe:"+func.jsSafe);
 		}
 		
 		
@@ -390,7 +401,7 @@ class Compiler {
 		
 		this.scope = this.scope.parentScope; // volta.
 		
-		console.log(this.functions);
+		//console.log(this.functions);
 		//if(!funcaoInicio) this.erro(this.tokens[0],"não encontrou a função início");
 	}
 	
@@ -1423,8 +1434,10 @@ class Compiler {
 						bc.push(funcIndex);
 						bc.push(args.length);
 						
+						
 						// a stack estará com as variáveis por referência, caso houver
 						// em ordem reversa!
+						if(funcIndex != 0)
 						for(var i =args.length-1;i>=0;i--)
 						{
 							if(func.parameters[i].byRef && func.parameters[i].id != STATEMENT_declArr)

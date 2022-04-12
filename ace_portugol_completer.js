@@ -104,18 +104,24 @@ class portugolCompleter
 	
 	getCompletions(editor, session, pos, prefix, callback) {
 		
+		var firstvmTime = performance.now();
+		var lastvmTime = firstvmTime;
 		//prefix = prefix.trim();
 		var sugestoes = []; // Lista de sugestões
 		var outPrefix = prefix; // Prefixo do identificador que está sendo escrito, e será substituido
 		
+		
 		var entireLine = editor.session.getLine(pos.row);
 		
-		if(this.tokenizer)
-		{
-			var tokenindex = this.tokenizer.getTokenIndexAtRowCol(pos.row+1,pos.column);
-			var token = this.tokenizer.tokens[tokenindex];
-			console.log("row:"+pos.row+",col:"+pos.column+" i:"+tokenindex+":'"+token.txt+"'");
-		}
+		//if(this.tokenizer)
+		//{
+		//	var tokenindex = this.tokenizer.getTokenIndexAtRowCol(pos.row+1,pos.column);
+		//	var token = this.tokenizer.tokens[tokenindex];
+		//	console.log("row:"+pos.row+",col:"+pos.column+" i:"+tokenindex+":'"+token.txt+"'");
+		//}
+		
+		var millis_tokens = Math.trunc(performance.now()-lastvmTime);
+		lastvmTime = performance.now();
 		//this.retrievePrecedingIdentifier(line, pos.column, identifierRegex);
 		//var outAppend = ""; // ??
 		
@@ -128,6 +134,8 @@ class portugolCompleter
 			sugestoes.push({value:p,caption:p,meta:"sugestão",tooltip:"",score:0});
 		}
 		
+		var millis_palavras = Math.trunc(performance.now()-lastvmTime);
+		lastvmTime = performance.now();
 		/*var bibliotecaCheck = /^.*[\D]\.[a-z0-9_]*$/.test(entireLine.toLowerCase());
 		if(!bibliotecaCheck && this.incluas)
 		{
@@ -158,6 +166,9 @@ class portugolCompleter
 			}
 		//}
 		
+		var millis_incluas = Math.trunc(performance.now()-lastvmTime);
+		lastvmTime = performance.now();
+		
 		if(this.functions)
 		{
 			for(var i =0;i<this.functions.length;i++)
@@ -177,6 +188,10 @@ class portugolCompleter
 			}
 		}
 		
+		
+		var millis_funcoes = Math.trunc(performance.now()-lastvmTime);
+		lastvmTime = performance.now();
+		
 		if(this.variaveisGlobais)
 		{
 			for(var i =0;i<this.variaveisGlobais.length;i++)
@@ -192,6 +207,9 @@ class portugolCompleter
 				});
 			}
 		}
+		
+		var millis_globais = Math.trunc(performance.now()-lastvmTime);
+		lastvmTime = performance.now();
 		
 		// deveria encontrar em que escopo está?
 		if(this.todasvariaveis)
@@ -209,6 +227,10 @@ class portugolCompleter
 				});
 			}
 		}
+		
+		
+		var millis_variaveis = Math.trunc(performance.now()-lastvmTime);
+		lastvmTime = performance.now();
 		
 		if(this.incluas)
 		{
@@ -294,6 +316,9 @@ class portugolCompleter
 			//}
 		}
 		
+		var millis_bibliotecas = Math.trunc(performance.now()-lastvmTime);
+		lastvmTime = performance.now();
+		
 		//console.info(entireLine+" ("+outPrefix+") --> "+sugestoes.map(entry=>{
 		//		return entry.value;
 		//}));
@@ -307,6 +332,16 @@ class portugolCompleter
 		{
 			sugestoes[i].score = i;
 		}*/
+		
+		console.log("Sugestoes Tempo de execução:"+Math.trunc(performance.now()-firstvmTime)+" milissegundos ["+
+		millis_tokens+" "+
+		millis_palavras+" "+
+		millis_incluas+" "+
+		millis_globais+" "+
+		millis_funcoes+" "+
+		millis_variaveis+" "+
+		millis_bibliotecas+"]"
+		);
 		
 		callback(
 			null,

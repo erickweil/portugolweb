@@ -953,10 +953,16 @@
 	
 	function removeHTML(html)
 	{
+		html = html.replaceAll("&lt;","@LT").replaceAll("&gt;","@GT");
 		var tmp = document.createElement("DIV");
 		tmp.innerHTML = html;
 		convertTagToNewLine(tmp,"p");
-		return tmp.textContent || tmp.innerText || "";
+		var ret = tmp.textContent || tmp.innerText || "";
+		
+		ret = ret.replaceAll("@LT","&lt;").replaceAll("@GT","&gt;");
+		return ret;
+		//var doc = new DOMParser().parseFromString(html, 'text/html');
+		//return doc.body.textContent || "";
 	}
 	
 	function convertTagToNewLine(elem,tag)
