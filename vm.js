@@ -362,6 +362,23 @@ function VM_realbool2s(value)
 	return (value ? "verdadeiro" : "falso");
 }
 
+function getFirstFunctionWithIndexes()
+{	
+	var func = VM_functions[VM_funcIndex];
+	if(func && func.bytecodeIndexes) return {funcIndex:VM_funcIndex,i:VM_i};
+	
+	for(var vI = VM_frame.length -1; vI >= 0; vI--)
+	{
+		var funcIndex = VM_frame[vI].funcIndex;
+		
+		func = VM_functions[funcIndex];
+		if(!func || !func.bytecodeIndexes)
+			continue;
+		
+		return {funcIndex:funcIndex,i: VM_frame[vI].i};
+	}
+}
+
 function getTokenIndex(bcIndex,funcIndex)
 {
 	var func = VM_functions[funcIndex];
@@ -377,12 +394,13 @@ function getTokenIndex(bcIndex,funcIndex)
 			tokenIndex = func.bytecodeIndexes[indexKeys[i]];
 		}
 	}
-	return tokenIndex
+	return tokenIndex;
 }
 
 function VMerro(msg)
-{	
-	var i = getTokenIndex(VM_i,VM_funcIndex);
+{
+	var fi = getFirstFunctionWithIndexes();
+	var i = getTokenIndex(fi.i,fi.funcIndex);
 	enviarErro(VM_textInput,{index:i},msg,"exec");
 }
 

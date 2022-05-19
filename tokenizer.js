@@ -374,7 +374,7 @@ function getTypeWord(code)
 		case T_logico: return "logico";
 		case T_squareO: return "vetor";
 		case T_vazio: return "vazio";
-		default: return "seila";
+		default: return code;
 	}
 }
 

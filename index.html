@@ -546,7 +546,7 @@ onmousedown="executarStepStart(this)" onmouseup="executarStepPause(this);" onmou
 			console.log(myStackTrace);
 		}
 		
-		console.log(lineNumber+":"+colNumber+" -> "+msg);
+		console.log("token index:"+token.index+" ... "+lineNumber+":"+colNumber+" -> "+msg);
 		
 		_enviarErroAnnot(//(lineNumber,colNumber,colNumber+next_line.length,msg,tipoErro);
 		{

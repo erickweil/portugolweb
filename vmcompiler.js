@@ -87,6 +87,18 @@ function getTipoRetorno(tA,tB)
 	return tA;
 }
 
+function funcArgsToStr(types)
+{
+	var str = getTypeWord(types[0]);
+	for(var i=1;i<types.length;i++)
+	{
+		str += ", ";
+		str += getTypeWord(types[i]);
+	}
+	
+	return str;
+}
+
 class FunctionScopeRef {
 	constructor() {
 		this.maxVarCount = 0;
@@ -222,15 +234,23 @@ class Compiler {
 				if(funcPars.length != funcArgs.length)
 					continue; // deve ter o mesmo número de argumentos
 				
+				var funcCompatible = true;
 				for(var k=0;k<funcPars.length;k++)
 				{
-					if(!checarCompatibilidadeTipo(funcPars[k].type,funcArgs[k].type,T_attrib)) 
-						continue; // deve ter os mesmos tipos, ou compatíveis
+					if(!checarCompatibilidadeTipo(funcPars[k].type,funcArgs[k],T_attrib)) 
+					{
+						funcCompatible = false; // deve ter os mesmos tipos, ou compatíveis
+						break;
+					}
 				}
+				
+				if(!funcCompatible)
+					continue;
+				
 				return i;
 			}
 		}
-		this.erro("a função '"+name+"' com "+funcArgs.length+" argumentos e tipos:"+funcArgs+" não foi encontrada");
+		this.erro("a função '"+name+"' com "+funcArgs.length+" argumentos e tipos:"+funcArgsToStr(funcArgs)+" não foi encontrada");
 		return 0;
 	}
 	

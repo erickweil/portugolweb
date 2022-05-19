@@ -1,3 +1,18 @@
+function replaceSubstring(inSource, inToReplace, inReplaceWith) {
+	var outString = [];
+	var repLen = inToReplace.length;
+	var idx = inSource.indexOf(inToReplace);
+	while (idx !== -1) {
+		outString.push(inSource.substring(0, idx))
+		outString.push(inReplaceWith);
+
+		inSource = inSource.substring(idx + repLen);
+		idx = inSource.indexOf(inToReplace);
+	}
+	outString.push(inSource);
+	return outString.join("");
+}
+	
 class Texto {
 	constructor() {
 		this.members = {
@@ -51,8 +66,12 @@ class Texto {
 		return {value:cad.padStart(tamanho,car)};
 	}
 	
+
+	
 	substituir(cad,texto_pesquisa,texto_substituto)
 	{
-		return {value:cad.replace(texto_pesquisa, texto_substituto)};
+		//return {value:cad.replace(texto_pesquisa, texto_substituto)};
+		var ret = replaceSubstring(cad, texto_pesquisa, texto_substituto);
+		return {value:ret};
 	}
 }
