@@ -7,6 +7,8 @@ class Graficos {
 		this.title = title;
 		this.divKeys = divKeys;
 		this.libTeclado = libTeclado;
+		this.rotation = 0;
+		
 		
 		this.COR_AMARELO = 0xFFFF00;
 		this.COR_AZUL = 0x0000FF;
@@ -118,6 +120,7 @@ class Graficos {
 		this.title.value = "Janela sem Título";
 		this.lastWidth = 100;
 		this.lastHeight = 100;
+		this.rotation = 0;
 		
 		this.textoTamanho = 15;
 		this.textoItalico = false;
@@ -218,6 +221,7 @@ class Graficos {
 	
 	desenhar_retangulo(x,y,w,h,arredondar,preencher) // lembrar que logico 0 é verdadeiro outra coisa é falso
 	{
+		this.startDraw(x,y,w,h);
 		if(preencher == 0)
 		{
 			this.ctx.fillRect(x, y, w, h);
@@ -226,6 +230,7 @@ class Graficos {
 		{
 			this.ctx.strokeRect(x, y, w, h);
 		}
+		this.endDraw();
 	}
 	
 	limpar()
@@ -263,17 +268,23 @@ class Graficos {
 	
 	desenhar_linha(x1,y1,x2,y2)
 	{
+		this.startDraw(x1,y1,x2-x1,y2-y1);
 		this.ctx.beginPath(); 
 		this.ctx.moveTo(x1,y1);
 		this.ctx.lineTo(x2,y2);
 		// Make the line visible
 		this.ctx.stroke();
+		this.endDraw();
 	}
 	
 	desenhar_texto(x,y,texto)
 	{
-		var yOff = this.altura_texto(texto).value*0.8;
-		this.ctx.fillText(texto, x, y+yOff);
+		var altura = this.altura_texto(texto).value;
+		var largura = this.largura_texto(texto).value;
+		this.startDraw(x,y,largura,altura);
+		
+		this.ctx.fillText(texto, x, y+altura*0.8);
+		this.endDraw();
 	}
 	
 	definir_tamanho_texto(tamanho)
@@ -296,6 +307,7 @@ class Graficos {
 	
 	desenhar_elipse(x,y,largura,altura,preencher)
 	{
+		this.startDraw(x,y,largura,altura);
 		var rx = largura/2.0;
 		var ry = altura/2.0;
 		if(this.ctx.ellipse)
@@ -330,6 +342,8 @@ class Graficos {
 			else this.ctx.stroke();
 			
 		}
+		
+		this.endDraw();
 	}
 	
 	entrar_modo_tela_cheia()
@@ -369,6 +383,7 @@ class Graficos {
 	
 	desenhar_poligono(pontos,preencher)
 	{
+		
 		this.ctx.beginPath();
 		
 		this.ctx.moveTo(pontos[0][0], pontos[0][1]);
@@ -460,14 +475,19 @@ class Graficos {
 		if(this.imgs[endereco] && this.imgs[endereco].loaded)
 		{
 			var imgObject = this.imgs[endereco];
+			
+			
 			if(!imgObject.rescale)
 			{
+				this.startDraw(x,y,imgObject.img.width,imgObject.img.height);
 				this.ctx.drawImage(imgObject.img, x, y);
 			}
 			else
 			{
+				this.startDraw(x,y,imgObject.rescaleX,imgObject.rescaleY);
 				this.ctx.drawImage(imgObject.img, x, y,imgObject.rescaleX,imgObject.rescaleY);
 			}
+			this.endDraw();
 		}
 		else
 		{
@@ -480,6 +500,9 @@ class Graficos {
 		if(this.imgs[endereco] && this.imgs[endereco].loaded)
 		{
 			var imgObject = this.imgs[endereco];
+			
+			this.startDraw(x,y,w,h);
+				
 			if(!imgObject.rescale)
 			{
 				this.ctx.drawImage(imgObject.img, xi, yi, w, h, x, y, w, h);
@@ -495,6 +518,9 @@ class Graficos {
 				
 				this.ctx.drawImage(imgObject.img, sxi, syi, sw, sh, x, y, w,h);
 			}
+			
+			
+			this.endDraw();
 		}
 		else
 		{
@@ -594,8 +620,31 @@ class Graficos {
 	
 	definir_rotacao(rot)
 	{
-		this.ctx.rotate(rot * Math.PI / 180);
+		//this.ctx.rotate(rot * Math.PI / 180);
+		this.rotation = rot;
 	}
+	
+	// para aplicar a rotação antes de desenhar
+	startDraw(x,y,w,h)
+	{
+		this.ctx.save();
+		if(this.rotation != 0)
+		{
+			var centerX = (x + (x+w)) * 0.5;
+			var centerY = (y + (y+h)) * 0.5;
+			// move the origin to the canvas' center
+			this.ctx.translate(centerX, centerY);
+			this.ctx.rotate(this.rotation * Math.PI / 180);
+			this.ctx.translate(-centerX, -centerY);
+		}
+	}
+
+	// para des-aplicar a rotação
+	endDraw()
+	{
+		this.ctx.restore();
+	}
+	
 	
 	fechar_janela()
 	{
