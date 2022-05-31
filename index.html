@@ -201,8 +201,10 @@ onmousedown="executarStepStart(this)" onmouseup="executarStepPause(this);" onmou
 
 </div>
 <div id="myOutput" style="position:relative;">
-<div class="saida" id="saida"><div id="errorArea"></div><textarea id="textAreaSaida" onclick="cursorToEnd(this)" onkeyup="cursorToEnd(this)" oninput="receiveInput(this)">??</textarea></div>
-<div class="saida" id="hidden"></div>
+<div class="saida" id="saida"><div id="errorArea"></div><div class="saida" id="hidden"></div><textarea id="textAreaSaida" onclick="cursorToEnd(this)" onkeyup="cursorToEnd(this)" oninput="receiveInput(this)">??</textarea>
+
+</div>
+
 <!--<input type="button" value="mostrar bytecode" style="position:absolute;top:0px;right:0px;background:transparent;z-index: 5;border:none" onclick="document.getElementById('hidden').style.display = 'block';"/>-->
 </div>
 </div>
@@ -297,6 +299,7 @@ onmousedown="executarStepStart(this)" onmouseup="executarStepPause(this);" onmou
 	var hotbar_active = false;
 	var hotbar_textarea = false;
 	var hotbar_isDragging = false;
+	var mostrar_bytecode = false;
 	//var screenDimension = getScreenDimensions();
 	//isMobile = true;
 	
@@ -877,6 +880,7 @@ onmousedown="executarStepStart(this)" onmouseup="executarStepPause(this);" onmou
 				VMsetup(compilado.compiler.functions,compilado.jsgenerator.functions,libraries,compilado.compiler.globalCount,string_cod,div_saida);
 				
 				try{
+					if(mostrar_bytecode)
 					document.getElementById("hidden").innerHTML = VMtoString();
 				}
 				catch(e){

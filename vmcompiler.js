@@ -44,7 +44,9 @@ function checarCompatibilidadeTipo(tA,tB,op)
 				case T_cadeia: return (op == T_attrib || op == T_plus || op == T_attrib_plus);
 				case T_caracter: return (op == T_attrib || op == T_plus || op == T_attrib_plus) && (tB == T_cadeia || tB == T_caracter);
 				case T_logico: 
-				return (op == T_attrib || 
+				return (
+				((op == T_plus || op == T_attrib_plus) && tB == T_cadeia) ||
+				op == T_attrib || 
 				op == T_bitor || op == T_bitand || op == T_xor || 
 				op == T_attrib_bitand || op == T_attrib_bitor || op == T_attrib_xor);
 			}

@@ -22,6 +22,36 @@ function htmlEntities(str) {
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+function removeEscaping(tok,str,escaping)
+{
+	// this.erro(this.tokens[this.tokens.length-1],"o tipo caracter deve conter apenas uma letra ou número. mude para cadeia");
+	var ret = "";
+	for(var i=0;i<str.length;i++)
+	{
+		var c0 = str[i];
+		
+		if(c0 == "\\" && i < str.length-1)
+		{
+			var c1 = str[i+1];
+			if(c1 == "\\") c0 = "\\";
+			else if(c1 == "t") c0 = "\t";
+			else if(c1 == "n") c0 = "\n";
+			else if(c1 == escaping) c0 = escaping;
+			else 
+			{
+				tok.erro(tok.tokens[tok.tokens.length-1],"Após inserir a barra invertida \\ você deve ter um desses: \\ (barra invertida), n (nova linha), t (tabulação), "+escaping+" (aspas)");
+			}
+			
+			i++;
+		}
+		
+		ret = ret+c0;
+	}
+	
+	return ret;
+}
+
+
 var separators = "\n\t +-*/%><!=&|^~;,.{}()[]:";
 var reserved_words =
 [
@@ -506,11 +536,15 @@ class Tokenizer {
 					}
 				}
 				var str = this.input.substring(i+1,k); // remove as aspas
-				str = str.replace(/\\n/g,'\n');
-				str = str.replace(/\\t/g,'\t');
-				str = str.replace(/\\\\/g,'\\');
-				str = str.replace(/\\"/g,'"');
-				str = str.replace(/\\'/g,"'");
+				
+				//str = str.replace(/\\n/g,'\n');
+				//str = str.replace(/\\t/g,'\t');
+				//str = str.replace(/\\\\/g,'\\');
+				//str = str.replace(/\\"/g,'"');
+				//str = str.replace(/\\'/g,"'");
+				
+				str = removeEscaping(this,str,c);
+				
 				if(c == '"')
 				{
 					this.tokens.push({id:T_cadeiaLiteral,index:i,txt:str});
