@@ -191,8 +191,16 @@ class Graficos {
 		// respira para não travar tudo
 		// a forma que o javascript funciona é que ele só vai atualizar a tela quando der uma pausinha
 		
+		this.updateTecladoGraficos()
+		
+		return {state:STATE_BREATHING};
+	}
+	
+		
+	updateTecladoGraficos()
+	{
 		// Vamos aproveitar essa função para atualizar os botões do teclado, caso tenha algum
-		if(isMobile)
+		if(isMobile && this.modal.style.display !== "none")
 		{
 			var teclas = Object.keys(this.libTeclado.checkMap);
 			var teclaCharMap = Object.keys(this.libTeclado.teclaCharMap);
@@ -203,32 +211,55 @@ class Graficos {
 				for(var i =0;i<teclas.length;i++)
 				{
 					var t = teclas[i];
-					var tvalue = t;
-					if(teclaCharMap.includes(t))
+					
+					if(this.libTeclado.checkMap[t] === true)
 					{
-						tvalue = this.libTeclado.teclaCharMap[t];
+						this.libTeclado.checkMap[t] = false;
+						var tvalue = this.libTeclado.teclaCharMap[t];
+						if(typeof tvalue === 'undefined')
+						{
+							tvalue = String.fromCharCode(t);
+						}
+						resHTML += "<input type=\"button\" value=\""+tvalue+"\" ontouchstart=\"GraficosBtnTypeDown('"+t+"')\" ontouchend=\"GraficosBtnTypeUp('"+t+"')\" onfocus=\"preventFocusCanvas(event)\" style=\"background: #1E2324;\">";
 					}
-					resHTML += "<input type=\"button\" value=\""+tvalue+"\" ontouchstart=\"GraficosBtnTypeDown('"+t+"')\" ontouchend=\"GraficosBtnTypeUp('"+t+"')\" onfocus=\"preventFocusCanvas(event)\" style=\"background: #1E2324;\">";
 				}
 			}
 					
 			if(this.divKeys.innerHTML != resHTML)
 			this.divKeys.innerHTML = resHTML;
-		}
-		
-		return {state:STATE_BREATHING};
+		}		
 	}
 	
 	desenhar_retangulo(x,y,w,h,arredondar,preencher) // lembrar que logico 0 é verdadeiro outra coisa é falso
 	{
 		this.startDraw(x,y,w,h);
-		if(preencher == 0)
+		if(arredondar == 0)
 		{
-			this.ctx.fillRect(x, y, w, h);
+			var r = 0;
+			if (w <= h) r = w / 10.0;
+			else r = h / 10.0;
+			
+			this.ctx.beginPath();
+			this.ctx.moveTo(x+r, y);
+			this.ctx.arcTo(x+w, y,   x+w, y+h, r);
+			this.ctx.arcTo(x+w, y+h, x,   y+h, r);
+			this.ctx.arcTo(x,   y+h, x,   y,   r);
+			this.ctx.arcTo(x,   y,   x+w, y,   r);
+			this.ctx.closePath();
+			
+			if(preencher == 0) this.ctx.fill();
+			else this.ctx.stroke();
 		}
 		else
 		{
-			this.ctx.strokeRect(x, y, w, h);
+			if(preencher == 0)
+			{
+				this.ctx.fillRect(x, y, w, h);
+			}
+			else
+			{
+				this.ctx.strokeRect(x, y, w, h);
+			}
 		}
 		this.endDraw();
 	}

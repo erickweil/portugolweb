@@ -140,7 +140,7 @@ class Mouse {
 	
 	ler_botao()
 	{
-		if(this.algum_botao_pressionado())
+		if(this.algum_botao_pressionado().value === true)
 		{
 			return {value:this.pressionado[0] ? this.BOTAO_ESQUERDO :( this.pressionado[1] ?  this.BOTAO_MEIO : this.BOTAO_DIREITO)};
 		}

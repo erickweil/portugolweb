@@ -345,6 +345,7 @@ onmousedown="executarStepStart(this)" onmouseup="executarStepPause(this);" onmou
 	libraries["Texto"] = new Texto();
 	libraries["Teclado"] = new Teclado(myCanvas);
 	libraries["Graficos"] = new Graficos(myCanvas,myCanvasModal,myCanvasWindow,myCanvasWindowTitle,myCanvasKeys,libraries["Teclado"]);
+	libraries["Teclado"].libGraficos = libraries["Graficos"];
 	libraries["Mouse"] = new Mouse(myCanvas);
 	libraries["Objetos"] = new Objetos();
 	libraries["Tipos"] = new Tipos();
@@ -1201,12 +1202,12 @@ onmousedown="executarStepStart(this)" onmouseup="executarStepPause(this);" onmou
 	
 	function GraficosBtnTypeDown(t)
 	{
-		libraries["Teclado"].tecladoDown({preventDefault:function(){},key:t});
+		libraries["Teclado"].tecladoDown({preventDefault:function(){},key:t},t);
 	}
 	
 	function GraficosBtnTypeUp(t)
 	{
-		libraries["Teclado"].tecladoUp({preventDefault:function(){},key:t});
+		libraries["Teclado"].tecladoUp({preventDefault:function(){},key:t},t);
 	}
 	//editor.on("blur", editorBlur);
 	
