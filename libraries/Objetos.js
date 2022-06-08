@@ -16,12 +16,22 @@ class Objetos {
 		"TIPO_OBJETO":{id:T_word,type:T_inteiro},
 		"TIPO_REAL":{id:T_word,type:T_inteiro},
 		"TIPO_VETOR":{id:T_word,type:T_inteiro},
-		"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_cadeia}],type:T_vazio,jsSafe:true},
-		"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_caracter}],type:T_vazio,jsSafe:true},
-		"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_inteiro}],type:T_vazio,jsSafe:true},
-		"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_real}],type:T_vazio,jsSafe:true},
-		"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_logico}],type:T_vazio,jsSafe:true},
-		"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_squareO}],type:T_vazio,jsSafe:true},
+		
+		// T_vazio coringa para qualquer tipo na função
+		
+		"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_vazio}],type:T_vazio,jsSafe:true},
+		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_caracter}],type:T_vazio,jsSafe:true},
+		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_inteiro}],type:T_vazio,jsSafe:true},
+		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_real}],type:T_vazio,jsSafe:true},
+		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_logico}],type:T_vazio,jsSafe:true},
+		
+		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_squareO}],type:T_vazio,jsSafe:true},
+		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_Vcadeia}],type:T_vazio,jsSafe:true},
+		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_Vcaracter}],type:T_vazio,jsSafe:true},
+		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_Vinteiro}],type:T_vazio,jsSafe:true},
+		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_Vreal}],type:T_vazio,jsSafe:true},
+		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_Vlogico}],type:T_vazio,jsSafe:true},
+		
 		"contem_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia}],type:T_logico,jsSafe:true},
 		"criar_objeto":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true},
 		"criar_objeto_via_json":{id:T_parO,parameters:[{name:"json",type:T_cadeia}],type:T_inteiro,jsSafe:true},

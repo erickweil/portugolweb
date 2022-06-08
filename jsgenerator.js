@@ -9,7 +9,18 @@ function getTypeChar(code)
 		case T_cadeia: return "s";
 		case T_real: return "f";
 		case T_logico: return "b";
-		case T_squareO: return "a";
+		case T_Vinteiro: return "vi";
+		case T_Vcaracter: return "vc";
+		case T_Vcadeia: return "vs";
+		case T_Vreal: return "vf";
+		case T_Vlogico: return "vb";
+		case T_Minteiro: return "mi";
+		case T_Mcaracter: return "mc";
+		case T_Mcadeia: return "ms";
+		case T_Mreal: return "mf";
+		case T_Mlogico: return "mb";
+		case T_Vetor: return "v";
+		case T_Matriz: return "m";
 	}
 }
 
@@ -136,9 +147,7 @@ class JsGenerator {
 				{
 					var arrayDim = parameters[k].size_expr.length;
 				
-					ret += getTypeChar(T_squareO);
-					ret += getTypeChar(parameters[k].type);
-					ret += ""+arrayDim;
+					ret += getTypeChar(convertArrayDimsType(parameters[k].type,arrayDim));
 				}
 				else
 				{
@@ -299,11 +308,28 @@ class JsGenerator {
 				if(funcPars.length != funcArgs.length)
 					continue; // deve ter o mesmo número de argumentos
 				
+				var funcCompatible = true;
 				for(var k=0;k<funcPars.length;k++)
 				{
-					if(!checarCompatibilidadeTipo(funcPars[k].type,funcArgs[k].type,T_attrib)) 
-						continue; // deve ter os mesmos tipos, ou compatíveis
+					var typeCheck = funcPars[k].type;
+					
+					if(funcPars[k].id == STATEMENT_declArr)
+					{
+						var dims = funcPars[k].size_expr.length;
+						if(dims == 1) typeCheck = convertArrayType(typeCheck);
+						if(dims == 2) typeCheck = convertMatrixType(typeCheck);
+					}
+					
+					if(!checarCompatibilidadeTipo(typeCheck,funcArgs[k],T_attrib)) 
+					{
+						funcCompatible = false; // deve ter os mesmos tipos, ou compatíveis
+						break;
+					}
 				}
+				
+				if(!funcCompatible)
+					continue;
+				
 				return i;
 			}
 		}
@@ -321,8 +347,19 @@ class JsGenerator {
 		}
 		else
 		{
+			var vType = type;
+			if(isArray)
+			{
+				if(arrayDim == 1)
+					vType = convertArrayType(type);
+				else if(arrayDim == 2)
+					vType = convertMatrixType(type);
+				else
+					this.erro("Matrizes com 3 ou mais dimensões não suportados:"+arrayDim);
+			}
+			
 			v = {
-				type:isArray ? T_squareO : type,
+				type:vType,
 				name:varName,
 				index:this.scope.globalScope ? this.scope.globalCount : this.scope.varCount,
 				global:this.scope.globalScope,
@@ -404,13 +441,13 @@ class JsGenerator {
 			{
 				case STATEMENT_declArr:
 				
+					var arrayDim = stat.size_expr.length;
 					var v = this.createVar(stat.name,stat.type,stat.isConst,true,arrayDim);
 			
 					if(v.global)
 						this.gen("VM_globals["+v.index+"] =");
 					else
 						this.gen("var",stat.name,"=");
-					var arrayDim = stat.size_expr.length;
 					var declExpr = stat.expr;
 					if(!declExpr)
 					{
@@ -424,6 +461,7 @@ class JsGenerator {
 						this.genln("],"+getDefaultValue(stat.type,v.global)+",0);");
 						
 						// Eu sei.
+						// Update 07/06/2022: Sabe oq????????/
 					}
 					else
 					{				
@@ -435,7 +473,7 @@ class JsGenerator {
 						}
 						else if(stat.expr.id == STATEMENT_expr)
 						{
-							this.compileExpr(stat.expr.expr,T_squareO);
+							this.compileExpr(stat.expr.expr,v.type);
 							this.genln(";");
 						}
 						
@@ -757,6 +795,7 @@ class JsGenerator {
 					else if(methName == "sorteia")
 					{
 						funcPars = [T_inteiro,T_inteiro];
+						funcType = T_inteiro;
 					}
 					else if(methName == "leia")
 					{
@@ -938,10 +977,10 @@ class JsGenerator {
 		
 		
 		
-		if( typeExpected == -1)
+		//if( typeExpected == -1)
 		return retType;
-		else
-		return typeExpected;
+		//else
+		//return typeExpected;
 	}
 	
 	baseParseInt(txt)

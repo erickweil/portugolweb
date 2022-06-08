@@ -1522,7 +1522,7 @@ onmousedown="executarStepStart(this)" onmouseup="executarStepPause(this);" onmou
 				if(_PreCompileLastHash != codigoHash)
 				{
 					_PreCompileLastHash = codigoHash;
-					console.log("escreveu, espera... Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
+					//console.log("escreveu, espera... Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
 					return;
 				}
 				
@@ -1530,7 +1530,7 @@ onmousedown="executarStepStart(this)" onmouseup="executarStepPause(this);" onmou
 				
 				if(_PreCompileCompileHash == codigoHash)
 				{
-					console.log("não escreveu nada, espera... Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
+					//console.log("não escreveu nada, espera... Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
 					return;
 				}
 				_PreCompileCompileHash = codigoHash;
@@ -1542,7 +1542,7 @@ onmousedown="executarStepStart(this)" onmouseup="executarStepPause(this);" onmou
 				
 				var compilado = compilar(string_cod,false);
 				
-				console.log("Compilou:"+compilado.success+" Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
+				//console.log("Compilou:"+compilado.success+" Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
 			}
 		} catch (e) {
 			var myStackTrace = e.stack || e.stacktrace || "";

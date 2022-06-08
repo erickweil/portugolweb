@@ -387,6 +387,40 @@ var T_cadeia = 98;
 var T_real = 99;
 var T_logico = 100;
 
+// VETOR
+var T_Vinteiro = 101;
+var T_Vcaracter = 102;
+var T_Vcadeia = 103;
+var T_Vreal = 104;
+var T_Vlogico = 105;
+
+// MATRIZ
+var T_Minteiro = 106;
+var T_Mcaracter = 107;
+var T_Mcadeia = 108;
+var T_Mreal = 109;
+var T_Mlogico = 110;
+
+var T_Vetor = 111; // qualquer vetor
+var T_Matriz = 112; // qualquer matriz
+
+function convertArrayType(c)
+{
+	return c + 5;
+}
+
+function convertMatrixType(c)
+{
+	return c + 10;
+}
+
+function convertArrayDimsType(c,dims)
+{
+	if(dims == 1)
+	return c + 5;
+	else
+	return c + 10;
+}
 
 function isTypeWord(code)
 {
@@ -402,8 +436,23 @@ function getTypeWord(code)
 		case T_cadeia: return "cadeia";
 		case T_real: return "real";
 		case T_logico: return "logico";
-		case T_squareO: return "vetor";
 		case T_vazio: return "vazio";
+		case T_Vetor: return "vetor";
+		case T_Matriz: return "matriz";
+		
+		
+		case T_Vinteiro: return "inteiro[]";
+		case T_Vcaracter: return "caracter[]";
+		case T_Vcadeia: return "cadeia[]";
+		case T_Vreal: return "real[]";
+		case T_Vlogico: return "logico[]";
+		
+		
+		case T_Minteiro: return "inteiro[][]";
+		case T_Mcaracter: return "caracter[][]";
+		case T_Mcadeia: return "cadeia[][]";
+		case T_Mreal: return "real[][]";
+		case T_Mlogico: return "logico[][]";
 		default: return code;
 	}
 }

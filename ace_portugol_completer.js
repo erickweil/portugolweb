@@ -247,7 +247,7 @@ class portugolCompleter
 			
 			//outAppend = linhaSemPonto+".";
 			
-			console.info("Biblioteca:"+linhaSemPonto+" offPonto:"+offPonto+" col:"+pos.column);
+			//console.info("Biblioteca:"+linhaSemPonto+" offPonto:"+offPonto+" col:"+pos.column);
 			
 			//var libsugestoes = [];
 			
@@ -333,6 +333,8 @@ class portugolCompleter
 			sugestoes[i].score = i;
 		}*/
 		
+		if(Math.trunc(performance.now()-firstvmTime) > 100)
+		{
 		console.log("Sugestoes Tempo de execução:"+Math.trunc(performance.now()-firstvmTime)+" milissegundos ["+
 		millis_tokens+" "+
 		millis_palavras+" "+
@@ -342,6 +344,7 @@ class portugolCompleter
 		millis_variaveis+" "+
 		millis_bibliotecas+"]"
 		);
+		}
 		
 		callback(
 			null,

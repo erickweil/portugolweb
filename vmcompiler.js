@@ -11,8 +11,53 @@ function getDefaultValue(code,global)
 	}
 }
 
+// debug
+//function checarCompatibilidadeTipo(tA,tB,op)
+//{
+//	var ret = _checarCompatibilidadeTipo(tA,tB,op);
+//
+//	console.log(getTypeWord(tA)+" "+getSeparator(op)+" "+getTypeWord(tB)+" --> "+ret);
+//	return ret;
+//}
+
 function checarCompatibilidadeTipo(tA,tB,op)
 {
+	// T_Vetor é o coringa para vetores
+	if(tA == T_Vetor)
+	{
+		if(tB >= T_Vinteiro && tB <= T_Vlogico)
+		{
+			tA = tB;
+		}
+	}
+	
+	// T_Matriz é o coringa para matrizes
+	if(tA == T_Matriz)
+	{
+		if(tB >= T_Minteiro && tB <= T_Mlogico)
+		{
+			tA = tB;
+		}
+	}
+	
+	// vazio é o coringa para aceitar qualquer um
+	if(tA == T_vazio)
+	{
+		tA = tB;
+	}
+	
+	// se é vetor ou matriz só é compatível se utilizar o = e o tipo for igual
+	if(tA >= T_Vinteiro && tA <= T_Mlogico)
+	{
+		if(op != T_attrib)
+		{
+			return false;
+		}
+		
+		return tA == tB;
+	}
+	
+	
 	switch(op)
 	{
 		case T_attrib:
@@ -37,8 +82,8 @@ function checarCompatibilidadeTipo(tA,tB,op)
 		case T_attrib_xor:
 		case T_xor:
 			switch(tA)
-			{
-				case T_squareO: return op == T_attrib && tB == T_squareO;
+			{				
+				//case T_squareO: return op == T_attrib && tB == T_squareO;
 				case T_inteiro: return (tB == T_inteiro || tB == T_real || ((op == T_plus || op == T_attrib_plus) && tB == T_cadeia));
 				case T_real: return (tB == T_inteiro || tB == T_real || ((op == T_plus || op == T_attrib_plus) && tB == T_cadeia));
 				case T_cadeia: return (op == T_attrib || op == T_plus || op == T_attrib_plus);
@@ -239,7 +284,16 @@ class Compiler {
 				var funcCompatible = true;
 				for(var k=0;k<funcPars.length;k++)
 				{
-					if(!checarCompatibilidadeTipo(funcPars[k].type,funcArgs[k],T_attrib)) 
+					var typeCheck = funcPars[k].type;
+					
+					if(funcPars[k].id == STATEMENT_declArr)
+					{
+						var dims = funcPars[k].size_expr.length;
+						if(dims == 1) typeCheck = convertArrayType(typeCheck);
+						if(dims == 2) typeCheck = convertMatrixType(typeCheck);
+					}
+					
+					if(!checarCompatibilidadeTipo(typeCheck,funcArgs[k],T_attrib)) 
 					{
 						funcCompatible = false; // deve ter os mesmos tipos, ou compatíveis
 						break;
@@ -445,8 +499,19 @@ class Compiler {
 		}
 		else
 		{
+			var vType = type;
+			if(isArray)
+			{
+				if(arrayDim == 1)
+					vType = convertArrayType(type);
+				else if(arrayDim == 2)
+					vType = convertMatrixType(type);
+				else
+					this.erro("Matrizes com 3 ou mais dimensões não suportados");
+			}
+			
 			v = {
-				type:isArray ? T_squareO : type,
+				type:vType,
 				name:varName,
 				index:this.scope.globalScope ? this.scope.globalCount : this.scope.varCount,
 				global:this.scope.globalScope,
@@ -639,9 +704,9 @@ class Compiler {
 						}
 						else if(stat.expr.id == STATEMENT_expr)
 						{
-							var tExpr = this.compileExpr(stat.expr.expr,bc,T_squareO);
+							var tExpr = this.compileExpr(stat.expr.expr,bc,v.type);
 														
-							if(!checarCompatibilidadeTipo(T_squareO,tExpr,T_attrib))
+							if(!checarCompatibilidadeTipo(v.type,tExpr,T_attrib))
 							{
 								this.erro("não pode colocar "+getTypeWord(tExpr)+" em uma variável do tipo "+getTypeWord(v.type));
 							}
@@ -1039,7 +1104,7 @@ class Compiler {
 			{
 				if(!checarCompatibilidadeTipo(tExprA,tExprB,expr.op))
 				{
-					this.erro("não pode aplicar a operação "+expr.op+" com os tipos "+getTypeWord(tExprA)+" e "+getTypeWord(tExprB));
+					this.erro("não pode aplicar a operação "+getSeparator(expr.op)+" com os tipos "+getTypeWord(tExprA)+" e "+getTypeWord(tExprB));
 				}
 			}
 		}
@@ -1063,7 +1128,7 @@ class Compiler {
 			{
 				if(!checarCompatibilidadeTipo(tExprA,tExprB,expr.op))
 				{
-					this.erro("não pode aplicar a operação "+expr.op+" com os tipos "+getTypeWord(tExprA)+" e "+getTypeWord(tExprB));
+					this.erro("não pode aplicar a operação "+getSeparator(expr.op)+" com os tipos "+getTypeWord(tExprA)+" e "+getTypeWord(tExprB));
 				}
 			}
 			
@@ -1236,7 +1301,7 @@ class Compiler {
 				{
 					if(!checarCompatibilidadeTipo(tExprA,tExprB,expr.op))
 					{
-						this.erro("não pode aplicar a operação com os tipos "+getTypeWord(tExprA)+" e "+getTypeWord(tExprB));
+						this.erro("não pode aplicar a operação "+getSeparator(expr.op)+" com os tipos "+getTypeWord(tExprA)+" e "+getTypeWord(tExprB));
 					}
 				}
 				
@@ -1302,7 +1367,7 @@ class Compiler {
 					case T_xor:bc.push(B_XOR);break;
 					
 					default:
-						this.erro("o operador "+expr.op+" não pode ter dois operandos.");
+						this.erro("o operador "+getSeparator(expr.op)+" não pode ter dois operandos.");
 						bc.push(B_ADD);
 					break;
 				}
@@ -1492,6 +1557,7 @@ class Compiler {
 				// x == 0: true
 				// x != 0: false
 				case T_logicoLiteral: bc.push(B_PUSH);bc.push(expr.value == "verdadeiro" ? B_TRUE : B_FALSE);return T_logico; 
+				// vetor[ expr ]
 				case T_squareO:
 					//var tExpri = this.compileExpr(expr.expr[0],bc,T_inteiro);
 					for(var k = 0;k<expr.expr.length;k++)
