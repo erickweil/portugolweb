@@ -1,4 +1,4 @@
-class Tipos {
+export default class Tipos {
 	constructor() {
 		this.members = {
 		"cadeia_e_caracter":{id:T_parO,parameters:[{name:"cad",type:T_cadeia}],type:T_logico,jsSafe:true},

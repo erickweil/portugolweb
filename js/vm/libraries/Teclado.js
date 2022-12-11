@@ -1,4 +1,4 @@
-class Teclado {
+export default class Teclado {
 	constructor(canvas) {
 		
 		this.canvas = canvas;

@@ -1,4 +1,4 @@
-class Calendario {
+export default class Calendario {
 	constructor() {
 		this.DIA_DOMINGO = 1;
 		this.DIA_SEGUNDA_FEIRA = 2;

@@ -1,4 +1,4 @@
-class Internet {
+export default class Internet {
 	constructor() {
 		this.members = {
 

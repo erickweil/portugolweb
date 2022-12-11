@@ -1,4 +1,4 @@
-class Mouse {
+export default class Mouse {
 	constructor(canvas) {
 		this.canvas = canvas;
 		this.BOTAO_DIREITO = 1;

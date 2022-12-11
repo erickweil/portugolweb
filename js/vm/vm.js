@@ -1,89 +1,91 @@
-const B_TRUE = 0;
-const B_FALSE = 1;
+import { numberOfLinesUntil } from "../extras/extras.js";
 
-const B_PUSH = 1;
-const B_POP = 2;
+export const B_TRUE = 0;
+export const B_FALSE = 1;
 
-const B_ADD = 3;
-const B_SUB = 4;
-const B_MUL = 5;
-const B_DIV = 6;
-const B_REM = 7;
+export const B_PUSH = 1;
+export const B_POP = 2;
 
-const B_iDIV = 8;  // integer div
-const B_iREM = 9; // integer modulo
+export const B_ADD = 3;
+export const B_SUB = 4;
+export const B_MUL = 5;
+export const B_DIV = 6;
+export const B_REM = 7;
 
-const B_GOTO = 13;
-const B_IFEQ = 14;
-const B_IFNE = 15;
-const B_IFLT = 16;
-const B_IFGE = 17;
-const B_IFGT = 18;
-const B_IFLE = 19;
+export const B_iDIV = 8;  // integer div
+export const B_iREM = 9; // integer modulo
 
-const B_DUP = 20;
-const B_INVOKE = 21;
+export const B_GOTO = 13;
+export const B_IFEQ = 14;
+export const B_IFNE = 15;
+export const B_IFLT = 16;
+export const B_IFGE = 17;
+export const B_IFGT = 18;
+export const B_IFLE = 19;
 
-const B_STORE = 22; // inteiro
-const B_LOAD = 23;
+export const B_DUP = 20;
+export const B_INVOKE = 21;
 
-const B_RET      = 24;
-const B_RETVALUE = 25;
+export const B_STORE = 22; // inteiro
+export const B_LOAD = 23;
 
-const B_SHL = 26;
-const B_SHR = 27;
-const B_XOR = 28;
-const B_AND = 29; //bitwise
-const B_OR = 30;  //bitwise
+export const B_RET      = 24;
+export const B_RETVALUE = 25;
 
-const B_IFCMPEQ = 31;
-const B_IFCMPNE = 32;
-const B_IFCMPLT = 33;
-const B_IFCMPLE = 34;
-const B_IFCMPGT = 35;
-const B_IFCMPGE = 36;
-const B_NEG = 37; // arithmetic negation
-const B_NOT = 38; // bitwise negation
-const B_NO = 39;  // logic negation
+export const B_SHL = 26;
+export const B_SHR = 27;
+export const B_XOR = 28;
+export const B_AND = 29; //bitwise
+export const B_OR = 30;  //bitwise
 
-const B_STOREGLOBAL = 40;
-const B_LOADGLOBAL = 41;
+export const B_IFCMPEQ = 31;
+export const B_IFCMPNE = 32;
+export const B_IFCMPLT = 33;
+export const B_IFCMPLE = 34;
+export const B_IFCMPGT = 35;
+export const B_IFCMPGE = 36;
+export const B_NEG = 37; // arithmetic negation
+export const B_NOT = 38; // bitwise negation
+export const B_NO = 39;  // logic negation
 
-const B_F2I = 42; // float to int
-//var B_I2F = 37; // int to float
+export const B_STOREGLOBAL = 40;
+export const B_LOADGLOBAL = 41;
 
-const B_I2S = 43; // int to str
-const B_F2S = 44; // float to str
-const B_B2S = 45; // bool to str
-const B_C2S = 46; // char to str
+export const B_F2I = 42; // float to int
+//let B_I2F = 37; // int to float
 
-const B_SWAP = 47; // swap the elemtns of the stack
+export const B_I2S = 43; // int to str
+export const B_F2S = 44; // float to str
+export const B_B2S = 45; // bool to str
+export const B_C2S = 46; // char to str
+
+export const B_SWAP = 47; // swap the elemtns of the stack
 
 
-const B_NEWARRAY = 48;
-const B_ASTORE = 49;
-const B_ALOAD = 50;
-const B_NEWARRAYGLOBAL = 51;
-const B_ASTOREGLOBAL = 52;
-const B_ALOADGLOBAL = 53;
+export const B_NEWARRAY = 48;
+export const B_ASTORE = 49;
+export const B_ALOAD = 50;
+export const B_NEWARRAYGLOBAL = 51;
+export const B_ASTOREGLOBAL = 52;
+export const B_ALOADGLOBAL = 53;
 
-const B_LIBLOAD = 54; // library load
-const B_LIBINVOKE = 55; // library invoke
+export const B_LIBLOAD = 54; // library load
+export const B_LIBINVOKE = 55; // library invoke
 // não existem opcodes pro or e and logico.
-//var B_LAND = 32; // logical or
-//var B_LOR = 33; // logical or
+//let B_LAND = 32; // logical or
+//let B_LOR = 33; // logical or
 
 // private
-const B_WRITE = 100;
-const B_WAITINPUT = 101;
-const B_READ_INT = 102;
-const B_READ_FLOAT = 103;
-const B_READ_STRING = 104;
-const B_READ_CHAR = 105;
-const B_READ_BOOL = 106;
-const B_CLEAR = 107;
+export const B_WRITE = 100;
+export const B_WAITINPUT = 101;
+export const B_READ_INT = 102;
+export const B_READ_FLOAT = 103;
+export const B_READ_STRING = 104;
+export const B_READ_CHAR = 105;
+export const B_READ_BOOL = 106;
+export const B_CLEAR = 107;
 
-function bytecodeName(c)
+export function bytecodeName(c)
 {
 switch(c)
 {
@@ -150,7 +152,7 @@ case B_LIBINVOKE: return "libinvoke";
 }
 }
 
-function bytecodeArgs(c)
+export function bytecodeArgs(c)
 {
 switch(c)
 {
@@ -222,40 +224,41 @@ case B_LIBINVOKE:
 }
 
 
-var STATE_ENDED = 0;
-var STATE_WAITINGINPUT = 1;
-var STATE_BREATHING = 2;
-var STATE_PENDINGSTOP = 3;
-var STATE_RUNNING = 4;
-var STATE_DELAY = 5;
-var STATE_DELAY_REPEAT = 6;
-var STATE_STEP = 7;
-var STATE_ASYNC_RETURN = 8;
-var VM_delay = false;
-var VM_execJS = false;
+export const STATE_ENDED = 0;
+export const STATE_WAITINGINPUT = 1;
+export const STATE_BREATHING = 2;
+export const STATE_PENDINGSTOP = 3;
+export const STATE_RUNNING = 4;
+export const STATE_DELAY = 5;
+export const STATE_DELAY_REPEAT = 6;
+export const STATE_STEP = 7;
+export const STATE_ASYNC_RETURN = 8;
+let VM_delay = false;
+let VM_execJS = false;
 // frame locals
-var VM_code = false;
-var VM_i = 0;
-var VM_stack = false; // o valor atual é o VM_si-1
-var VM_si = 0; // stack i
-var VM_vars = false;
-var VM_funcIndex = 0;
+let VM_code = false;
+let VM_i = 0;
+let VM_stack = false; // o valor atual é o VM_si-1
+let VM_si = 0; // stack i
+let VM_vars = false;
+let VM_funcIndex = 0;
 
 // frame globals
-var VM_frame = false;
-var VM_globals = false;
-var VM_functions = false;
-var VM_jsfunctions = false;
-var VM_libraries = false;
-var VM_saida = false;
-var VM_saidaDiv = false;
-var VM_textInput = false;
-var VM_codeCount = 0;
-var VM_codeMax = 500000; // se for um valor baixo dá flickering no canvas, valor alto trava tudo. (Resolvido, alterado esse máximo só quando usar a biblioteca Gráficos)
-var VM_escrevaCount = 0;
-var VM_escrevaMax = 1000;
+let VM_frame = false;
+let VM_globals = false;
+let VM_functions = false;
+let VM_jsfunctions = false;
+let VM_libraries = false;
+let VM_saida = false;
+let VM_saidaDiv = false;
+let VM_textInput = false;
+let VM_codeCount = 0;
+let VM_codeMax = 500000; // se for um valor baixo dá flickering no canvas, valor alto trava tudo. (Resolvido, alterado esse máximo só quando usar a biblioteca Gráficos)
+let VM_escrevaCount = 0;
+let VM_escrevaMax = 1000;
+let enviarErro = false;
 
-function recursiveDeclareArray(sizes,defaultValue,i)
+export function recursiveDeclareArray(sizes,defaultValue,i)
 {
 	if(i >= sizes.length)
 	{
@@ -263,18 +266,18 @@ function recursiveDeclareArray(sizes,defaultValue,i)
 		return false; // no more dimensions
 	}
 	
-	var arr = new Array(sizes[i]);
+	let arr = new Array(sizes[i]);
 	
 	if(i+1 < sizes.length)
 	{
-		for(var k=0;k<arr.length;k++)
+		for(let k=0;k<arr.length;k++)
 		{
 			arr[k] = this.recursiveDeclareArray(sizes,defaultValue,i+1);
 		}
 	}
 	else
 	{
-		for(var k=0;k<arr.length;k++)
+		for(let k=0;k<arr.length;k++)
 		{
 			arr[k] = defaultValue;
 		}
@@ -283,14 +286,14 @@ function recursiveDeclareArray(sizes,defaultValue,i)
 	return arr;
 }
 
-function escreva(...txt)
+export function escreva(...txt)
 {
 	if(VM_escrevaCount > VM_escrevaMax)
 	{
 		VM_escrevaCount = 0;
 		VM_saida = "<MAIS DE "+VM_escrevaMax+" ESCREVAS, REINICIANDO LOG...>\n";
 	}
-	for(var i=0;i<txt.length;i++)
+	for(let i=0;i<txt.length;i++)
 		VM_saida += txt[i];
 	
 	VM_saidaDiv.value = VM_saida;
@@ -298,7 +301,7 @@ function escreva(...txt)
 	VM_escrevaCount++;
 }
 
-function limpa()
+export function limpa()
 {
 	VM_saida = "";
 	VM_saidaDiv.value = VM_saida;
@@ -306,10 +309,10 @@ function limpa()
 	VM_escrevaCount = 0;
 }
 
-function leia()
+export function leia()
 {
-	var saidadiv = VM_saidaDiv.value;
-	var entrada = saidadiv.substring(VM_saida.length,saidadiv.length);
+	let saidadiv = VM_saidaDiv.value;
+	let entrada = saidadiv.substring(VM_saida.length,saidadiv.length);
 	if(entrada.endsWith("\n"))
 	{
 		entrada = entrada.substring(0,entrada.length-1);
@@ -318,12 +321,12 @@ function leia()
 	return entrada;
 }
 
-function sorteia(a,b)
+export function sorteia(a,b)
 {
 	return VM_libraries["Util"].sorteia(a,b).value;
 }
 
-function VM_async_return(retValue)
+export function VM_async_return(retValue)
 {
 	if(typeof retValue !== "undefined")
 	{	
@@ -334,42 +337,42 @@ function VM_async_return(retValue)
 	}
 	else
 	{
-		retvalue = null;
+		retValue = null;
 	}
 	
 	VM_stack[VM_si++] = retValue;
 }
 
-function VM_i2s(value)
+export function VM_i2s(value)
 {
 	return value.toLocaleString('fullwide', { useGrouping: false });
 }
 
-function VM_f2s(value)
+export function VM_f2s(value)
 {
-	var strFloat = ""+value;
+	let strFloat = ""+value;
 	if(!strFloat.includes(".")) strFloat += ".0";
 	return strFloat;
 }
 
-function VM_b2s(value)
+export function VM_b2s(value)
 {
 	return (value == 0 ? "verdadeiro" : "falso");
 }
 
-function VM_realbool2s(value)
+export function VM_realbool2s(value)
 {
 	return (value ? "verdadeiro" : "falso");
 }
 
-function getFirstFunctionWithIndexes()
+export function getFirstFunctionWithIndexes()
 {	
-	var func = VM_functions[VM_funcIndex];
+	let func = VM_functions[VM_funcIndex];
 	if(func && func.bytecodeIndexes) return {funcIndex:VM_funcIndex,i:VM_i};
 	
-	for(var vI = VM_frame.length -1; vI >= 0; vI--)
+	for(let vI = VM_frame.length -1; vI >= 0; vI--)
 	{
-		var funcIndex = VM_frame[vI].funcIndex;
+		let funcIndex = VM_frame[vI].funcIndex;
 		
 		func = VM_functions[funcIndex];
 		if(!func || !func.bytecodeIndexes)
@@ -377,17 +380,19 @@ function getFirstFunctionWithIndexes()
 		
 		return {funcIndex:funcIndex,i: VM_frame[vI].i};
 	}
+
+	return false
 }
 
-function getTokenIndex(bcIndex,funcIndex)
+export function getTokenIndex(bcIndex,funcIndex)
 {
-	var func = VM_functions[funcIndex];
+	let func = VM_functions[funcIndex];
 	if(!func || !func.bytecodeIndexes) return 0;
 	
-	var indexKeys = Object.keys(func.bytecodeIndexes);
+	let indexKeys = Object.keys(func.bytecodeIndexes);
 	if(!indexKeys) return 0;
-	var tokenIndex = 0;
-	for(var i =0;i<indexKeys.length;i++)
+	let tokenIndex = 0;
+	for(let i =0;i<indexKeys.length;i++)
 	{
 		if(indexKeys[i] <= bcIndex)
 		{
@@ -397,14 +402,21 @@ function getTokenIndex(bcIndex,funcIndex)
 	return tokenIndex;
 }
 
-function VMerro(msg)
+export function VMerro(msg)
 {
-	var fi = getFirstFunctionWithIndexes();
-	var i = getTokenIndex(fi.i,fi.funcIndex);
+	let fi = getFirstFunctionWithIndexes();
+	let i = 0;
+	
+	if(fi)
+		i = getTokenIndex(fi.i,fi.funcIndex);
+	// TODO
+	if(enviarErro)
 	enviarErro(VM_textInput,{index:i},msg,"exec");
+	else
+	console.log("ERRO NA VM:",msg)
 }
 
-function VMsetup(functions,jsfunctions,libraries,globalCount,textInput,saida_div) 
+export function VMsetup(functions,jsfunctions,libraries,globalCount,textInput,saida_div,erroCallback) 
 {
 	VM_functions = functions;
 	VM_jsfunctions = jsfunctions;
@@ -420,8 +432,11 @@ function VMsetup(functions,jsfunctions,libraries,globalCount,textInput,saida_div
 	
 	VM_frame = [];
 	VM_globals = new Array(globalCount);
+
+	// para mandar erro no console bonito
+	enviarErro = erroCallback;
 	
-	for(var i=0;i<VM_functions.length;i++)
+	for(let i=0;i<VM_functions.length;i++)
 	{
 		if(VM_functions[i].name == "#globalInit"){
 			//this.frame = new StackFrame(false,new Array(100),i,100); // depois tem 	que ver para ter o numero certo de variaveis
@@ -438,21 +453,21 @@ function VMsetup(functions,jsfunctions,libraries,globalCount,textInput,saida_div
 }
 
 // testando performance
-function VMrun(execMax)
+export function VMrun(execMax)
 {
 	try {
 	VM_codeCount = 0;
-	while(true)
+	while(true) // eslint-disable-line
 	{
 		VM_codeCount++; // para parar o programa e atualizar a saida em loops muito demorados
 		if(VM_codeCount > execMax) return STATE_BREATHING;
-		//var code = this.next();
+		//let code = this.next();
 		
 		
-		var lastVM_i = VM_i;
-		var lastVM_si = VM_si;
+		let lastVM_i = VM_i;
+		let lastVM_si = VM_si;
 		
-		var code = VM_code[VM_i++];
+		let code = VM_code[VM_i++];
 		
 		
 		switch(code)
@@ -461,9 +476,11 @@ function VMrun(execMax)
 			case B_POP: VM_si--; break;
 			case B_DUP: VM_stack[VM_si] = VM_stack[VM_si-1]; VM_si++; break; // o valor atual é colocado na frente.
 			case B_SWAP: 
-				var v = VM_stack[VM_si-1];
+			{
+				let v = VM_stack[VM_si-1];
 				VM_stack[VM_si-1] = VM_stack[VM_si-2];
 				VM_stack[VM_si-2] = v;
+			}
 			break;
 			case B_STORE: VM_vars[VM_code[VM_i++]] = VM_stack[--VM_si]; break;
 			case B_LOAD: VM_stack[VM_si++] = VM_vars[VM_code[VM_i++]]; break;
@@ -472,9 +489,11 @@ function VMrun(execMax)
 			case B_LOADGLOBAL: VM_stack[VM_si++] = VM_globals[VM_code[VM_i++]]; break;
 			
 			case B_LIBLOAD: 
-				var lib = VM_code[VM_i++];
-				var field = VM_code[VM_i++];
+			{
+				let lib = VM_code[VM_i++];
+				let field = VM_code[VM_i++];
 				VM_stack[VM_si++] = VM_libraries[lib][field];
+			}
 			break;
 
 			case B_ADD: VM_stack[VM_si-2] = VM_stack[VM_si-2]+VM_stack[VM_si-1]; VM_si--; break;
@@ -508,22 +527,23 @@ function VMrun(execMax)
 			case B_IFLE: VM_i = (VM_stack[--VM_si] <= 0 ? VM_code[VM_i++] : VM_i+1); break;
 			
 			case B_LIBINVOKE:
-				var lib = VM_code[VM_i++];
-				var meth = VM_code[VM_i++];
-				var methArgsN = VM_code[VM_i++];
-				var methArgs = [];
-				for(var i = 0;i<methArgsN; i++)
+			{
+				let lib = VM_code[VM_i++];
+				let meth = VM_code[VM_i++];
+				let methArgsN = VM_code[VM_i++];
+				let methArgs = [];
+				for(let i = 0;i<methArgsN; i++)
 				{
 					methArgs.push(VM_stack[--VM_si]);
 				}
 				methArgs.reverse();
 				
-				var ret = VM_libraries[lib][meth].apply(VM_libraries[lib], methArgs);
+				let ret = VM_libraries[lib][meth].apply(VM_libraries[lib], methArgs);
 				
 				
 				if(ret)
 				{
-					var retValue = ret.value;
+					let retValue = ret.value;
 					
 					if(typeof retValue !== "undefined")
 					{	
@@ -545,13 +565,14 @@ function VMrun(execMax)
 						return ret.state;
 					}
 				}
+			}
 			break;
 			case B_INVOKE:
-								
-				var methIndex = VM_code[VM_i++];
-				var methArgsN = VM_code[VM_i++];
-				var methArgs = [];
-				for(var i = 0;i<methArgsN; i++)
+			{
+				let methIndex = VM_code[VM_i++];
+				let methArgsN = VM_code[VM_i++];
+				let methArgs = [];
+				for(let i = 0;i<methArgsN; i++)
 				{
 					methArgs.push(VM_stack[--VM_si]);
 				}
@@ -586,21 +607,21 @@ function VMrun(execMax)
 					VM_stack = new Array(100);
 					VM_si = 0;
 					VM_vars = new Array(VM_functions[VM_funcIndex].varCount);
-					if(methArgs) for(var i=0;i<methArgs.length;i++)
+					if(methArgs) for(let i=0;i<methArgs.length;i++)
 					{
 						VM_vars[i] = methArgs[i];
 					}
 				}
 				else
 				{
-					var jsfuncName = VM_jsfunctions[methIndex].jsName;
+					let jsfuncName = VM_jsfunctions[methIndex].jsName;
 					if(!jsfuncName)
 					{
 						VMerro("Function '"+methIndex+"' has no name");
 					}
 					
 					
-					var jsfunc = window[jsfuncName];
+					let jsfunc = window[jsfuncName];
 					
 					if(!jsfunc)
 					{
@@ -609,7 +630,7 @@ function VMrun(execMax)
 					else
 					{
 						//console.log("chamou "+jsfuncName);
-						var ret = jsfunc.apply(null,methArgs);
+						let ret = jsfunc.apply(null,methArgs);
 						if(typeof ret !== "undefined")
 						{
 							if(typeof ret == "boolean")
@@ -620,13 +641,14 @@ function VMrun(execMax)
 						}
 					}
 				}
+			}
 			break;
 			
 			case B_RET: // return; // sem valor
-				
+			{
 				if(VM_frame.length > 0)
 				{
-					var vI = VM_frame.length -1;
+					let vI = VM_frame.length -1;
 					VM_funcIndex = VM_frame[vI].funcIndex;
 					VM_code = VM_functions[VM_funcIndex].bytecode;
 					VM_i = VM_frame[vI].i;
@@ -640,13 +662,15 @@ function VMrun(execMax)
 				{
 					return STATE_ENDED;
 				}
+			}
 			break;
 			
 			case B_RETVALUE: // return <expr>; // com valor
-				var v = VM_stack[--VM_si];
+			{
+				let v = VM_stack[--VM_si];
 				if(VM_frame.length > 0)
 				{
-					var vI = VM_frame.length -1;
+					let vI = VM_frame.length -1;
 					//VM_funcIndex = VM_frame[vI].funcIndex;
 					//VM_code = VM_functions[VM_funcIndex].bytecode;
 					//VM_i = VM_frame[vI].i;
@@ -663,6 +687,7 @@ function VMrun(execMax)
 					console.log("Não pode retornar valor:"+v);
 					return STATE_ENDED;
 				}
+			}
 			break;
 			
 			
@@ -676,21 +701,24 @@ function VMrun(execMax)
 			
 			case B_I2S: VM_stack[VM_si-1] = VM_stack[VM_si-1].toLocaleString('fullwide', { useGrouping: false }); break;
 			case B_F2S: 
-				var strFloat = ""+VM_stack[VM_si-1];
+			{
+				let strFloat = ""+VM_stack[VM_si-1];
 				if(!strFloat.includes(".")) strFloat += ".0";
 				VM_stack[VM_si-1] = strFloat;
+			}
 			break;
 			case B_B2S: VM_stack[VM_si-1] = (VM_stack[VM_si-1] == 0 ? "verdadeiro" : "falso"); break;
 			
 			case B_NEWARRAYGLOBAL:
 			case B_NEWARRAY:
-				var arrayVar = VM_code[VM_i++];
-				var ndims = VM_code[VM_i++];
-				var defaultValue = VM_code[VM_i++];
-				var sizes = [];
-				for(var k=0;k<ndims;k++)
+			{
+				let arrayVar = VM_code[VM_i++];
+				let ndims = VM_code[VM_i++];
+				let defaultValue = VM_code[VM_i++];
+				let sizes = [];
+				for(let k=0;k<ndims;k++)
 				{
-					var size = VM_stack[--VM_si];
+					let size = VM_stack[--VM_si];
 					if(size>=0)
 						sizes.push(size);
 					else
@@ -705,21 +733,23 @@ function VMrun(execMax)
 				VM_globals[arrayVar] = this.recursiveDeclareArray(sizes,defaultValue,0);
 				else
 				VM_vars[arrayVar] = this.recursiveDeclareArray(sizes,defaultValue,0);
+			}
 			break;
 			case B_ASTOREGLOBAL: 
 			case B_ASTORE:  
-				var arrayVar = VM_code[VM_i++];
-				var ndims = VM_code[VM_i++];
+			{
+				let arrayVar = VM_code[VM_i++];
+				let ndims = VM_code[VM_i++];
 				
-				var indexes = [];
-				for(var k=0;k<ndims;k++)
+				let indexes = [];
+				for(let k=0;k<ndims;k++)
 				{
 					indexes.push(VM_stack[--VM_si]);
 				}
 				indexes.reverse();
 				
-				var tempArr = code == B_ASTOREGLOBAL ? VM_globals[arrayVar] :VM_vars[arrayVar];
-				for(var k=0;k<ndims-1;k++)
+				let tempArr = code == B_ASTOREGLOBAL ? VM_globals[arrayVar] :VM_vars[arrayVar];
+				for(let k=0;k<ndims-1;k++)
 				{
 					if(indexes[k]>=0 && indexes[k] < tempArr.length)
 						tempArr = tempArr[indexes[k]];
@@ -737,21 +767,23 @@ function VMrun(execMax)
 					VMerro("O vetor vai de 0 à "+(tempArr.length-1)+" mas tentou acessar a posição '"+indexes[ndims-1]+"'");
 					return STATE_ENDED;
 				}
+			}
 			break;
 			case B_ALOADGLOBAL:
 			case B_ALOAD:
-				var arrayVar = VM_code[VM_i++];
-				var ndims = VM_code[VM_i++];
+			{
+				let arrayVar = VM_code[VM_i++];
+				let ndims = VM_code[VM_i++];
 				
-				var indexes = [];
-				for(var k=0;k<ndims;k++)
+				let indexes = [];
+				for(let k=0;k<ndims;k++)
 				{
 					indexes.push(VM_stack[--VM_si]);
 				}
 				indexes.reverse();
 				
-				var tempArr = code == B_ALOADGLOBAL ? VM_globals[arrayVar] :VM_vars[arrayVar];
-				for(var k=0;k<ndims-1;k++)
+				let tempArr = code == B_ALOADGLOBAL ? VM_globals[arrayVar] :VM_vars[arrayVar];
+				for(let k=0;k<ndims-1;k++)
 				{
 					if(indexes[k]>=0 && indexes[k] < tempArr.length)
 						tempArr = tempArr[indexes[k]];
@@ -769,6 +801,7 @@ function VMrun(execMax)
 					VMerro("O vetor vai de 0 à "+(tempArr.length-1)+" mas tentou acessar a posição '"+indexes[ndims-1]+"'");
 					return STATE_ENDED;
 				}
+			}
 			break;
 			
 			case B_WRITE: 
@@ -780,30 +813,33 @@ function VMrun(execMax)
 			case B_WAITINPUT: 
 				return STATE_WAITINGINPUT;
 			case B_READ_INT:
-				var intRead = leia();
+			{
+				let intRead = leia();
 				if(!intRead || 0 === intRead.length)
 				{
 					VMerro("Deveria inserir um número inteiro, mas inseriu nada");
 					return STATE_ENDED;
 				}
 				
-				if(!/^[\+\-]?\d+$/.test(intRead))
+				if(!/^[\+\-]?\d+$/.test(intRead)) // eslint-disable-line
 				{
 					VMerro("Deveria inserir um número inteiro, mas inseriu outro tipo");
 					return STATE_ENDED;
 				}
 				
 				VM_stack[VM_si++] = parseInt(intRead);
+			}
 			break;
 			case B_READ_FLOAT:
-				var floatRead = leia();
+			{
+				let floatRead = leia();
 				if(!floatRead || 0 === floatRead.length)
 				{
 					VMerro("Deveria inserir um número, mas inseriu nada");
 					return STATE_ENDED;
 				}
 								
-				var floatConverted = parseFloat(floatRead);
+				let floatConverted = parseFloat(floatRead);
 				if(isNaN(floatConverted) || !isFinite(floatConverted))
 				{
 					VMerro("Deveria inserir um número, mas inseriu outro tipo");
@@ -811,12 +847,14 @@ function VMrun(execMax)
 				}
 				
 				VM_stack[VM_si++] = floatConverted;
+			}
 			break;
 			case B_READ_STRING:
 				VM_stack[VM_si++] = leia();
 			break;
 			case B_READ_CHAR:
-				var charRead = leia();
+			{
+				let charRead = leia();
 				if(!charRead || 0 === charRead.length)
 				{
 					VMerro("Deveria inserir um caractere, mas inseriu nada");
@@ -824,9 +862,11 @@ function VMrun(execMax)
 				}
 				
 				VM_stack[VM_si++] = charRead[0];
+			}
 			break;
 			case B_READ_BOOL:
-				var boolRead = leia();
+			{
+				let boolRead = leia();
 				if(boolRead == "verdadeiro")
 				VM_stack[VM_si++] = B_TRUE;
 				else if(boolRead == "falso")
@@ -836,11 +876,11 @@ function VMrun(execMax)
 					VMerro("Deveria inserir verdadeiro ou falso, mas inseriu outro valor");
 					return STATE_ENDED;
 				}
+			}
 			break;
 			default:
 				VMerro("invalid bytecode:"+code);
 				return STATE_ENDED;
-			break;
 		}
 	}
 	}
@@ -851,25 +891,25 @@ function VMrun(execMax)
 	}
 }
 
-function VMtoString()
+export function VMtoString()
 {
-	var str = "";
+	let str = "";
 	
-	for(var i =9;i<VM_functions.length;i++)
+	for(let i =9;i<VM_functions.length;i++)
 	{
-		var f = VM_functions[i];
+		let f = VM_functions[i];
 		str+= i+": "+f.name+"\n";
-		var lastLine = -1;
-		for(var k =0;k<f.bytecode.length;k++)
+		let lastLine = -1;
+		for(let k =0;k<f.bytecode.length;k++)
 		{
-			var b = f.bytecode[k];
-			var line =numberOfLinesUntil(getTokenIndex(k,i),VM_textInput);
+			let b = f.bytecode[k];
+			let line =numberOfLinesUntil(getTokenIndex(k,i),VM_textInput);
 			if(line == lastLine)
 				str += "  \t"+k+":\t";
 			else
 				str += line+"\t"+k+":\t";
 			str += bytecodeName(b);
-			for(var o = 0;o<bytecodeArgs(b);o++)
+			for(let o = 0;o<bytecodeArgs(b);o++)
 			{
 				k++;
 				str += "\t"+f.bytecode[k];

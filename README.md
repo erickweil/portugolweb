@@ -106,6 +106,8 @@ Com o docker instalado basta executar:
 docker run -d -p 80:80 erickweil/portugolweb
 ```
 
+em seguida acesse http://localhost/
+
 ### Manual
 
 Pode também baixar o inteiro projeto e abrir o arquivo index.html para utilizar offline no Computador ( É necessário ter um navegador web ). Não funcionará clicar nos exemplos a não ser que hospede em um servidor web estático local, como por exemplo apache ou nginx (Uma forma fácil seria instalar o XAMPP).

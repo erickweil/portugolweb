@@ -1,0 +1,22 @@
+{
+  "name": "portugolweb",
+  "version": "1.0.0",
+  "description": "Portugol Web",
+  "main": "index.js",
+  "scripts": {
+    "lint": "npx eslint ./"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erickweil/portugolweb.git"
+  },
+  "author": "Erick Leonardo Weil",
+  "license": "GPL-3",
+  "bugs": {
+    "url": "https://github.com/erickweil/portugolweb/issues"
+  },
+  "homepage": "https://github.com/erickweil/portugolweb#readme",
+  "devDependencies": {
+    "eslint": "^8.29.0"
+  }
+}

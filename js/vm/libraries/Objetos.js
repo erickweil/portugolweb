@@ -1,4 +1,4 @@
-class Objetos {
+export default class Objetos {
 	constructor() {
 		this.TIPO_CADEIA = 2;
 		this.TIPO_CARACTER = 3;
