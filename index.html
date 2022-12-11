@@ -1,12 +1,32 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="description" content="Ajuda">
-  <meta name="keywords" content="HTML,CSS,XML,JavaScript">
-  <meta name="author" content="Erick Weil">
+<head> 
+
+  <title>Portugol Web</title>
+	
+  <!-- HTML Meta Tags -->
+  <meta charset="utf-8">
+  <meta lang="pt-br">
+  <meta name="author" content="Erick L. Weil">
+  <meta name="theme-color" content="#08ecbc">
+  <meta name="description" content="Utilize o portugol diretamente do seu navegador!">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Portugol Web</title>
+
+  <!-- Facebook Meta Tags -->
+  <meta property="og:url" content="https://erickweil.github.io/portugolweb/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Portugol Web">
+  <meta property="og:site_name" content="Portugol Web">
+  <meta property="og:description" content="Utilize o portugol diretamente do seu navegador!">
+  <meta property="og:locale" content="pt-br">
+
+  <!-- Twitter Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="twitter:domain" content="erickweil.github.io">
+  <meta property="twitter:url" content="https://erickweil.github.io/portugolweb/">
+  <meta name="twitter:title" content="Portugol Web">
+  <meta name="twitter:description" content="Utilize o portugol diretamente do seu navegador!">
+  
 	<link rel="stylesheet" type="text/css" href="portugol.css">
 </head>
 <body style="margin:0">
@@ -114,10 +134,14 @@ Portugol web no celular
 <div class="listaExemplos">
 <h2 onclick="exemplo('branco');">Novo Programa em Branco</h2>
 <hr style="border: 1px solid #01EABC;"/>
+<details><summary><h2>Básico</h2></summary>
 <h2 onclick="exemplo('variaveis');">Variáveis</h2>
 <h2 onclick="exemplo('entrada');">Entrada de dados</h2>
+</details><details><summary><h2>Operações Matemáticas</h2></summary>
+</details><details><summary><h2>Desvios Condicionais</h2></summary>
 <h2 onclick="exemplo('condicoes');">Condições</h2>
 <h2 onclick="exemplo('repeticao');">Repetição</h2>
+</details><details><summary><h2>Outros</h2></summary>
 <h2 onclick="exemplo('vetores');">Vetores</h2>
 <h2 onclick="exemplo('funcoes');">Funções</h2>
 <h2 onclick="exemplo('bibliotecas');">Bibliotecas</h2>
@@ -126,6 +150,7 @@ Portugol web no celular
 <h2 onclick="exemplo('jogodavida');">Jogo da Vida</h2>
 <h2 onclick="exemplo('internet');">Internet</h2>
 <h2 onclick="exemplo('aleatorio');">Aleatorio</h2>
+</details>
 
 <hr style="border: 1px solid #01EABC;"/>
 <span style="white-space:nowrap"><input id="check-mostrar-hotbar" style="height: 20px;" name="mostrar-hotbar" type="checkbox" onchange="toggleHotbar(this.checked);"/><label for="mostrar-hotbar">Mostrar Hotbar</label></span> 
@@ -142,18 +167,19 @@ Portugol web no celular
 
 <div id="hotbar" class="portugol-buttons" style="width:100%">
 <div id="myOutput_buttons" class="portugol-buttons" style="overflow-x:auto;white-space:nowrap;width: auto;">
-<input type="button" id="btn-run" value="Executar" onclick="executar(this,false)"/>
+<input type="button" id="btn-run" value="Executar" onclick="executar(this,false)" title="Executa o seu código"/>
 
 <input tabindex="-1" id="btn-step" type="button" style="background-image: url(icons/step.png);" value=" " 
 onmousedown="executarStepStart(this)" onmouseup="executarStepPause(this);" onmouseleave="executarStepPause(this);" 
+title="Executa o código mostando linha a linha a cada clique"
 />
 
-<input tabindex="-1" type="button" style="background-image: url(icons/FontPlus.png);" id="btn-fonteMaior" value=" " onclick="fonteAumentar()" onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/FontMinus.png);" id="btn-fonteMenor" value=" " onclick="fonteDiminuir()" onfocus="preventFocus(event)"/>
-<input type="button" style="background-image: url(icons/save.png);" id="btn-salvar" value=" " onclick="save()"/>
-<input type="button" style="background-image: url(icons/open.png);"  id="btn-abrir" value=" " onclick="load()"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/FontPlus.png); cursor: zoom-in;" id="btn-fonteMaior" value=" " onclick="fonteAumentar()" onfocus="preventFocus(event)" title="Aumenta o tamanho da fonte"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/FontMinus.png); cursor: zoom-out;" id="btn-fonteMenor" value=" " onclick="fonteDiminuir()" onfocus="preventFocus(event)" title="Diminui o tamanho da fonte"/>
+<input type="button" style="background-image: url(icons/save.png);" id="btn-salvar" value=" " onclick="save()" title="Baixa o código"/>
+<input type="button" style="background-image: url(icons/open.png);"  id="btn-abrir" value=" " onclick="load()" title="Carrega um código"/>
 <!--<input type="button" tabindex="-1" id="btn-mostrar-hotbar" value="Ocultar" onclick='toggleHotbar();' onfocus="preventFocus(event)"/>-->
-<input type="button" id="btn-exemplos" value="Exemplos" onclick="document.getElementById('modalExemplos').style.display = 'table';"/>
+<input type="button" id="btn-exemplos" value="Exemplos" onclick="document.getElementById('modalExemplos').style.display = 'table';"  title="Abre o menu inicial"/>
 
 <!--<input type="button" id="btn-run" value="Modo Normal" onclick=""/>-->
 

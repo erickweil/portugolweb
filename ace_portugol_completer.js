@@ -3,7 +3,7 @@ class portugolCompleter
 	constructor(libraries)
 	{
 		this.listaPalavras = [
-			"leia(variavel)"
+			"leia()"
 		];
 		
 		this.listaPalavras = this.listaPalavras.concat(reserved_words);

@@ -13,7 +13,7 @@ programa
 		
 		// Condições permitem que tenhamos valores verdadeiro ou falso
 		// os operadores de comparação são:
-		//   ==		--> para testar se os valores são iguais
+		//   ==	    --> para testar se os valores são iguais
 		//   <      --> se o valor à esquerda é menor que o da direita
 		//   >      --> se o valor à esquerda é maior que o da direita
 		

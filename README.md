@@ -89,7 +89,7 @@ Devido ao código ser executado em uma máquina virtual, o mesmo código executa
 
 * [Ace editor](https://github.com/ajaxorg/ace) - O editor do código.
 
-é isso! todo o código é escrito em html e javascript, não é utilizado JQuery nem nenhuma outra biblioteca.
+é isso! todo o código é escrito em html e javascript, não é utilizado nenhuma outra biblioteca.
 
 ## Instalação
 
@@ -98,7 +98,17 @@ Devido ao código ser executado em uma máquina virtual, o mesmo código executa
 > acesse: <a>https://erickweil.github.io/portugolweb/</a> para utilizar direto do navegador
 > ou baixe o aplicativo Android:<a>https://play.google.com/store/apps/details?id=br.erickweil.portugolweb</a> que permite utilizar offline.
 
-Ou se desejar, baixe o inteiro projeto e abra o arquivo index.html para utilizar offline no Computador ( É necessário ter um navegador web ).
+### Docker
+
+É possível executar uma imagem Docker baseada no nginx para hospedar o site em um container Docker.
+Com o docker instalado basta executar:
+```
+docker run -d -p 80:80 erickweil/portugolweb
+```
+
+### Manual
+
+Pode também baixar o inteiro projeto e abrir o arquivo index.html para utilizar offline no Computador ( É necessário ter um navegador web ). Não funcionará clicar nos exemplos a não ser que hospede em um servidor web estático local, como por exemplo apache ou nginx (Uma forma fácil seria instalar o XAMPP).
 
 ## Licença 
 
