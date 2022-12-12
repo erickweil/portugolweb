@@ -1,26 +1,27 @@
 import PortugolRuntime from "../js/vm/portugolrun.js";
-import { assert, assertEquals, test } from '/test/test.js'
+import { assert, assertEquals, test, testAll } from './test.js';
 
-test("Executnado Hello World:", () => {
-    let input = "programa{ funcao inicio(){escreva(\"Olá\")escreva(\" \")escreva(\"Mundo\")} }"
+export function runTests() {
+return testAll("portugolrun",
 
-    let run = new PortugolRuntime()
+    test("Executnado Hello World:", () => {
+        let input = "programa{ funcao inicio(){escreva(\"Olá\")escreva(\" \")escreva(\"Mundo\")} }";
 
-    return run.executar(input,false).then((saida) => {
-        assertEquals(saida,"Olá Mundo")
-        proximo()
-    })
-});
-
-function proximo() {
-    test("Executando Fibonacci:", () => {
-        let input = "programa{ funcao inicio(){inteiro a = 0 inteiro b = 1 enquanto(a<20){a = a + b b = a - b escreva(a,\" \")}}}"
-
-        let run = new PortugolRuntime()
+        let run = new PortugolRuntime();
 
         return run.executar(input,false).then((saida) => {
-            assertEquals(saida,"1 1 2 3 5 8 13 21 ")
-        })
-    });
+            assertEquals(saida,"Olá Mundo");
+        });
+    }),
 
+    test("Executando Fibonacci:", () => {
+        let input = "programa{ funcao inicio(){inteiro a = 0 inteiro b = 1 enquanto(a<20){a = a + b b = a - b escreva(a,\" \")}}}";
+
+        let run = new PortugolRuntime();
+
+        return run.executar(input,false).then((saida) => {
+            assertEquals(saida,"1 1 2 3 5 8 13 21 ");
+        });
+    })
+);
 }

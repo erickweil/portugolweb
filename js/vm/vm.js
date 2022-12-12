@@ -246,7 +246,7 @@ export function VM_getDelay(delay) {
 
 let VM_execJS = false;
 export function VM_getExecJS() {
-	return VM_execJS
+	return VM_execJS;
 }
 // frame locals
 let VM_code = false;
@@ -403,7 +403,7 @@ export function getFirstFunctionWithIndexes()
 		return {funcIndex:funcIndex,i: VM_frame[vI].i};
 	}
 
-	return false
+	return false;
 }
 
 export function getTokenIndex(bcIndex,funcIndex)
@@ -425,7 +425,7 @@ export function getTokenIndex(bcIndex,funcIndex)
 }
 
 export function getCurrentTokenIndex() {
-	return getTokenIndex(VM_i,VM_funcIndex)
+	return getTokenIndex(VM_i,VM_funcIndex);
 }
 
 export function VMerro(msg)
@@ -439,7 +439,7 @@ export function VMerro(msg)
 	if(enviarErro)
 	enviarErro(VM_textInput,{index:i},msg,"exec");
 	else
-	console.log("ERRO NA VM:",msg)
+	console.log("ERRO NA VM:",msg);
 }
 
 export function VMsetup(functions,jsfunctions,libraries,globalCount,textInput,saida_div,erroCallback) 

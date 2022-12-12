@@ -20,4 +20,4 @@ function persistentGetValue(key){
 
 }
 
-export {persistentGetValue,persistentStoreValue}
+export {persistentGetValue,persistentStoreValue};

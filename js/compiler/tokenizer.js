@@ -2,7 +2,7 @@ import { numberOfLinesUntil } from "../extras/extras.js";
 
 export const decodeEntities = (function() {
   // this prevents any overhead from creating the object each time
-  var element = document.createElement('div');
+  let element = document.createElement('div');
 
   function decodeHTMLEntities (str) {
     if(str && typeof str === 'string') {
@@ -27,14 +27,14 @@ export function htmlEntities(str) {
 export function removeEscaping(tok,str,escaping)
 {
 	// this.erro(this.tokens[this.tokens.length-1],"o tipo caracter deve conter apenas uma letra ou número. mude para cadeia");
-	var ret = "";
-	for(var i=0;i<str.length;i++)
+	let ret = "";
+	for(let i=0;i<str.length;i++)
 	{
-		var c0 = str[i];
+		let c0 = str[i];
 		
 		if(c0 == "\\" && i < str.length-1)
 		{
-			var c1 = str[i+1];
+			let c1 = str[i+1];
 			if(c1 == "\\") c0 = "\\";
 			else if(c1 == "t") c0 = "\t";
 			else if(c1 == "n") c0 = "\n";
@@ -573,7 +573,7 @@ export class Tokenizer {
 	// Adding a method to the constructor
 	tokenize()
 	{
-		let start_off = 0
+		let start_off = 0;
 		
 		for(let i =0; i< this.input.length;i++)
 		{
@@ -886,7 +886,7 @@ export class Tokenizer {
 // deprecated
 function token_replace2(input)
 {
-	let start_off = 0
+	let start_off = 0;
 	let string = "";
 	for(let i =0; i< input.length;i++)
 	{
@@ -973,7 +973,7 @@ function token_replace2(input)
 				if( !(separators.indexOf(word) > -1)) // n Ã© um separador
 				{
 					word = "<span class='w-"+word+"'>"+word+"</span>"; 
-					let sep_c = separators_names[separators.indexOf(c)]
+					let sep_c = separators_names[separators.indexOf(c)];
 					let sep = "<span class='"+sep_c+"'>"+c+"</span>"; 
 					string += word;
 					string += sep;
@@ -982,7 +982,7 @@ function token_replace2(input)
 				}
 				else
 				{
-					let sep_c = separators_names[separators.indexOf(word)]
+					let sep_c = separators_names[separators.indexOf(word)];
 					let sep = "<span class='"+sep_c+"'>"+word+"</span>"; 
 					string += sep;
 					start_off = i+1;
@@ -990,7 +990,7 @@ function token_replace2(input)
 			}
 			else
 			{
-				let sep_c = separators_names[separators.indexOf(c)]
+				let sep_c = separators_names[separators.indexOf(c)];
 				let sep = "<span class='"+sep_c+"'>"+c+"</span>"; 
 				string += sep;
 				start_off = i+1;

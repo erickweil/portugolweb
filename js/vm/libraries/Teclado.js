@@ -501,7 +501,7 @@ export default class Teclado {
 		"ler_tecla":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:false},
 		"tecla_pressionada":{id:T_parO,parameters:[{name:"tecla",type:T_inteiro}],type:T_logico,jsSafe:true},
 		};
-		var that = this;
+		let that = this;
 		this.canvas.addEventListener("keydown",function(evt) {that.tecladoDown(evt,-1);});
 		this.canvas.addEventListener("keyup",function(evt) {that.tecladoUp(evt,-1);});
 		
@@ -524,7 +524,7 @@ export default class Teclado {
 	tecladoDown(evt,codekey)
 	{
 		evt.preventDefault();
-		var key = codekey;
+		let key = codekey;
 		if(key == -1)
 		{
 			key = this.teclaCodepointMap[evt.key.toUpperCase()];
@@ -542,7 +542,7 @@ export default class Teclado {
 	tecladoUp(evt,codekey)
 	{
 		evt.preventDefault();
-		var key = codekey;
+		let key = codekey;
 		if(key == -1)
 		{
 			key = this.teclaCodepointMap[evt.key.toUpperCase()];
@@ -588,14 +588,14 @@ export default class Teclado {
 			
 			this.ultimaSolta = -1;
 			
-			VM_setDelay(1)
+			VM_setDelay(1);
 			return {state:STATE_DELAY_REPEAT};
 		}
 		else
 		{
 			if(this.ultimaSolta == -1)
 			{
-				VM_setDelay(1)
+				VM_setDelay(1);
 				return {state:STATE_DELAY_REPEAT};
 			}
 			else

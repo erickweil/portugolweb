@@ -141,10 +141,10 @@ export default class Graficos {
 		VM_setCodeMax(10000000); // para não dar flickering na tela
 		this.manter_visivel = manter_visivel == 0;
 		
-		var screenDim = getScreenDimensions();
+		let screenDim = getScreenDimensions();
 
 		
-		var square = Math.min(screenDim.width,screenDim.height);
+		let square = Math.min(screenDim.width,screenDim.height);
 		//this.definir_dimensoes_janela(600,480);
 		this.definir_dimensoes_janela(square-32,square-72);
 		
@@ -172,7 +172,7 @@ export default class Graficos {
 	
 	definir_dimensoes_janela(w,h)
 	{
-		var screenDim = getScreenDimensions();
+		let screenDim = getScreenDimensions();
 		w = Math.min(screenDim.width-8,w);
 		h = Math.min(screenDim.height-48,h);
 		this.lastWidth = w;
@@ -196,7 +196,7 @@ export default class Graficos {
 		// respira para não travar tudo
 		// a forma que o javascript funciona é que ele só vai atualizar a tela quando der uma pausinha
 		
-		this.updateTecladoGraficos()
+		this.updateTecladoGraficos();
 		
 		return {state:STATE_BREATHING};
 	}
@@ -207,20 +207,20 @@ export default class Graficos {
 		// Vamos aproveitar essa função para atualizar os botões do teclado, caso tenha algum
 		if(this.isMobile && this.modal.style.display !== "none")
 		{
-			var teclas = Object.keys(this.libTeclado.checkMap);
-			var teclaCharMap = Object.keys(this.libTeclado.teclaCharMap);
-			var resHTML = "";
+			let teclas = Object.keys(this.libTeclado.checkMap);
+			let teclaCharMap = Object.keys(this.libTeclado.teclaCharMap);
+			let resHTML = "";
 			
 			if(teclas.length > 0)
 			{
-				for(var i =0;i<teclas.length;i++)
+				for(let i =0;i<teclas.length;i++)
 				{
-					var t = teclas[i];
+					let t = teclas[i];
 					
 					if(this.libTeclado.checkMap[t] === true)
 					{
 						this.libTeclado.checkMap[t] = false;
-						var tvalue = this.libTeclado.teclaCharMap[t];
+						let tvalue = this.libTeclado.teclaCharMap[t];
 						if(typeof tvalue === 'undefined')
 						{
 							tvalue = String.fromCharCode(t);
@@ -240,7 +240,7 @@ export default class Graficos {
 		this.startDraw(x,y,w,h);
 		if(arredondar == 0)
 		{
-			var r = 0;
+			let r = 0;
 			if (w <= h) r = w / 10.0;
 			else r = h / 10.0;
 			
@@ -281,13 +281,13 @@ export default class Graficos {
 	
 	altura_tela()
 	{
-		var screenDim = getScreenDimensions();
+		let screenDim = getScreenDimensions();
 		return {value:screenDim.height};
 	}
 	
 	largura_tela()
 	{
-		var screenDim = getScreenDimensions();
+		let screenDim = getScreenDimensions();
 		return {value:screenDim.width};
 	}
 	
@@ -315,8 +315,8 @@ export default class Graficos {
 	
 	desenhar_texto(x,y,texto)
 	{
-		var altura = this.altura_texto(texto).value;
-		var largura = this.largura_texto(texto).value;
+		let altura = this.altura_texto(texto).value;
+		let largura = this.largura_texto(texto).value;
 		this.startDraw(x,y,largura,altura);
 		
 		this.ctx.fillText(texto, x, y+altura*0.8);
@@ -344,8 +344,8 @@ export default class Graficos {
 	desenhar_elipse(x,y,largura,altura,preencher)
 	{
 		this.startDraw(x,y,largura,altura);
-		var rx = largura/2.0;
-		var ry = altura/2.0;
+		let rx = largura/2.0;
+		let ry = altura/2.0;
 		if(this.ctx.ellipse)
         {
 			//ctx.save();
@@ -358,7 +358,7 @@ export default class Graficos {
         }
 		else
 		{
-			var kappa = .5522848,
+			let kappa = .5522848,
 			ox = (largura / 2) * kappa, // control point offset horizontal
 			oy = (altura / 2) * kappa, // control point offset vertical
 			xe = x + largura,           // x-end
@@ -389,19 +389,19 @@ export default class Graficos {
 		this.cwindow.style.width = "100%";
 		this.telaCheia = true;
 		
-		var screenDim = getScreenDimensions();
+		let screenDim = getScreenDimensions();
 		this.canvas.height = screenDim.height-48;
 		this.canvas.width = screenDim.width-8;
 		
-		var that = this;
+		let that = this;
 		window.setTimeout(function(){ // pq a tela redimensiona depois
-			var screenDim = getScreenDimensions();
+			let screenDim = getScreenDimensions();
 			that.canvas.height = screenDim.height-48;
 			that.canvas.width = screenDim.width-8;
 		}, 50);
 		
 		window.setTimeout(function(){ // muito depois 
-			var screenDim = getScreenDimensions();
+			let screenDim = getScreenDimensions();
 			that.canvas.height = screenDim.height-48;
 			that.canvas.width = screenDim.width-8;
 		}, 250);
@@ -422,9 +422,9 @@ export default class Graficos {
 		this.ctx.beginPath();
 		
 		this.ctx.moveTo(pontos[0][0], pontos[0][1]);
-		for(var i=1;i<pontos.length;i++)
+		for(let i=1;i<pontos.length;i++)
 		{
-			var ponto = pontos[i];
+			let ponto = pontos[i];
 			this.ctx.lineTo(ponto[0],ponto[1]);
 		}
 		this.ctx.closePath();
@@ -439,7 +439,7 @@ export default class Graficos {
 	
 	carregar_imagem(url)
 	{
-		var imgObject = this.imgs[this.imgs.length-1];
+		let imgObject = this.imgs[this.imgs.length-1];
 		if(imgObject && imgObject.url == url)
 		{
 			
@@ -459,7 +459,7 @@ export default class Graficos {
 		}
 		else
 		{
-			var img = new Image();
+			let img = new Image();
 			img.src = url;
 			
 			imgObject = {url:url,img:img,loaded:false,error:false,rescale:false,rescaleX:0,rescaleY:0};
@@ -473,7 +473,7 @@ export default class Graficos {
 			img.onload = function() {
 				console.log("Carregada imagem :"+url);
 				imgObject.loaded = true;
-			}
+			};
 			
 			
 			this.imgs.push(imgObject);
@@ -493,8 +493,8 @@ export default class Graficos {
 	{
 		if(this.imgs[endereco] && this.imgs[endereco].loaded)
 		{
-			var imgObject = this.imgs[endereco];
-			var newImgObject = {url:imgObject.url,img:imgObject.img,loaded:true,error:false,rescale:true,rescaleX:largura,rescaleY:altura};
+			let imgObject = this.imgs[endereco];
+			let newImgObject = {url:imgObject.url,img:imgObject.img,loaded:true,error:false,rescale:true,rescaleX:largura,rescaleY:altura};
 			
 			this.imgs.push(newImgObject);
 			return {value:this.imgs.length-1};
@@ -509,7 +509,7 @@ export default class Graficos {
 	{
 		if(this.imgs[endereco] && this.imgs[endereco].loaded)
 		{
-			var imgObject = this.imgs[endereco];
+			let imgObject = this.imgs[endereco];
 			
 			
 			if(!imgObject.rescale)
@@ -534,7 +534,7 @@ export default class Graficos {
 	{
 		if(this.imgs[endereco] && this.imgs[endereco].loaded)
 		{
-			var imgObject = this.imgs[endereco];
+			let imgObject = this.imgs[endereco];
 			
 			this.startDraw(x,y,w,h);
 				
@@ -545,11 +545,11 @@ export default class Graficos {
 			else
 			{
 				// Remapear para operar na imagem não escalonada.
-				var sw = w/imgObject.rescaleX * imgObject.img.width
-				var sh = h/imgObject.rescaleY * imgObject.img.height
+				let sw = w/imgObject.rescaleX * imgObject.img.width;
+				let sh = h/imgObject.rescaleY * imgObject.img.height;
 				
-				var sxi = xi/imgObject.rescaleX * imgObject.img.width
-				var syi = yi/imgObject.rescaleY * imgObject.img.height
+				let sxi = xi/imgObject.rescaleX * imgObject.img.width;
+				let syi = yi/imgObject.rescaleY * imgObject.img.height;
 				
 				this.ctx.drawImage(imgObject.img, sxi, syi, sw, sh, x, y, w,h);
 			}
@@ -634,12 +634,12 @@ export default class Graficos {
 	
 	definir_gradiente(tipo,cor1,cor2)
 	{
-		var hexcor1 =  "#"+Number(cor1).toString(16).padStart(6, '0');
-		var hexcor2 =  "#"+Number(cor2).toString(16).padStart(6, '0');
+		let hexcor1 =  "#"+Number(cor1).toString(16).padStart(6, '0');
+		let hexcor2 =  "#"+Number(cor2).toString(16).padStart(6, '0');
 		//if(tipo == this.GRADIENTE_DIREITA)
 		//{
 			// Create gradient
-			var grd = this.ctx.createLinearGradient(0, 0, this.canvas.width, 0);
+			let grd = this.ctx.createLinearGradient(0, 0, this.canvas.width, 0);
 			grd.addColorStop(0, hexcor1);
 			grd.addColorStop(1, hexcor2);
 
@@ -665,8 +665,8 @@ export default class Graficos {
 		this.ctx.save();
 		if(this.rotation != 0)
 		{
-			var centerX = (x + (x+w)) * 0.5;
-			var centerY = (y + (y+h)) * 0.5;
+			let centerX = (x + (x+w)) * 0.5;
+			let centerY = (y + (y+h)) * 0.5;
 			// move the origin to the canvas' center
 			this.ctx.translate(centerX, centerY);
 			this.ctx.rotate(this.rotation * Math.PI / 180);

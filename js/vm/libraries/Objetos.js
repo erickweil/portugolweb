@@ -77,7 +77,7 @@ export default class Objetos {
 	{
 		if(this.objs[endereco])
 		{
-			var obj = this.objs[endereco];
+			let obj = this.objs[endereco];
 			obj[propriedade] = valor;
 		}
 		else throw "Nenhum objeto encontrado no endereco "+endereco;
@@ -87,7 +87,7 @@ export default class Objetos {
 	{
 		if(this.objs[endereco])
 		{
-			var obj = this.objs[endereco];
+			let obj = this.objs[endereco];
 			if(propriedade in obj)
 			{
 				return {value: true};
@@ -143,7 +143,7 @@ export default class Objetos {
 	{
 		if(this.objs[endereco])
 		{
-			var obj = this.objs[endereco];
+			let obj = this.objs[endereco];
 			if(propriedade in obj)
 			{
 				return {value:obj[propriedade]};
@@ -155,21 +155,21 @@ export default class Objetos {
 	
 	obter_propriedade_tipo_danese_em_vetor(endereco,propriedade,indice)
 	{
-		var arr = this.obter_propriedade_tipo_danese(endereco,propriedade);
+		let arr = this.obter_propriedade_tipo_danese(endereco,propriedade);
 		
 		return {value:arr[indice]};
 	}
 	
 	obter_tamanho_vetor_propriedade(endereco,propriedade)
 	{
-		var arr = this.obter_propriedade_tipo_danese(endereco,propriedade);
+		let arr = this.obter_propriedade_tipo_danese(endereco,propriedade);
 		
 		return {value:arr.length};
 	}
 	
 	tipo_propriedade(endereco,propriedade)
 	{
-		var prop = this.obter_propriedade_tipo_danese(endereco,propriedade);
+		let prop = this.obter_propriedade_tipo_danese(endereco,propriedade);
 		
 		if(typeof prop === "object")
 		{

@@ -9,14 +9,20 @@ import {
 	addEvent,
 	referenceSafeRemove,
 	httpGetAsync
-} from '../js/extras/extras.js'
+} from '../js/extras/extras.js';
 
-import { assert, assertEquals, test } from '/test/test.js'
+import { assert, assertEquals, test, testAll } from './test.js';
 
-test("numberOfLinesUntil:", () => {
-    assertEquals(numberOfLinesUntil(4,"aaa\nbbb\nccc"), 2);
-});
+export function runTests() {
+return testAll("extras",
 
-test("hashCode:", () => {
-    assertEquals(stringHashCode("ERICK"), stringHashCode("ER"+"ICK"));
-});
+	test("numberOfLinesUntil:", () => {
+		assertEquals(numberOfLinesUntil(4,"aaa\nbbb\nccc"), 2);
+	}),
+
+	test("hashCode:", () => {
+		assertEquals(stringHashCode("ERICK"), stringHashCode("ER"+"ICK"));
+	})
+
+);
+}

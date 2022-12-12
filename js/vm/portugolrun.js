@@ -16,7 +16,7 @@ import Util from "./libraries/Util.js";
 import { escreva, getCurrentTokenIndex, getTokenIndex, limpa, STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMrun, VMsetup, VMtoString, VM_getCodeMax, VM_getDelay, VM_getExecJS 
 } from "./vm.js";
 
-var libraries = {};
+let libraries = {};
 libraries["Util"] = new Util();
 libraries["Calendario"] = new Calendario();
 libraries["Matematica"] = new Matematica();
@@ -30,11 +30,11 @@ libraries["Internet"] = new Internet();
 
 function enviarErro(textInput,token,msg,tipoErro)
 {
-	var lineNumber = numberOfLinesUntil(token.index,textInput);
-	var prev_line = textInput.substring(textInput.lastIndexOf('\n', token.index)+1,token.index).replace(/\t/g,'    ');
-	var next_line = textInput.substring(token.index,textInput.indexOf('\n', token.index));
-	var colNumber = prev_line.length;
-	var logprev = "Linha "+lineNumber+":"+prev_line;
+	let lineNumber = numberOfLinesUntil(token.index,textInput);
+	let prev_line = textInput.substring(textInput.lastIndexOf('\n', token.index)+1,token.index).replace(/\t/g,'    ');
+	let next_line = textInput.substring(token.index,textInput.indexOf('\n', token.index));
+	let colNumber = prev_line.length;
+	let logprev = "Linha "+lineNumber+":"+prev_line;
 	/*
 	try {
 		throw "ERRO"
@@ -63,14 +63,14 @@ function _enviarErroAnnot(annot)
 {
 	if(!annot) return;
 	
-	let txt = ""
+	let txt = "";
 	txt += htmlEntities(annot.text)+"\n";
 	if(annot.textprev && annot.textnext)
 	{
 		txt += htmlEntities(annot.textprev+annot.textnext)+"\n";
 		txt += " ".repeat(annot.textprev.length)+"^\n\n";
 	}
-	console.error(txt)
+	console.error(txt);
 	/*if(annot.text)
 	errosSaida.innerHTML += htmlEntities(annot.text)+"\n";
 	if(annot.textprev && annot.textnext)
@@ -115,7 +115,7 @@ export default class PortugolRuntime {
 				//var string_cod = editor.getValue();
 				try{
 				
-					var compilado = that.compilar(string_cod,true);
+					let compilado = that.compilar(string_cod,true);
 					
 					//lastvm = new Vm(compiler.functions,string_cod,div_saida);
 					if(!compilado.success)
@@ -131,7 +131,7 @@ export default class PortugolRuntime {
 						document.getElementById("hidden").innerHTML = VMtoString();
 					}
 					catch(e){
-						var myStackTrace = e.stack || e.stacktrace || "";
+						let myStackTrace = e.stack || e.stacktrace || "";
 						console.log(myStackTrace);
 					}
 					//lastvmState = lastvm.run();
@@ -154,7 +154,7 @@ export default class PortugolRuntime {
 				limpa();
 
 				const tryExec = () => {
-					let delay = that.executarVM()
+					let delay = that.executarVM();
 
 					if(that.lastvmState == STATE_ENDED)
 					{
@@ -167,14 +167,14 @@ export default class PortugolRuntime {
 					}
 					else if(that.lastvmState.STATE_WAITINGINPUT || that.lastvmState.STATE_ASYNC_RETURN)
 					{
-						throw "Não funciona"
+						throw "Não funciona";
 					}
 					else
 					{
 						mySetTimeout("EXEC",tryExec,0);
 					}
-				}
-				tryExec()
+				};
+				tryExec();
 
 		});
 		}
@@ -226,7 +226,7 @@ export default class PortugolRuntime {
 		let nErrosInicio = this.errosAnnot.length;
 		
 		let tokenizer = new Tokenizer(string_cod,enviarErro);
-		tokenizer.tokenize()
+		tokenizer.tokenize();
 		//console.log(tokenizer.tokenize());
 		if(!this.execMesmoComErros && this.errosAnnot.length > nErrosInicio)
 		{
@@ -236,8 +236,8 @@ export default class PortugolRuntime {
 		}
 		//div_port.innerHTML = tokenizer.formatHTML();
 		
-		var relevantTokens = tokenizer.getRelevantTokens();
-		var tree = new Parser(relevantTokens,string_cod,enviarErro).parse();
+		let relevantTokens = tokenizer.getRelevantTokens();
+		let tree = new Parser(relevantTokens,string_cod,enviarErro).parse();
 		//console.log(tree);
 		if(!this.execMesmoComErros && this.errosAnnot.length > nErrosInicio)
 		{
@@ -246,13 +246,13 @@ export default class PortugolRuntime {
 			return ret;
 		}
 		
-		var librariesNames = Object.keys(libraries);
-		for(var i =0;i<librariesNames.length;i++)
+		let librariesNames = Object.keys(libraries);
+		for(let i =0;i<librariesNames.length;i++)
 		{
 			libraries[librariesNames[i]].resetar();
 		}
 		
-		var compiler = new Compiler(tree,libraries,relevantTokens,string_cod,null,enviarErro);
+		let compiler = new Compiler(tree,libraries,relevantTokens,string_cod,null,enviarErro);
 		compiler.compile();
 		if(!this.execMesmoComErros && this.errosAnnot.length > nErrosInicio)
 		{
@@ -261,7 +261,7 @@ export default class PortugolRuntime {
 			return ret;
 		}
 		
-		var jsgenerator = {"functions":false};
+		let jsgenerator = {"functions":false};
 		if(mayCompileJS && VM_getExecJS())
 		{
 			/*try{
@@ -315,7 +315,7 @@ export default class PortugolRuntime {
 		}
 		else if(this.lastvmState == STATE_BREATHING) {
 			//mySetTimeout("STATE_BREATHING",() => {that.executarVM()}, 0); // permite o navegador ficar responsivo
-			return 0
+			return 0;
 		}
 		else if(this.lastvmState == STATE_DELAY || this.lastvmState == STATE_DELAY_REPEAT) {
 			//mySetTimeout("STATE_DELAY",() => {that.executarVM()}, VM_getDelay());
@@ -357,7 +357,7 @@ export default class PortugolRuntime {
 			let _errosAnnot = this.errosAnnot;
 			this.errosAnnot = [];
 			//editor.getSession().setAnnotations(errosAnnot);
-			for(var i=0;i<_errosAnnot.length;i++)
+			for(let i=0;i<_errosAnnot.length;i++)
 			{
 				if(!tipoErros.includes(_errosAnnot[i].myErrorType) && _errosAnnot[i].type == "error")
 				{

@@ -56,18 +56,19 @@ export default class Matematica {
 	
 	raiz(x,n)
 	{
+		// não tinha que dar erro para x negativo?
 		try {
-			var negate = n % 2 == 1 && x < 0;
+			let negate = n % 2 == 1 && x < 0;
 			if(negate)
 				x = -x;
-			var possible = Math.pow(x, 1 / n);
+			let possible = Math.pow(x, 1 / n);
 			n = Math.pow(possible, n);
 			if(Math.abs(x - n) < 1 && (x > 0 == n > 0))
 				return {value:negate ? -possible : possible};
 		}
 		catch(e)
 		{
-			console.log(e)
+			console.log(e);
 		}
 	}
 	

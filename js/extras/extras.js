@@ -6,7 +6,7 @@
 // retorna o número de linhas, começando em 1
 function numberOfLinesUntil(index,str)
 {
-	var st = str.substring(0,index);
+	let st = str.substring(0,index);
 	return (st.match(/\r?\n/g) || '').length + 1;
 }
 
@@ -27,7 +27,8 @@ function numberOfLinesUntil(index,str)
  */
 function stringHashCode(s) 
 {
-    for(var i = 0, h = 0; i < s.length; i++)
+	let h = 0;
+    for(let i = 0; i < s.length; i++)
         h = Math.imul(31, h) + s.charCodeAt(i) | 0;
     return h;
 }
@@ -49,12 +50,12 @@ function elementIsAllScrolled(obj)
 /* View in fullscreen */
 function requestFullScreen(element) {
 	// Supports most browsers and their versions.
-	var requestMethod = element.requestFullScreen || element.webkitRequestFullScreen || element.mozRequestFullScreen || element.msRequestFullScreen;
+	let requestMethod = element.requestFullScreen || element.webkitRequestFullScreen || element.mozRequestFullScreen || element.msRequestFullScreen;
 
 	if (requestMethod) { // Native full screen.
 		requestMethod.call(element);
 	} else if (typeof window.ActiveXObject !== "undefined") { // Older IE.
-		var wscript = new window.ActiveXObject("WScript.Shell");
+		let wscript = new window.ActiveXObject("WScript.Shell");
 		if (wscript !== null) {
 			wscript.SendKeys("{F11}");
 		}
@@ -98,7 +99,7 @@ function closeFullscreen() {
 			}
 		}
 	}catch (e) {
-			var myStackTrace = e.stack || e.stacktrace || "";
+		let myStackTrace = e.stack || e.stacktrace || "";
 
 			console.log(myStackTrace);
 		}
@@ -106,9 +107,9 @@ function closeFullscreen() {
 
 function getScreenDimensions()
 {
-	var width  = window.innerWidth || document.documentElement.clientWidth || 
+	let width  = window.innerWidth || document.documentElement.clientWidth || 
 	document.body.clientWidth;
-	var height = window.innerHeight|| document.documentElement.clientHeight|| 
+	let height = window.innerHeight|| document.documentElement.clientHeight|| 
 	document.body.clientHeight;
 	
 	return {width:width,height:height};
@@ -126,7 +127,7 @@ function addEvent(element, eventName, callback) {
 
 function referenceSafeRemove(array,index)
 {
-	for(var i = index;i<array.length;i++)
+	for(let i = index;i<array.length;i++)
 	{
 		if(i < (array.length -1))
 		{
@@ -146,9 +147,9 @@ function httpGetAsync(theUrl, callback, options)
     xmlHttp.open("GET", theUrl, true); // true for asynchronous 
     xmlHttp.send(null);*/
 
-	if(!options) options = {}
+	if(!options) options = {};
 
-	options.method = "GET"
+	options.method = "GET";
 
 	return fetch(theUrl, options)
 	.then((response) => {
@@ -159,15 +160,15 @@ function httpGetAsync(theUrl, callback, options)
             return Promise.reject(error);
         }
 
-		return response.text()
+		return response.text();
 	})
 	.then((text) => {
 		if(!text) {
 			return Promise.reject("Resposta Vazia");
 		}
 
-		callback(text)
-	})
+		callback(text);
+	});
 }
 
 /*function convertPromise(func)
@@ -193,4 +194,4 @@ export {
 	addEvent,
 	referenceSafeRemove,
 	httpGetAsync
-}
+};

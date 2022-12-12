@@ -1,11 +1,11 @@
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../compiler/tokenizer.js";
 
 function replaceSubstring(inSource, inToReplace, inReplaceWith) {
-	var outString = [];
-	var repLen = inToReplace.length;
-	var idx = inSource.indexOf(inToReplace);
+	let outString = [];
+	let repLen = inToReplace.length;
+	let idx = inSource.indexOf(inToReplace);
 	while (idx !== -1) {
-		outString.push(inSource.substring(0, idx))
+		outString.push(inSource.substring(0, idx));
 		outString.push(inReplaceWith);
 
 		inSource = inSource.substring(idx + repLen);
@@ -73,7 +73,7 @@ export default class Texto {
 	substituir(cad,texto_pesquisa,texto_substituto)
 	{
 		//return {value:cad.replace(texto_pesquisa, texto_substituto)};
-		var ret = replaceSubstring(cad, texto_pesquisa, texto_substituto);
+		let ret = replaceSubstring(cad, texto_pesquisa, texto_substituto);
 		return {value:ret};
 	}
 }

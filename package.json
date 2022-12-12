@@ -18,5 +18,8 @@
   "homepage": "https://github.com/erickweil/portugolweb#readme",
   "devDependencies": {
     "eslint": "^8.29.0"
+  },
+  "dependencies": {
+    "eslint-plugin-import": "^2.26.0"
   }
 }

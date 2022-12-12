@@ -153,7 +153,7 @@ export function funcArgsToStr(types)
 	return str;
 }
 
-class FunctionScopeRef {
+export class FunctionScopeRef {
 	constructor() {
 		this.maxVarCount = 0;
 		this.jsSafe = true;
@@ -171,7 +171,7 @@ class FunctionScopeRef {
 	}
 }
 
-class LoopScope {
+export class LoopScope {
 	constructor(parentScope,endJumps) {
 		this.parentScope = parentScope;
 		this.endJumps = endJumps;
@@ -183,7 +183,7 @@ class LoopScope {
 	}
 }
 
-class SwitchScope {
+export class SwitchScope {
 	constructor(parentScope,endJumps,casoJumps) {
 		this.parentScope = parentScope;
 		this.endJumps = endJumps;
@@ -211,7 +211,7 @@ class SwitchScope {
 	}
 }
 
-class Scope {
+export class Scope {
 	constructor(parentScope,globalScope,funcScopeRef) {
 		this.parentScope = parentScope;
 		this.funcScopeRef = funcScopeRef;
@@ -278,7 +278,7 @@ export class Compiler {
 		if(this.enviarErro)
 		this.enviarErro(this.textInput,{index:this.lastIndex},msg,"contexto");
 		else
-		console.log("ERRO NO COMPILADOR:",msg)
+		console.log("ERRO NO COMPILADOR:",msg);
 	}
 	
 	getFuncIndex(name,funcArgs)

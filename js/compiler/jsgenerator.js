@@ -1,3 +1,10 @@
+import { STATEMENT_block, STATEMENT_caso, STATEMENT_declArr, STATEMENT_declArrValues, STATEMENT_declVar, STATEMENT_enquanto, STATEMENT_escolha, STATEMENT_expr, STATEMENT_facaEnquanto, STATEMENT_para, STATEMENT_pare, STATEMENT_ret, STATEMENT_se 
+} from "./parser.js";
+import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro, T_Vetor, T_Matriz, T_Vinteiro, T_Vcaracter, T_Vcadeia, T_Vreal, T_Vlogico, T_Mcaracter, T_Mcadeia, T_Mreal, T_Mlogico, convertArrayDimsType, convertArrayType, convertMatrixType, T_attrib, isOperator, getOpPrecedence, T_and, T_or, T_ge, T_gt, T_le, T_lt, T_equals, T_notequals, isAttribOp, getSeparator, T_div, T_attrib_div, T_not, T_unary_plus, T_unary_minus, T_autoinc, T_pre_autoinc, T_autodec, T_pre_autodec, T_bitnot, T_inteiroLiteral, T_realLiteral, T_cadeiaLiteral, T_caracterLiteral, stringEscapeSpecials, T_logicoLiteral, T_squareO, T_dot 
+} from "./tokenizer.js";
+import { checarCompatibilidadeTipo, getDefaultValue, getTipoRetorno, Scope 
+} from "./vmcompiler.js";
+
 // Entenda que sempre que for gerar o js da árvore, assume que está sem erros nenhum,
 // Pois o vmcompiler já verificou todos os erros possíveis.
 function getTypeChar(code)
@@ -24,15 +31,14 @@ function getTypeChar(code)
 	}
 }
 
-class JsGenerator {
-    constructor(codeTree,libraries,tokens,textInput,saida_div) {
+export default class JsGenerator {
+    constructor(codeTree,libraries,tokens,textInput,erroCallback) {
 		this.codeTree = codeTree;
 		this.tokens = tokens;
 		this.textInput = textInput;
 		this.libraries = libraries;
 		
 		this.saida = "";
-		this.saida_div = saida_div;
 		
 		this.incluas = [];
 		this.scope = false;
@@ -43,11 +49,15 @@ class JsGenerator {
 		this.gen_output = "";
 		this.tabs = "";
 		this.saved_gen_output = [];
+		this.enviarErro = erroCallback;
 	}
 	
 	erro(msg)
 	{	
-		enviarErro(this.textInput,{index:this.lastIndex},msg,"exec");
+		if(this.enviarErro)
+		this.enviarErro(this.textInput,{index:this.lastIndex},msg,"exec");
+		else
+		console.log("ERRO NO JSGENERATOR:",msg);
 	}
 	
 	save_gen()
@@ -61,11 +71,11 @@ class JsGenerator {
 	
 	load_gen()
 	{
-		var previous_gen_output = this.gen_output;
+		let previous_gen_output = this.gen_output;
 		
 		if( this.saved_gen_output.length > 0)
 		{
-			var saved = this.saved_gen_output.pop();
+			let saved = this.saved_gen_output.pop();
 			this.gen_output = saved["gen_output"];
 			this.isnewLine = saved["isnewLine"];
 			this.tabs = saved["tabs"];
@@ -92,7 +102,7 @@ class JsGenerator {
 			this.gen_output += " ";
 		}
 		
-		for(var i=0;i<txt.length;i++)
+		for(let i=0;i<txt.length;i++)
 		{
 			if(i != 0)
 			{
@@ -114,7 +124,7 @@ class JsGenerator {
 			this.gen_output += " ";
 		}
 		
-		for(var i=0;i<txt.length;i++)
+		for(let i=0;i<txt.length;i++)
 		{
 			if(i != 0)
 			{
@@ -139,13 +149,13 @@ class JsGenerator {
 	
 	getFuncOverloadsTypeString(func)
 	{
-		var ret = func.name;
-		var parameters = func.parameters;
-		for(var k=0;k<parameters.length;k++)
+		let ret = func.name;
+		let parameters = func.parameters;
+		for(let k=0;k<parameters.length;k++)
 		{
 				if(parameters[k].id == STATEMENT_declArr)
 				{
-					var arrayDim = parameters[k].size_expr.length;
+					let arrayDim = parameters[k].size_expr.length;
 				
 					ret += getTypeChar(convertArrayDimsType(parameters[k].type,arrayDim));
 				}
@@ -159,8 +169,8 @@ class JsGenerator {
 	
 	compile()
 	{
-		var funcoes = this.codeTree.funcoes;
-		var variaveisGlobais = this.codeTree.variaveis;
+		let funcoes = this.codeTree.funcoes;
+		let variaveisGlobais = this.codeTree.variaveis;
 				
 		this.incluas = this.codeTree.incluas;
 		
@@ -207,7 +217,7 @@ class JsGenerator {
 		
 		
 		// Gerar as variáveis globais?
-		var funcInit = {name:"#globalInit",overloaded:true,overloadedName:"globalInit" };
+		let funcInit = {name:"#globalInit",overloaded:true,overloadedName:"globalInit" };
 		
 		this.currentFunctionRetType = T_vazio;
 		this.genln("function","()");
@@ -216,18 +226,18 @@ class JsGenerator {
 		this.compileStatements(variaveisGlobais);
 		this.decreaseTabLevel();
 		this.genln("}");
-		var jsGlobais = this.load_gen();
+		let jsGlobais = this.load_gen();
 		funcInit.jsName = this.globalPrefix+funcInit.overloadedName;
 		console.log(funcInit.jsName+" = "+jsGlobais);
 		window[funcInit.jsName] = new Function("return " + jsGlobais)();
 		
 		this.functions.push(funcInit);
 		
-		for(var i=0;i<funcoes.length;i++)
+		for(let i=0;i<funcoes.length;i++)
 		{
-			var func = {name:funcoes[i].name,parameters:funcoes[i].parameters,type:funcoes[i].type,statements:funcoes[i].statements, overloaded:false, overloadedName:false };
+			let func = {name:funcoes[i].name,parameters:funcoes[i].parameters,type:funcoes[i].type,statements:funcoes[i].statements, overloaded:false, overloadedName:false };
 				
-			for(var k=0;k<funcoes.length;k++)
+			for(let k=0;k<funcoes.length;k++)
 			{
 				if(i != k && func.name == funcoes[k].name)
 				{
@@ -238,14 +248,14 @@ class JsGenerator {
 			this.functions.push(func);
 		}
 		// Gerar as funções
-		for(var i=0;i<this.functions.length;i++)
+		for(let i=0;i<this.functions.length;i++)
 		{
-			var func = this.functions[i];
+			let func = this.functions[i];
 			
 			if(!func.statements) continue;
 			
-			var funcName = func.name;
-			var parameters = func.parameters;
+			let funcName = func.name;
+			let parameters = func.parameters;
 			
 			if(func.overloaded)
 			{
@@ -258,16 +268,16 @@ class JsGenerator {
 			
 			this.scope = new Scope(this.scope,false,false); // cria um scopo para rodar a funcao, se, enquanto e qualquer coisa...	
 			
-			for(var k=0;k<parameters.length;k++)
+			for(let k=0;k<parameters.length;k++)
 			{
 				if(k != 0)
 				{
-					this.gen(",")
+					this.gen(",");
 				}
 				
 				if(parameters[k].id == STATEMENT_declArr)
 				{
-					var arrayDim = parameters[k].size_expr.length;
+					let arrayDim = parameters[k].size_expr.length;
 					this.createVar(parameters[k].name,parameters[k].type,parameters[k].isConst,true,arrayDim);
 				}
 				else
@@ -285,7 +295,7 @@ class JsGenerator {
 
 			this.genln();
 			
-			var jsFunc = this.load_gen();
+			let jsFunc = this.load_gen();
 			
 			// var func = new Function("return " + "function (a, b) { return a + b; }")();
 			func.jsName = this.globalPrefix+funcName;
@@ -299,23 +309,23 @@ class JsGenerator {
 	
 	getFuncIndex(name,funcArgs)
 	{
-		for(var i=0;i<this.functions.length;i++)
+		for(let i=0;i<this.functions.length;i++)
 		{
 			if(this.functions[i].name == name)
 			{
-				var funcPars = this.functions[i].parameters;
+				let funcPars = this.functions[i].parameters;
 				
 				if(funcPars.length != funcArgs.length)
 					continue; // deve ter o mesmo número de argumentos
 				
-				var funcCompatible = true;
-				for(var k=0;k<funcPars.length;k++)
+				let funcCompatible = true;
+				for(let k=0;k<funcPars.length;k++)
 				{
-					var typeCheck = funcPars[k].type;
+					let typeCheck = funcPars[k].type;
 					
 					if(funcPars[k].id == STATEMENT_declArr)
 					{
-						var dims = funcPars[k].size_expr.length;
+						let dims = funcPars[k].size_expr.length;
 						if(dims == 1) typeCheck = convertArrayType(typeCheck);
 						if(dims == 2) typeCheck = convertMatrixType(typeCheck);
 					}
@@ -339,7 +349,7 @@ class JsGenerator {
 	
 	createVar(varName,type,isConst,isArray,arrayDim)
 	{
-		var v = this.scope.getVar(varName);
+		let v = this.scope.getVar(varName);
 		if(v)
 		{
 			this.erro("a variável '"+varName+"' já foi declarada");
@@ -347,7 +357,7 @@ class JsGenerator {
 		}
 		else
 		{
-			var vType = type;
+			let vType = type;
 			if(isArray)
 			{
 				if(arrayDim == 1)
@@ -376,7 +386,7 @@ class JsGenerator {
 	getVar(varName)
 	{
 		//var v = this.vars[varName];
-		var v = this.scope.getVar(varName);
+		let v = this.scope.getVar(varName);
 		if(v)
 		{
 			return v;
@@ -384,14 +394,13 @@ class JsGenerator {
 		else
 		{
 			this.erro("não encontrou a variável '"+varName+"', esqueceu de declará-la?");
-			var v = this.createVar(varName,T_cadeia,false,false);
-			return v;
+			return this.createVar(varName,T_cadeia,false,false);
 		}
 	}
 	
 	compileDeclArray(values,arrayType,arrayDim)
 	{
-		for(var k =0;k<values.length;k++)
+		for(let k =0;k<values.length;k++)
 		{
 			if(k != 0)
 			this.gen(",");
@@ -409,20 +418,22 @@ class JsGenerator {
 	
 	compileForStatements(statements)
 	{
-		for(var i=0;i<statements.length;i++)
+		for(let i=0;i<statements.length;i++)
 		{
-			var stat = statements[i];
+			let stat = statements[i];
 			
 			switch(stat.id)
 			{
 				case STATEMENT_declVar:
-					var v = this.createVar(stat.name,stat.type,stat.isConst,false);
+				{
+					let v = this.createVar(stat.name,stat.type,stat.isConst,false);
 					this.gen("var",stat.name);
 					if(stat.expr)
 					{
 						this.gen("=");
 						this.compileExpr(stat.expr,stat.type);
 					}
+				}
 				break;
 				case STATEMENT_expr:
 					this.compileExpr(stat.expr,T_vazio);
@@ -433,26 +444,26 @@ class JsGenerator {
 	
 	compileStatements(statements)
 	{
-		for(var i=0;i<statements.length;i++)
+		for(let i=0;i<statements.length;i++)
 		{
-			var stat = statements[i];
+			let stat = statements[i];
 			this.lastIndex = stat.index;
 			switch(stat.id)
 			{
 				case STATEMENT_declArr:
-				
-					var arrayDim = stat.size_expr.length;
-					var v = this.createVar(stat.name,stat.type,stat.isConst,true,arrayDim);
+				{
+					let arrayDim = stat.size_expr.length;
+					let v = this.createVar(stat.name,stat.type,stat.isConst,true,arrayDim);
 			
 					if(v.global)
 						this.gen("VM_globals["+v.index+"] =");
 					else
 						this.gen("var",stat.name,"=");
-					var declExpr = stat.expr;
+					let declExpr = stat.expr;
 					if(!declExpr)
 					{
 						this.gen("recursiveDeclareArray([");
-						for(var k=0;k<stat.size_expr.length;k++)
+						for(let k=0;k<stat.size_expr.length;k++)
 						{
 							if(k != 0)
 							this.gen(",");
@@ -462,6 +473,7 @@ class JsGenerator {
 						
 						// Eu sei.
 						// Update 07/06/2022: Sabe oq????????/
+						// Update 12/12/2022: ???????????????????????
 					}
 					else
 					{				
@@ -478,9 +490,11 @@ class JsGenerator {
 						}
 						
 					}
+				}
 				break;
 				case STATEMENT_declVar:
-					var v = this.createVar(stat.name,stat.type,stat.isConst,false);
+				{
+					let v = this.createVar(stat.name,stat.type,stat.isConst,false);
 					
 					if(v.global)
 						this.gen("VM_globals["+v.index+"]");
@@ -499,6 +513,7 @@ class JsGenerator {
 					{
 						this.genln("= false;");
 					}
+				}
 				break;
 				case STATEMENT_expr:
 					this.compileExpr(stat.expr,T_vazio);
@@ -633,35 +648,35 @@ class JsGenerator {
 	{
 		if(!expr) return T_vazio;
 
-		var retType = T_vazio;
+		let retType = T_vazio;
 		
 		this.save_gen();
 
 		if(expr.length == 2)
 		{	
-			var parOnExpr0 = isOperator(expr[0].op) && getOpPrecedence(expr[0].op) < getOpPrecedence(expr.op);
-			var parOnExpr1 = isOperator(expr[1].op) && getOpPrecedence(expr[1].op) <= getOpPrecedence(expr.op);
+			let parOnExpr0 = isOperator(expr[0].op) && getOpPrecedence(expr[0].op) < getOpPrecedence(expr.op);
+			let parOnExpr1 = isOperator(expr[1].op) && getOpPrecedence(expr[1].op) <= getOpPrecedence(expr.op);
 			
 			this.save_gen();
 			
 			if(parOnExpr0) this.gen("(");
-			var tExprA = this.compileExpr(expr[0],-1,true);
+			let tExprA = this.compileExpr(expr[0],-1,true);
 			if(parOnExpr0) this.gen(")");
 			
-			var exprAGen = this.load_gen();
+			let exprAGen = this.load_gen();
 			
 			this.save_gen();
 			
 			if(parOnExpr1) this.gen("(");
-			var tExprB = this.compileExpr(expr[1],-1);
+			let tExprB = this.compileExpr(expr[1],-1);
 			if(parOnExpr1) this.gen(")");
 			
-			var exprBGen = this.load_gen();
+			let exprBGen = this.load_gen();
 			
 			retType = getTipoRetorno(tExprA,tExprB); // quando é divisão retorna real ou inteiro?
 	
 			if(
-		   expr.op == T_and
+			expr.op == T_and
 		|| expr.op == T_or
 		|| expr.op == T_ge
 		|| expr.op == T_gt
@@ -674,7 +689,7 @@ class JsGenerator {
 			}
 			else if(isAttribOp(expr.op))
 			{
-				var v = this.getVar(expr[0].name);
+				let v = this.getVar(expr[0].name);
 				retType = tExprA;
 				
 				if(tExprA == T_logico && v.global)
@@ -690,7 +705,7 @@ class JsGenerator {
 				exprBGen = this.tryConvertType(retType,tExprB,exprBGen);
 			}
 			
-			var exprGen = exprAGen;
+			let exprGen = exprAGen;
 			
 			if( expr.op == T_and ) exprGen +=" && ";
 			else if( expr.op == T_or ) exprGen +=" || ";
@@ -717,77 +732,85 @@ class JsGenerator {
 			switch(expr.op)
 			{
 				case T_not:
-				
+				{
 					this.gen("!(");
-					var tExpr = this.compileExpr(expr[0],-1);
+					let tExpr = this.compileExpr(expr[0],-1);
 					this.gen(")");
 					
 					retType = tExpr;
-					break;
-					
+				}
+				break;
 				case T_unary_plus:
 					retType = this.compileExpr(expr[0],-1);
 					break;
 				case T_unary_minus:
+				{
 					this.gen("(-");
-					var tExpr = this.compileExpr(expr[0],-1);
+					let tExpr = this.compileExpr(expr[0],-1);
 					this.gen(")");
 					retType =  tExpr;
-					break;
+				}
+				break;
 				case T_autoinc:
-				
-					var tExpr = this.compileExpr(expr[0],-1);
+				{
+					let tExpr = this.compileExpr(expr[0],-1);
 					this.gen("++");
 					
 					retType =  tExpr;
-					break;
+				}
+				break;
 				case T_pre_autoinc:
-
+				{
 					this.gen("++");	
-					var tExpr = this.compileExpr(expr[0],-1);
+					let tExpr = this.compileExpr(expr[0],-1);
 					
 					retType =  tExpr;
-					break;
+				}
+				break;
 				case T_autodec:
-								
-					var tExpr = this.compileExpr(expr[0],-1);
+				{
+					let tExpr = this.compileExpr(expr[0],-1);
 					this.gen("--");
 					
 					retType =  tExpr;
-					break;
+				}
+				break;
 				case T_pre_autodec:
-					
+				{
 					this.gen("--");	
-					var tExpr = this.compileExpr(expr[0],-1);
+					let tExpr = this.compileExpr(expr[0],-1);
 					
 					retType =  tExpr;
-					break;
+				}
+				break;
 				case T_bitnot:
+				{
 					this.gen("~(");
-					var tExpr = this.compileExpr(expr[0],-1);
+					let tExpr = this.compileExpr(expr[0],-1);
 					this.gen(")");
 					retType =  tExpr;
-					break;
+				}
+				break;
 				//case T_not:tis.compileExpr(expr[0],bc,variableMap);break;
 				case T_parO: // methCall
 				{
-					var args = expr.args;
-					var methName= expr.name;
-					var funcArgs = [];
-					var funcArgsGen = [];
+					let args = expr.args;
+					let methName= expr.name;
+					let funcArgs = [];
+					let funcArgsGen = [];
 					
-					for(var i =0;i<args.length;i++)
+					for(let i =0;i<args.length;i++)
 					{
 						this.save_gen();					
 						funcArgs.push(this.compileExpr(args[i],-1));
 						funcArgsGen.push(this.load_gen());
 					}
 					
-					var funcType = T_vazio;
-					var funcPars = [];
+					let funcType = T_vazio;
+					let funcPars = [];
 					if(methName == "escreva")
 					{
-						for(var i =0;i<args.length;i++)
+						for(let i =0;i<args.length;i++)
 						{
 							funcPars.push(T_cadeia);
 						}
@@ -803,8 +826,8 @@ class JsGenerator {
 					}
 					else
 					{
-						var funcIndex = this.getFuncIndex(methName,funcArgs);
-						var func = this.functions[funcIndex];
+						let funcIndex = this.getFuncIndex(methName,funcArgs);
+						let func = this.functions[funcIndex];
 						funcType = func.type;
 						if(func.overloaded)
 						{
@@ -821,7 +844,7 @@ class JsGenerator {
 					
 					this.gen(methName+"(");									
 					
-					for(var i =0;i<args.length;i++)
+					for(let i =0;i<args.length;i++)
 					{
 						if(i != 0) this.gen(",");
 						
@@ -835,7 +858,8 @@ class JsGenerator {
 				}
 				break;
 				case T_word: 
-					var v = this.getVar(expr.name);
+				{
+					let v = this.getVar(expr.name);
 					
 					if(v.global)
 					{
@@ -850,7 +874,8 @@ class JsGenerator {
 					}
 					
 					retType =  v.type;
-					break;
+				}
+				break;
 				case T_inteiroLiteral:this.gen(this.baseParseInt(expr.value));retType =  T_inteiro;break;
 				case T_realLiteral:this.gen(parseFloat(expr.value));retType =  T_real;break;
 				case T_cadeiaLiteral:this.gen("\""+stringEscapeSpecials(expr.value)+"\"");retType =  T_cadeia;break;
@@ -861,7 +886,7 @@ class JsGenerator {
 				case T_logicoLiteral: this.gen(expr.value == "verdadeiro" ? "true" : "false" );retType =  T_logico;break; 
 				case T_squareO:
 				{
-					var v = this.getVar(expr.name);
+					let v = this.getVar(expr.name);
 					//var tExpri = this.compileExpr(expr.expr[0],bc,T_inteiro);
 					if(v.global)
 					{
@@ -875,10 +900,10 @@ class JsGenerator {
 						this.gen(expr.name);
 					}
 					
-					for(var k = 0;k<expr.expr.length;k++)
+					for(let k = 0;k<expr.expr.length;k++)
 					{
 						this.gen("[");
-						var tExpri = this.compileExpr(expr.expr[k],T_inteiro); // espera retorno inteiro do index do array
+						let tExpri = this.compileExpr(expr.expr[k],T_inteiro); // espera retorno inteiro do index do array
 						this.gen("]");
 					}
 					
@@ -890,11 +915,11 @@ class JsGenerator {
 				break;
 				case T_dot:
 				{
-					var biblioteca = expr.name;
-					var campo = expr.expr;
+					let biblioteca = expr.name;
+					let campo = expr.expr;
 					
-					var declarado = false;
-					for(var k=0;k<this.incluas.length;k++)
+					let declarado = false;
+					for(let k=0;k<this.incluas.length;k++)
 					{
 						if(this.incluas[k].name == biblioteca || this.incluas[k].alias == biblioteca)
 						{
@@ -909,7 +934,7 @@ class JsGenerator {
 						this.erro("a biblioteca "+biblioteca+" não foi inclusa no programa");
 					}
 					
-					var libObj = this.libraries[biblioteca];
+					let libObj = this.libraries[biblioteca];
 					
 					if(!libObj)
 					{
@@ -934,14 +959,14 @@ class JsGenerator {
 					{
 						this.gen("VM_libraries[\""+biblioteca+"\"]."+campo.name+"(");
 						
-						var funcPars = libObj.members[campo.name].parameters;
+						let funcPars = libObj.members[campo.name].parameters;
 						
 						if(funcPars.length != campo.args.length)
 						{
 							this.erro("a função "+campo.name+" espera "+funcPars.length+" argumentos, foram passados apenas "+campo.args.length);
 						}
 						
-						for(var k =0;k<campo.args.length;k++)
+						for(let k =0;k<campo.args.length;k++)
 						{
 							if(k!=0)
 								this.gen(",");
@@ -966,7 +991,7 @@ class JsGenerator {
 			}
 		}
 		
-		var exprGen = this.load_gen();
+		let exprGen = this.load_gen();
 
 		if(typeExpected == T_logico && globalConvert)
 		{

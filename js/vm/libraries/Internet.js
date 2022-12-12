@@ -44,12 +44,12 @@ export default class Internet {
 		}
 		else //return {value:"Obter páginas da internet apenas funciona no aplicativo Android, pelo navegador não é possível devido a limitações de segurança que grande parte dos navegadores aplicam."};
 		{
-			let ret = this.obter_texto(endereco)
+			let ret = this.obter_texto(endereco);
 			if(ret.state == STATE_DELAY_REPEAT) {
-				return ret
+				return ret;
 			}
 
-			return {value:ret.__sucess}
+			return {value:ret.__sucess};
 		}
 	}
 	
@@ -84,7 +84,7 @@ export default class Internet {
 						this.retorno = false;	
 						this.tempo = 0;
 						this.abortador = false;	
-						return {value:"Tempo limite atingido",__sucess:false}
+						return {value:"Tempo limite atingido",__sucess:false};
 					}
 					else 
 					{
@@ -100,13 +100,13 @@ export default class Internet {
 				this.retorno = false;
 				this.abortador = new AbortController();
 				httpGetAsync(endereco, (txt) => {
-					this.retorno = {value:""+txt,__sucess:true}
+					this.retorno = {value:""+txt,__sucess:true};
 				}, { signal: this.abortador.signal})
 				.catch( (reason) => {
 					if (reason.name === 'AbortError') {
 						console.log('Fetch aborted');
 					} else {
-					this.retorno = {value:""+reason,__sucess:false}
+					this.retorno = {value:""+reason,__sucess:false};
 					}
 				});
 				VM_setDelay(1);

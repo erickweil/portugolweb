@@ -89,7 +89,7 @@ export class Parser {
 		if(this.enviarErro)
 		this.enviarErro(this.textInput,token,msg,"semantico");
 		else
-		console.log("ERRO NO PARSER:",msg)
+		console.log("ERRO NO PARSER:",msg);
 	}
 	
 
@@ -635,7 +635,7 @@ export class Parser {
 			
 			if(tokens[i].id == T_bracesO)
 			{
-				let expr = []
+				let expr = [];
 				i = this.parseDeclArray(i,tokens,expr);
 				tree.push(expr);
 			}

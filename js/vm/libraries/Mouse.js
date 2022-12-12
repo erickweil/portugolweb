@@ -21,7 +21,7 @@ export default class Mouse {
 		};
 
 		//this.canvas.addEventListener("mousemove",function(evt) {console.log("LOL");});
-		this.canvas.addEventListener("mousemove",(e) => {this.mouseMove(e)});
+		this.canvas.addEventListener("mousemove",(e) => {this.mouseMove(e);});
 		this.canvas.addEventListener("click",(e) => {this.mouseClick(e);});
 		this.canvas.addEventListener("mouseenter",(e) => {this.mouseEnter(e);});
 		this.canvas.addEventListener("mouseleave",(e) => {this.mouseLeave(e);});
@@ -30,7 +30,7 @@ export default class Mouse {
 		this.canvas.addEventListener("mouseup",(e) => {this.mouseUp(e);});
 		
 		
-		var touchMap = [-1,this.BOTAO_ESQUERDO,this.BOTAO_MEIO,this.BOTAO_DIREITO];
+		let touchMap = [-1,this.BOTAO_ESQUERDO,this.BOTAO_MEIO,this.BOTAO_DIREITO];
 		this.touchManager = new TouchManager();
 		this.canvas.addEventListener("touchstart",(e) => {this.touchManager.touchstart(e);}, false);
 		this.canvas.addEventListener("touchmove",(e) => {
@@ -46,10 +46,10 @@ export default class Mouse {
 		this.canvas.addEventListener("touchcancel",(e) => {this.touchManager.touchcancel(e);}, false);
 		this.canvas.addEventListener("touchleave",(e) => {this.touchManager.touchleave(e);}, false);
 		
-		this.touchManager.addEventListener("onTouchDown",(p,ntouches) => {this.mouseDown({clientX:p.x,clientY:p.y,button:touchMap[ntouches]})}, false);
-		this.touchManager.addEventListener("onTouchMove",(p,ntouches) => {this.mouseMove({clientX:p.x,clientY:p.y,button:touchMap[ntouches]})}, false);
-		this.touchManager.addEventListener("onTouchUp",(p,ntouches) => {this.mouseUp({clientX:p.x,clientY:p.y,button:touchMap[ntouches]})}, false);
-		this.touchManager.addEventListener("onTouchZoom",(p,zoomDelta) => {this.doZoom(p,zoomDelta)}, false);
+		this.touchManager.addEventListener("onTouchDown",(p,ntouches) => {this.mouseDown({clientX:p.x,clientY:p.y,button:touchMap[ntouches]});}, false);
+		this.touchManager.addEventListener("onTouchMove",(p,ntouches) => {this.mouseMove({clientX:p.x,clientY:p.y,button:touchMap[ntouches]});}, false);
+		this.touchManager.addEventListener("onTouchUp",(p,ntouches) => {this.mouseUp({clientX:p.x,clientY:p.y,button:touchMap[ntouches]});}, false);
+		this.touchManager.addEventListener("onTouchZoom",(p,zoomDelta) => {this.doZoom(p,zoomDelta);}, false);
 		
 		
 		this.resetar();
@@ -74,7 +74,7 @@ export default class Mouse {
 	
 	mouseChanged(evt)
 	{	
-		var rect = this.canvas.getBoundingClientRect();
+		let rect = this.canvas.getBoundingClientRect();
 		this.x = evt.clientX - rect.left;
 		this.y = evt.clientY - rect.top;
 		//console.log(this.x+","+this.y);

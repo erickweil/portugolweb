@@ -3,7 +3,10 @@
         "browser": true,
         "es2021": true
     },
-    "extends": "eslint:recommended",
+    "extends": [
+        "eslint:recommended",
+        "plugin:import/recommended"
+    ],
     "overrides": [
     ],
     "parserOptions": {
@@ -13,6 +16,11 @@
     "rules": {
         "no-unused-vars": "off",
         "no-useless-escape":"off",
-        "no-constant-condition":"off"
+        "no-constant-condition":"off",
+        "no-var": "error",
+        "semi":["error","always"],
+        "import/no-absolute-path":"error",
+        "import/no-self-import":"error",
+        "import/extensions":["error", "always", { "js": "always" }]
     }
 }

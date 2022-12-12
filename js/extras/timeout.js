@@ -27,4 +27,4 @@ function myClearTimeout(name)
     }
 }
 
-export {mySetTimeout, myClearTimeout}
+export {mySetTimeout, myClearTimeout};
