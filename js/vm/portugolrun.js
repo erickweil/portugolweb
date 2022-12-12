@@ -1,7 +1,7 @@
+import JsGenerator from "../compiler/jsgenerator.js";
 import { Parser } from "../compiler/parser.js";
-import { htmlEntities, Tokenizer } from "../compiler/tokenizer.js";
+import { Tokenizer } from "../compiler/tokenizer.js";
 import { Compiler } from "../compiler/vmcompiler.js";
-import { numberOfLinesUntil } from "../extras/extras.js";
 import { myClearTimeout, mySetTimeout } from "../extras/timeout.js";
 import Calendario from "./libraries/Calendario.js";
 import Graficos from "./libraries/Graficos.js";
@@ -13,82 +13,21 @@ import Teclado from "./libraries/Teclado.js";
 import Texto from "./libraries/Texto.js";
 import Tipos from "./libraries/Tipos.js";
 import Util from "./libraries/Util.js";
-import { escreva, getCurrentTokenIndex, getTokenIndex, limpa, STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMrun, VMsetup, VMtoString, VM_getCodeMax, VM_getDelay, VM_getExecJS 
+import { STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMrun, VMsetup, VMtoString, VM_getCodeMax, VM_getDelay, VM_getExecJS 
 } from "./vm.js";
 
-let libraries = {};
-libraries["Util"] = new Util();
-libraries["Calendario"] = new Calendario();
-libraries["Matematica"] = new Matematica();
-libraries["Texto"] = new Texto();
-//libraries["Teclado"] = new Teclado(myCanvas);
-//libraries["Graficos"] = new Graficos(myCanvas,myCanvasModal,myCanvasWindow,myCanvasWindowTitle,myCanvasKeys,libraries["Teclado"]);
-//libraries["Mouse"] = new Mouse(myCanvas);
-libraries["Objetos"] = new Objetos();
-libraries["Tipos"] = new Tipos();
-libraries["Internet"] = new Internet();
-
-
-function _enviarErroAnnot(annot)
-{
-	if(!annot) return;
-	
-	let txt = "";
-	txt += htmlEntities(annot.text)+"\n";
-	if(annot.textprev && annot.textnext)
-	{
-		txt += htmlEntities(annot.textprev+annot.textnext)+"\n";
-		txt += " ".repeat(annot.textprev.length)+"^\n\n";
+function debug_exibe_bytecode() {
+	try{
+		document.getElementById("hidden").innerHTML = VMtoString();
 	}
-	console.error(txt);
-	/*if(annot.text)
-	errosSaida.innerHTML += htmlEntities(annot.text)+"\n";
-	if(annot.textprev && annot.textnext)
-	{
-		errosSaida.innerHTML += htmlEntities(annot.textprev+annot.textnext)+"\n";
-		errosSaida.innerHTML += " ".repeat(annot.textprev.length)+"^\n\n";
-	}
-	errosAnnot.push(annot);
-	editor.getSession().setAnnotations(errosAnnot);
-	
-	errosMarkers.push(editor.getSession().addMarker(new Range(annot.row, 0, annot.row, annot.columnFim), 'ace_erroportugol-marker', 'screenLine'));*/
-}
-
-function enviarErro(textInput,token,msg,tipoErro)
-{
-	let lineNumber = numberOfLinesUntil(token.index,textInput);
-	let prev_line = textInput.substring(textInput.lastIndexOf('\n', token.index)+1,token.index).replace(/\t/g,'    ');
-	let next_line = textInput.substring(token.index,textInput.indexOf('\n', token.index));
-	let colNumber = prev_line.length;
-	let logprev = "Linha "+lineNumber+":"+prev_line;
-	/*
-	try {
-		throw "ERRO"
-	} catch (e) {
-		var myStackTrace = e.stack || e.stacktrace || "";
-		
+	catch(e){
+		let myStackTrace = e.stack || e.stacktrace || "";
 		console.log(myStackTrace);
 	}
-	*/
-	console.log("token index:"+token.index+" ... "+lineNumber+":"+colNumber+" -> "+msg);
-	
-	_enviarErroAnnot(//(lineNumber,colNumber,colNumber+next_line.length,msg,tipoErro);
-	{
-		row: lineNumber-1,
-		column: colNumber,
-		columnFim: colNumber+next_line.length,
-		textprev: logprev,
-		textnext: next_line,
-		text: msg, // Or the Json reply from the parser 
-		type: "error", // also warning and information
-		myErrorType: tipoErro
-	});
 }
 
-
-
 export default class PortugolRuntime {
-    constructor() {
+    constructor(div_saida) {
 		this.lastvmState = STATE_ENDED;
 		this.lastvmTime = 0;
 		this.lastvmStep = false;
@@ -96,49 +35,55 @@ export default class PortugolRuntime {
 		this.errosAnnot = [];
 		this.execMesmoComErros = false;
 		this.mostrar_bytecode = false;
-		this.saida = {value:"",scrollTop:0};
+		this.div_saida = div_saida;
+
+		this.libraries = {};
     }
 
-	executar(string_cod)
+	iniciarBibliotecas(myCanvas,myCanvasModal,myCanvasWindow,myCanvasWindowTitle,myCanvasKeys) {
+		this.libraries["Util"] = new Util();
+		this.libraries["Calendario"] = new Calendario();
+		this.libraries["Matematica"] = new Matematica();
+		this.libraries["Texto"] = new Texto();
+		this.libraries["Objetos"] = new Objetos();
+		this.libraries["Tipos"] = new Tipos();
+		this.libraries["Internet"] = new Internet();
+
+		// Dependem de graficos
+		if(myCanvas && myCanvasModal && myCanvasWindow && myCanvasWindowTitle && myCanvasKeys)
+		{
+			this.libraries["Teclado"] = new Teclado(myCanvas);
+			this.libraries["Graficos"] = new Graficos(myCanvas,myCanvasModal,myCanvasWindow,myCanvasWindowTitle,myCanvasKeys,this.libraries["Teclado"]);
+			this.libraries["Mouse"] = new Mouse(myCanvas);
+		}
+	}
+
+	executar(string_cod,compilado,erroCallback)
 	{
+		if(!compilado.success)
+		{
+			throw "Tentou executar mas havia erros na compilação";
+		}
+
 		const that = this;
 		that.lastvmStep = false;
 		if(that.lastvmState == STATE_ENDED)
 		{	
 			return new Promise((resolve, reject)=> {
-				that.limparErros();	
-				// abrir hotbar e animar
-				//if(isMobile)
-				//{
-					//if(hotbar_yOffset < hotbar_extendedyOffset)
-					//setHotbarPosition(hotbar_extendedyOffset,true);
-				//}
-				
-				//var string_cod = editor.getValue();
-				try{
-				
-					let compilado = that.compilar(string_cod,true);
+				try{					
+					// Preparar Máquina
+					VMsetup(
+						compilado.compiler.functions,
+						compilado.jsgenerator.functions,
+						that.libraries,
+						compilado.compiler.globalCount,
+						string_cod,
+						that.div_saida,
+						erroCallback
+					);
 					
-					//lastvm = new Vm(compiler.functions,string_cod,div_saida);
-					if(!compilado.success)
-					{
-						reject("Erro na compilação");
-						return;
-					}
-					
-					VMsetup(compilado.compiler.functions,compilado.jsgenerator.functions,libraries,compilado.compiler.globalCount,string_cod,that.saida);
-					
-					try{
-						if(that.mostrar_bytecode)
-						document.getElementById("hidden").innerHTML = VMtoString();
-					}
-					catch(e){
-						let myStackTrace = e.stack || e.stacktrace || "";
-						console.log(myStackTrace);
-					}
-					//lastvmState = lastvm.run();
-					that.lastvmTime = performance.now();
-					
+					// Para testar compilação se tiver ativado
+					if(that.mostrar_bytecode) debug_exibe_bytecode();					
 				}
 				catch(e)
 				{
@@ -146,26 +91,34 @@ export default class PortugolRuntime {
 
 					console.log(myStackTrace);
 				
-					enviarErro(string_cod,{index:0},"Erro na compilação:"+e,"compilador");
-					reject("Erro na compilação");
+					if(erroCallback)
+					erroCallback(string_cod,{index:0},"Erro ao preparar a máquina:"+e,"vm");
+					
+					reject("Erro ao preparar a máquina");
 					return;
 				}
 
-				//autoSave();
-				that.limparErros();
-				limpa();
+				// Inicia contagem de tempo
+				that.lastvmTime = performance.now();
 
+				// Loop de execução
 				const tryExec = () => {
+					if(that.lastvmState == STATE_PENDINGSTOP)
+					{
+						that.executarParou();
+						return;
+					}
+
 					let delay = that.executarVM();
 
 					if(that.lastvmState == STATE_ENDED)
 					{
-						resolve(that.saida.value);
+						resolve(that.div_saida.value);
 						return;
 					}
 					else if(that.lastvmState == STATE_DELAY || that.lastvmState == STATE_DELAY_REPEAT)
 					{
-						mySetTimeout("EXEC",tryExec,delay);
+						mySetTimeout("STATE_DELAY",tryExec,delay);
 					}
 					else if(that.lastvmState.STATE_WAITINGINPUT || that.lastvmState.STATE_ASYNC_RETURN)
 					{
@@ -177,7 +130,6 @@ export default class PortugolRuntime {
 					}
 				};
 				tryExec();
-
 		});
 		}
 	}
@@ -205,7 +157,7 @@ export default class PortugolRuntime {
 			}
 			else
 			{
-				console.log("botão estava em estado inconsistente: lastvmState:'"+this.lastvmState+"'");
+				console.log("estado inconsistente: lastvmState:'"+this.lastvmState+"'");
 			}
 		}
 		else if(this.lastvmState == STATE_PENDINGSTOP)
@@ -215,7 +167,7 @@ export default class PortugolRuntime {
 		}
 		else // para deixar o botao do jeito certo, e corrigir no caso de algum erro.
 		{
-			//console.log("botão estava em estado inconsistente: lastvmState:'"+lastvmState+"' e valor:'"+btn.value+"'");
+			console.log("botão estava em estado inconsistente: lastvmState:'"+this.lastvmState);
 			//if(lastvmState == STATE_ENDED) btn.value = "Executar";
 			//else if(lastvmState == STATE_PENDINGSTOP) btn.value = "Parando...";
 			//else btn.value = "Parar";
@@ -223,64 +175,85 @@ export default class PortugolRuntime {
 		
 	}
 	
-	compilar(string_cod,mayCompileJS)
+	compilar(string_cod,erroCallback,mayCompileJS)
 	{
-		let nErrosInicio = this.errosAnnot.length;
+		let erroCount = {value:0};
+		let erroCounterCallback = (textInput,token,msg,tipoErro) => {
+			erroCount.value++;
+
+			if(erroCallback)
+			erroCallback(textInput,token,msg,tipoErro);
+			else console.log("Erro ",tipoErro,":",msg);
+		};
+
+		let first_Time = performance.now();
 		
-		let tokenizer = new Tokenizer(string_cod,enviarErro);
-		tokenizer.tokenize();
-		//console.log(tokenizer.tokenize());
-		if(!this.execMesmoComErros && this.errosAnnot.length > nErrosInicio)
-		{
-			let ret = {success:false,"tokenizer":tokenizer};
-			//myPortugolCompleter.setCompiler(ret);
-			return ret;
-		}
-		//div_port.innerHTML = tokenizer.formatHTML();
-		
-		let relevantTokens = tokenizer.getRelevantTokens();
-		let tree = new Parser(relevantTokens,string_cod,enviarErro).parse();
-		//console.log(tree);
-		if(!this.execMesmoComErros && this.errosAnnot.length > nErrosInicio)
-		{
-			let ret = {success:false,"tokenizer":tokenizer,"tree":tree};
-			//myPortugolCompleter.setCompiler(ret);
-			return ret;
-		}
-		
-		let librariesNames = Object.keys(libraries);
-		for(let i =0;i<librariesNames.length;i++)
-		{
-			libraries[librariesNames[i]].resetar();
-		}
-		
-		let compiler = new Compiler(tree,libraries,relevantTokens,string_cod,null,enviarErro);
-		compiler.compile();
-		if(!this.execMesmoComErros && this.errosAnnot.length > nErrosInicio)
-		{
-			let ret = {success:false,"tokenizer":tokenizer,"tree":tree,"compiler":compiler};
-			//myPortugolCompleter.setCompiler(ret);
-			return ret;
-		}
-		
-		let jsgenerator = {"functions":false};
-		if(mayCompileJS && VM_getExecJS())
-		{
-			/*try{
-				jsgenerator = new JsGenerator(tree,libraries,relevantTokens,string_cod,div_saida);
-				jsgenerator.compile();
-				
+		let last_Time = first_Time;
+		let token_Time = 0;
+		let tree_Time = 0;
+		let compiler_Time = 0;
+		let other_Time = 0;
+
+		try	{
+			last_Time = performance.now();
+			let tokenizer = new Tokenizer(string_cod,erroCounterCallback);
+			tokenizer.tokenize();
+
+			token_Time = Math.trunc(performance.now() - last_Time);
+			last_Time = performance.now();
+
+			if(!this.execMesmoComErros && erroCount.value > 0)
+			{
+				return {success:false,"tokenizer":tokenizer};
 			}
-			catch(e){
-				var myStackTrace = e.stack || e.stacktrace || "";
-				console.log(myStackTrace);
-			}*/
+			
+			let relevantTokens = tokenizer.getRelevantTokens();
+			let tree = new Parser(relevantTokens,string_cod,erroCounterCallback).parse();
+
+			tree_Time = Math.trunc(performance.now() - last_Time);
+			last_Time = performance.now();
+			
+			if(!this.execMesmoComErros && erroCount.value > 0)
+			{
+				return {success:false,"tokenizer":tokenizer,"tree":tree};
+			}
+			
+			let librariesNames = Object.keys(this.libraries);
+			for(let i =0;i<librariesNames.length;i++)
+			{
+				this.libraries[librariesNames[i]].resetar();
+			}
+			
+			let compiler = new Compiler(tree,this.libraries,relevantTokens,string_cod,null,erroCounterCallback);
+			compiler.compile();
+
+			compiler_Time = Math.trunc(performance.now() - last_Time);
+			last_Time = performance.now();
+			
+			if(!this.execMesmoComErros && erroCount.value > 0)
+			{
+				return {success:false,"tokenizer":tokenizer,"tree":tree,"compiler":compiler};
+			}
+			
+			let jsgenerator = {"functions":false};
+			if(mayCompileJS && VM_getExecJS())
+			{
+				try{
+					jsgenerator = new JsGenerator(tree,this.libraries,relevantTokens,string_cod,this.div_saida,erroCounterCallback);
+					jsgenerator.compile();	
+				}
+				catch(e){
+					let myStackTrace = e.stack || e.stacktrace || "";
+					console.log(myStackTrace);
+				}
+			}
+			
+			return {success:true,"tokenizer":tokenizer,"tree":tree,"compiler":compiler,"jsgenerator":jsgenerator};
 		}
-		
-		{
-			let ret = {success:true,"tokenizer":tokenizer,"tree":tree,"compiler":compiler,"jsgenerator":jsgenerator};
-			//myPortugolCompleter.setCompiler(ret);
-			return ret;
+		finally{
+			first_Time = Math.trunc(performance.now()-first_Time);
+			other_Time = first_Time - (token_Time + tree_Time + compiler_Time);
+			console.log("Compilou: Tempo de execução:"+first_Time+" milissegundos \n[token:"+token_Time+" ms,tree:"+tree_Time+" ms,compiler:"+compiler_Time+" ms, other:"+other_Time+"]");
 		}
 	}
 	
@@ -299,7 +272,6 @@ export default class PortugolRuntime {
 
 		this.lastvmState = VMrun(VM_getCodeMax());
 		
-		//VM_saidaDiv.value = VM_saida;
 		if(this.lastvmState == STATE_ENDED)
 		{
 			//escreva("\n\nPrograma finalizado. Tempo de execução:"+Math.trunc(performance.now()-this.lastvmTime)+" milissegundos");
@@ -316,61 +288,23 @@ export default class PortugolRuntime {
 			return -1;
 		}
 		else if(this.lastvmState == STATE_BREATHING) {
-			//mySetTimeout("STATE_BREATHING",() => {that.executarVM()}, 0); // permite o navegador ficar responsivo
 			return 0;
 		}
 		else if(this.lastvmState == STATE_DELAY || this.lastvmState == STATE_DELAY_REPEAT) {
-			//mySetTimeout("STATE_DELAY",() => {that.executarVM()}, VM_getDelay());
 			return VM_getDelay();
+		}
+		else if(this.lastvmState == STATE_ASYNC_RETURN) {
+			//?
+			return -1;
 		}
 	}
 
 	executarParou()
 	{
 		this.lastvmState = STATE_ENDED;
-		//document.getElementById("btn-run").value = "Executar";
-		//myCanvasModal.style.display = "none";
-		if(libraries["Graficos"] && libraries["Graficos"].telaCheia)
+		if(this.libraries["Graficos"] && this.libraries["Graficos"].telaCheia)
 		{
-			libraries["Graficos"].encerrar_modo_grafico();
-		}
-		//limparErros();
-	}
-	
-	erro(token,msg)
-	{
-		enviarErro(this.input,token,msg,"compilador");
-	}
-
-	limparErros(tipoErros)
-	{
-		/*errosSaida.innerHTML = "";
-
-		
-		for(let i=0;i<errosMarkers.length;i++)
-		{
-			editor.getSession().removeMarker(errosMarkers[i]);
-		}
-		errosMarkers = [];*/
-		
-		if(tipoErros)
-		{
-			// apaga os erros e re-envia os que nao é para apagar
-			let _errosAnnot = this.errosAnnot;
-			this.errosAnnot = [];
-			//editor.getSession().setAnnotations(errosAnnot);
-			for(let i=0;i<_errosAnnot.length;i++)
-			{
-				if(!tipoErros.includes(_errosAnnot[i].myErrorType) && _errosAnnot[i].type == "error")
-				{
-					_enviarErroAnnot(_errosAnnot[i]);
-				}
-			}
-		}
-		else
-		{
-			this.errosAnnot = [];
-			//editor.getSession().setAnnotations(errosAnnot);
+			this.libraries["Graficos"].encerrar_modo_grafico();
 		}
 	}
 }

@@ -1,5 +1,4 @@
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../compiler/tokenizer.js";
-import { httpGetAsync } from "../../extras/extras.js";
 import { STATE_ASYNC_RETURN, STATE_DELAY_REPEAT, VM_async_return, VM_setDelay } from "../vm.js";
 
 export default class Internet {
@@ -73,7 +72,7 @@ export default class Internet {
 					this.retorno = false;	
 					this.tempo = 0;
 					this.abortador = false;				
-					return this.retorno;
+					return ret;
 				}
 				else
 				{
@@ -99,16 +98,45 @@ export default class Internet {
 				this.tempo = 0;
 				this.retorno = false;
 				this.abortador = new AbortController();
-				httpGetAsync(endereco, (txt) => {
-					this.retorno = {value:""+txt,__sucess:true};
-				}, { signal: this.abortador.signal})
-				.catch( (reason) => {
-					if (reason.name === 'AbortError') {
-						console.log('Fetch aborted');
-					} else {
-					this.retorno = {value:""+reason,__sucess:false};
-					}
-				});
+				
+				try{
+					let that = this;
+					fetch(endereco, {method:"GET",  signal: that.abortador.signal})
+					.then((response) => {
+						// check for error response
+						if (!response.ok) {
+							// get error message from body or default to response status
+							const error = response.status;
+							return Promise.reject(error);
+						}
+				
+						return response.text();
+					})
+					.then((text) => {
+						if(!text) {
+							return Promise.reject("Resposta Vazia");
+						}
+				
+						that.retorno = {value:""+text,__sucess:true};
+					})
+					.catch( (reason) => {
+						console.log("FETCH --> CATCH:"+reason);
+						if (reason.name === 'AbortError') {
+							console.log('Fetch aborted');
+						} else {
+							that.retorno = {value:""+reason,__sucess:false};
+						}
+					});
+				}
+				catch(e) {
+					console.log("TRY --> CATCH"+e);
+					this.ocupado = false;
+					this.retorno = false;	
+					this.tempo = 0;
+					this.abortador = false;	
+					return {value:""+e,__sucess:false};
+				}
+
 				VM_setDelay(1);
 				return {state:STATE_DELAY_REPEAT};
 			}
