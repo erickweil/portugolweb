@@ -1,33 +1,63 @@
+import { httpGetAsync } from "../js/extras/extras.js";
 import PortugolRuntime from "../js/vm/portugolrun.js";
 import { assert, assertEquals, test, testAll } from './test.js';
+
+function erroCounterFn(counterRef) {
+    return (input,token,msg,tipo) => {
+        console.log("Erro ",tipo," em ",token,":",msg);
+        counterRef.value++;
+    };
+}
+
+function doExecCheck(input) {
+
+    // Para pegar o output padrão só
+    // Não precisa mais fazer isso no código.
+    let lninput = input.replace(/\r\n/g,"\n");
+
+    const ex_fim = lninput.lastIndexOf("---")-1;
+    const ex_inicio = lninput.lastIndexOf("---",ex_fim)+4;
+    const ex_txt = lninput.substring(ex_inicio,ex_fim);
+    assert(ex_txt != false);
+
+
+    const run = new PortugolRuntime({value:""});
+
+    const compilado = run.compilar(input,false,false);
+    assert(compilado.success);
+
+    return run.executar(input,compilado,false).then((saida) => {
+        if(!saida) return Promise.reject("Saída Vazia");
+
+        assertEquals(saida,ex_txt);
+    });
+}
+
+function testExemplo(exemplo) {
+    return test(exemplo,() => {
+        /*return httpGetAsync("/test/programas/"+exemplo, (txt) => {
+            execContarErros(txt);
+        });*/
+        return fetch("/test/programas/"+exemplo, {method:"GET"})
+        .then((response) => {
+            if (!response.ok) return Promise.reject(response.status);    
+
+            return response.text();
+        })
+        .then((text) => {
+            if(!text) return Promise.reject("Resposta Vazia");
+
+            return doExecCheck(text);
+        });
+    }); 
+}
+
 
 export function runTests() {
 return testAll("portugolrun",
 
-    test("Executnado Hello World:", () => {
-        let input = "programa{ funcao inicio(){escreva(\"Olá\")escreva(\" \")escreva(\"Mundo\")} }";
-
-        let run = new PortugolRuntime({value:""});
-
-        let compilado = run.compilar(input,false,false);
-        assert(compilado.success);
-
-        return run.executar(input,compilado,false).then((saida) => {
-            assertEquals(saida,"Olá Mundo");
-        });
-    }),
-
-    test("Executando Fibonacci:", () => {
-        let input = "programa{ funcao inicio(){inteiro a = 0 inteiro b = 1 enquanto(a<20){a = a + b b = a - b escreva(a,\" \")}}}";
-
-        let run = new PortugolRuntime({value:""});
-
-        let compilado = run.compilar(input,false,false);
-        assert(compilado.success);
-
-        return run.executar(input,compilado,false).then((saida) => {
-            assertEquals(saida,"1 1 2 3 5 8 13 21 ");
-        });
-    })
+    testExemplo("olamundo.por"),
+    testExemplo("fibonacci.por"),
+    testExemplo("primos.por")
 );
 }

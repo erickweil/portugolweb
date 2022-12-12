@@ -54,7 +54,7 @@ export function removeEscaping(tok,str,escaping)
 }
 
 
-export const separators = "\n\t +-*/%><!=&|^~;,.{}()[]:";
+export const separators = "\n\t +-*/%><!=&|^~;,.{}()[]:\r";
 export const reserved_words =
 [
 "programa","funcao","inclua","biblioteca","e","ou","nao","se","senao","enquanto","faca","para","escolha","caso","contrario","pare","retorne","vazio","const"
@@ -66,16 +66,16 @@ export const type_words =
 export const separators_names =
 [
 "sep-ln","sep-tab","sep-space","sep-plus","sep-minus","sep-mul","sep-div","sep-rem","sep-gt","sep-lt","sep-not","sep-equals","sep-and","sep-or","sep-xor","sep-bnot",
-"sep-semi","sep-colon","sep-dot","sep-bracesO","sep-bracesC","sep-parO","sep-parC","sep-squareO","sep-squareC"
+"sep-semi","sep-colon","sep-dot","sep-bracesO","sep-bracesC","sep-parO","sep-parC","sep-squareO","sep-squareC","sep-real-colon","sep-carriage-return"
 ];
 
 export const separator_tokens =
 [
 
 // 0-25
-"\n","\t"," ","+","-","*","/","%",">","<","!","=","&","|","^","~",";",",",".","{","}","(",")","[","]",":",
-// 26-31
-"","","","","","",
+"\n","\t"," ","+","-","*","/","%",">","<","!","=","&","|","^","~",";",",",".","{","}","(",")","[","]",":","\r",
+// 27-31
+"","","","","",
 // 32-63
 "+=","-=","*=","/=","%=",">>=",">>",">=","<<=","<<","<=","!=","==","e","&=","ou","|=","^=","~=","++","--","","+","-","-->","++","--","","","","",""
 ];
@@ -174,6 +174,7 @@ export const T_parC = 22;
 export const T_squareO = 23;
 export const T_squareC = 24;
 export const T_colon = 25;//53;
+export const T_carriage_return = 26;
 
 
 export function isOperator(code)
@@ -489,8 +490,8 @@ export function stringEscapeSpecials(str)
 
 export class Tokenizer {
     constructor(input,erroCallback) {
-		// Remove os \r\n e substitui por \n
-		input = input.replace(/\r\n/g,"\n");
+		// NÃO PRECISA MAIS
+		//input = input.replace(/\r\n/g,"\n");
 
 		this.input = input;
 		this.enviarErro = erroCallback;
@@ -744,7 +745,7 @@ export class Tokenizer {
 					let t0 = getSeparatorCode(c);
 					let t1 = this.input.length > i+1 ? getSeparatorCode(this.input.charAt(i+1)) : -1;
 					let t2 = this.input.length > i+2 ? getSeparatorCode(this.input.charAt(i+2)) : -1;
-					let t3 = this.input.length > i+3 ? getSeparatorCode(this.input.charAt(i+3)) : -1;
+					//let t3 = this.input.length > i+3 ? getSeparatorCode(this.input.charAt(i+3)) : -1;
 					
 					if(t0 == T_plus && t1 == T_plus)
 						{t0 = T_autoinc; sepOff = 2;}
@@ -806,6 +807,12 @@ export class Tokenizer {
 					if(t0 == T_bitnot && t1 == T_attrib)
 						{t0 = T_attrib_bitnot; sepOff = 2;}
 					
+					// \r\n \r 
+					if(t0 == T_carriage_return && t1 == T_ln)
+						{t0 = T_ln; sepOff = 2;}
+					else if(t0 == T_carriage_return)
+						{t0 = T_ln;}
+
 					this.tokens.push({id:t0,index:i,txt:this.input.substring(i,i+sepOff)});
 					start_off = i+sepOff;
 					i += sepOff -1; // vai fazer +1 no for

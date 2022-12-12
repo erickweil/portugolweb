@@ -2,6 +2,7 @@ import JsGenerator from "../compiler/jsgenerator.js";
 import { Parser } from "../compiler/parser.js";
 import { Tokenizer } from "../compiler/tokenizer.js";
 import { Compiler } from "../compiler/vmcompiler.js";
+import { numberOfLinesUntil } from "../extras/extras.js";
 import { myClearTimeout, mySetTimeout } from "../extras/timeout.js";
 import Calendario from "./libraries/Calendario.js";
 import Graficos from "./libraries/Graficos.js";
@@ -30,15 +31,59 @@ export default class PortugolRuntime {
     constructor(div_saida) {
 		this.lastvmState = STATE_ENDED;
 		this.lastvmTime = 0;
-		this.lastvmStep = false;
-		this.counter = 0;
-		this.errosAnnot = [];
+		this.errosCount = 0;
 		this.execMesmoComErros = false;
 		this.mostrar_bytecode = false;
 		this.div_saida = div_saida;
 
 		this.libraries = {};
     }
+
+	getErroMiddleCallback(erroCallback) {
+		let that = this;
+		return (textInput,token,msg,tipoErro) => {
+			let lineNumber = numberOfLinesUntil(token.index,textInput);
+			let prev_line = textInput.substring(textInput.lastIndexOf('\n', token.index)+1,token.index).replace(/\t/g,'    ');
+			let next_line = textInput.substring(token.index,textInput.indexOf('\n', token.index));
+			let colNumber = prev_line.length;
+			let logprev = "Linha "+lineNumber+":"+prev_line;
+			
+			that.errosCount++;
+			try {
+				throw "ERRO";
+			} catch (e) {
+				let myStackTrace = e.stack || e.stacktrace || "";
+				
+				console.log(myStackTrace);
+			}
+			
+			let erroInfo = {
+				row: lineNumber-1,
+				column: colNumber,
+				columnFim: colNumber+next_line.length,
+				textprev: logprev,
+				textnext: next_line,
+				text: msg, // Or the Json reply from the parser 
+				type: "error", // also warning and information
+				myErrorType: tipoErro
+			};
+
+			if(erroCallback) erroCallback(erroInfo);
+			else {
+				console.log("token index:"+token.index+" ... "+lineNumber+":"+colNumber+" -> "+msg);
+			
+				if(erroInfo.text) console.log(erroInfo.text+"\n");
+
+				if(erroInfo.textprev && erroInfo.textnext)
+				{
+					console.log(
+						(erroInfo.textprev+erroInfo.textnext)+"\n"+
+						" ".repeat(erroInfo.textprev.length)+"^\n\n"
+					);
+				}
+			}
+		};
+	}
 
 	iniciarBibliotecas(myCanvas,myCanvasModal,myCanvasWindow,myCanvasWindowTitle,myCanvasKeys) {
 		this.libraries["Util"] = new Util();
@@ -66,7 +111,6 @@ export default class PortugolRuntime {
 		}
 
 		const that = this;
-		that.lastvmStep = false;
 		if(that.lastvmState == STATE_ENDED)
 		{	
 			return new Promise((resolve, reject)=> {
@@ -79,7 +123,7 @@ export default class PortugolRuntime {
 						compilado.compiler.globalCount,
 						string_cod,
 						that.div_saida,
-						erroCallback
+						that.getErroMiddleCallback(erroCallback)
 					);
 					
 					// Para testar compilação se tiver ativado
@@ -88,12 +132,8 @@ export default class PortugolRuntime {
 				catch(e)
 				{
 					let myStackTrace = e.stack || e.stacktrace || "";
-
 					console.log(myStackTrace);
-				
-					if(erroCallback)
-					erroCallback(string_cod,{index:0},"Erro ao preparar a máquina:"+e,"vm");
-					
+
 					reject("Erro ao preparar a máquina");
 					return;
 				}
@@ -101,7 +141,7 @@ export default class PortugolRuntime {
 				// Inicia contagem de tempo
 				that.lastvmTime = performance.now();
 
-				// Loop de execução
+				// Loop Assíncrono de execução
 				const tryExec = () => {
 					if(that.lastvmState == STATE_PENDINGSTOP)
 					{
@@ -177,15 +217,6 @@ export default class PortugolRuntime {
 	
 	compilar(string_cod,erroCallback,mayCompileJS)
 	{
-		let erroCount = {value:0};
-		let erroCounterCallback = (textInput,token,msg,tipoErro) => {
-			erroCount.value++;
-
-			if(erroCallback)
-			erroCallback(textInput,token,msg,tipoErro);
-			else console.log("Erro ",tipoErro,":",msg);
-		};
-
 		let first_Time = performance.now();
 		
 		let last_Time = first_Time;
@@ -193,6 +224,8 @@ export default class PortugolRuntime {
 		let tree_Time = 0;
 		let compiler_Time = 0;
 		let other_Time = 0;
+
+		let erroCounterCallback = this.getErroMiddleCallback(erroCallback);
 
 		try	{
 			last_Time = performance.now();
@@ -202,7 +235,7 @@ export default class PortugolRuntime {
 			token_Time = Math.trunc(performance.now() - last_Time);
 			last_Time = performance.now();
 
-			if(!this.execMesmoComErros && erroCount.value > 0)
+			if(!this.execMesmoComErros && this.errosCount > 0)
 			{
 				return {success:false,"tokenizer":tokenizer};
 			}
@@ -213,7 +246,7 @@ export default class PortugolRuntime {
 			tree_Time = Math.trunc(performance.now() - last_Time);
 			last_Time = performance.now();
 			
-			if(!this.execMesmoComErros && erroCount.value > 0)
+			if(!this.execMesmoComErros && this.errosCount > 0)
 			{
 				return {success:false,"tokenizer":tokenizer,"tree":tree};
 			}
@@ -230,7 +263,7 @@ export default class PortugolRuntime {
 			compiler_Time = Math.trunc(performance.now() - last_Time);
 			last_Time = performance.now();
 			
-			if(!this.execMesmoComErros && erroCount.value > 0)
+			if(!this.execMesmoComErros && this.errosCount > 0)
 			{
 				return {success:false,"tokenizer":tokenizer,"tree":tree,"compiler":compiler};
 			}
@@ -259,8 +292,6 @@ export default class PortugolRuntime {
 	
 	executarVM()
 	{
-		this.counter++;
-
 		if(this.lastvmState == STATE_PENDINGSTOP) {
 			// blz então
 			//escreva("\n\nPrograma interrompido pelo usuário. Tempo de execução:"+Math.trunc(performance.now()-this.lastvmTime)+" milissegundos");
