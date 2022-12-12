@@ -138,14 +138,34 @@ function referenceSafeRemove(array,index)
 
 function httpGetAsync(theUrl, callback)
 {
-    var xmlHttp = new XMLHttpRequest();
+    /*var xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function() { 
         if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
             callback(xmlHttp.responseText);
     }
     xmlHttp.open("GET", theUrl, true); // true for asynchronous 
-    xmlHttp.send(null);
+    xmlHttp.send(null);*/
+
+	return fetch(theUrl, {method: "GET"})
+	.then((response) => {
+		return response.text()
+	})
+	.then((text) => {
+		callback(text)
+	})
 }
+
+/*function convertPromise(func)
+{
+	return new Promise( (resolve,reject) => {
+		try {
+			var ret = func()
+			resolve(ret)
+		} catch (error) {
+			reject(error)
+		}
+	});
+}*/
 
 export {
 	numberOfLinesUntil,

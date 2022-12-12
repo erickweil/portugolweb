@@ -1,4 +1,6 @@
-var decodeEntities = (function() {
+import { numberOfLinesUntil } from "../extras/extras.js";
+
+export const decodeEntities = (function() {
   // this prevents any overhead from creating the object each time
   var element = document.createElement('div');
 
@@ -18,11 +20,11 @@ var decodeEntities = (function() {
   return decodeHTMLEntities;
 })();
 
-function htmlEntities(str) {
+export function htmlEntities(str) {
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function removeEscaping(tok,str,escaping)
+export function removeEscaping(tok,str,escaping)
 {
 	// this.erro(this.tokens[this.tokens.length-1],"o tipo caracter deve conter apenas uma letra ou número. mude para cadeia");
 	var ret = "";
@@ -52,22 +54,22 @@ function removeEscaping(tok,str,escaping)
 }
 
 
-var separators = "\n\t +-*/%><!=&|^~;,.{}()[]:";
-var reserved_words =
+export const separators = "\n\t +-*/%><!=&|^~;,.{}()[]:";
+export const reserved_words =
 [
 "programa","funcao","inclua","biblioteca","e","ou","nao","se","senao","enquanto","faca","para","escolha","caso","contrario","pare","retorne","vazio","const"
 ];
-var type_words =
+export const type_words =
 [
 "inteiro","caracter","cadeia","real","logico"
 ];
-var separators_names =
+export const separators_names =
 [
 "sep-ln","sep-tab","sep-space","sep-plus","sep-minus","sep-mul","sep-div","sep-rem","sep-gt","sep-lt","sep-not","sep-equals","sep-and","sep-or","sep-xor","sep-bnot",
 "sep-semi","sep-colon","sep-dot","sep-bracesO","sep-bracesC","sep-parO","sep-parC","sep-squareO","sep-squareC"
 ];
 
-var separator_tokens =
+export const separator_tokens =
 [
 
 // 0-25
@@ -82,7 +84,7 @@ var separator_tokens =
 //var separatorsIgnore = "\n\r\t ";
 
 // SEPARATOR 
-var T_SEPARATOROFF = 0;
+const T_SEPARATOROFF = 0;
 function getSeparator(c)
 {
 	return separator_tokens[c-T_SEPARATOROFF];
@@ -92,95 +94,95 @@ function getSeparatorCode(c)
 {
 	return T_SEPARATOROFF + separators.indexOf(c);
 }
-var T_ln = 0;
-var T_tab = 1;
-var T_space = 2;
+export const T_ln = 0;
+export const T_tab = 1;
+export const T_space = 2;
 
 // ++ += +
-var T_autoinc = 51;
-var T_pre_autoinc = 57;
-var T_attrib_plus = 32;
-var T_unary_plus = 54;
-var T_plus = 3;
+export const T_autoinc = 51;
+export const T_pre_autoinc = 57;
+export const T_attrib_plus = 32;
+export const T_unary_plus = 54;
+export const T_plus = 3;
 
 // --> -- -= -
-var T_arrow = 56;
-var T_autodec = 52;
-var T_pre_autodec = 58;
-var T_attrib_minus = 33;
-var T_unary_minus = 55;
-var T_minus = 4;
+export const T_arrow = 56;
+export const T_autodec = 52;
+export const T_pre_autodec = 58;
+export const T_attrib_minus = 33;
+export const T_unary_minus = 55;
+export const T_minus = 4;
 
 // *= *
-var T_attrib_mul = 34;
-var T_mul = 5;
+export const T_attrib_mul = 34;
+export const T_mul = 5;
 
 // /= /
-var T_attrib_div = 35;
-var T_div = 6;
+export const T_attrib_div = 35;
+export const T_div = 6;
 
 // %= %
-var T_attrib_rem = 36;
-var T_rem = 7;
+export const T_attrib_rem = 36;
+export const T_rem = 7;
 
 // >>= >> >= >
-var T_attrib_shiftright = 37;
-var T_shiftright = 38;
-var T_ge = 39;
-var T_gt = 8;
+export const T_attrib_shiftright = 37;
+export const T_shiftright = 38;
+export const T_ge = 39;
+export const T_gt = 8;
 
 // <<= << <= <
-var T_attrib_shiftleft = 40;
-var T_shiftleft = 41;
-var T_le = 42;
-var T_lt = 9;
+export const T_attrib_shiftleft = 40;
+export const T_shiftleft = 41;
+export const T_le = 42;
+export const T_lt = 9;
 
 // != !
-var T_notequals = 43;
-var T_not = 10;
+export const T_notequals = 43;
+export const T_not = 10;
 
 
 // == =
-var T_equals = 44;
-var T_attrib = 11;
+export const T_equals = 44;
+export const T_attrib = 11;
 
 // && &= &
-var T_and = 45;
-var T_attrib_bitand = 46;
-var T_bitand = 12;
+export const T_and = 45;
+export const T_attrib_bitand = 46;
+export const T_bitand = 12;
 
 // || |= |
-var T_or = 47;
-var T_attrib_bitor = 48;
-var T_bitor = 13;
+export const T_or = 47;
+export const T_attrib_bitor = 48;
+export const T_bitor = 13;
 
 // ^= ^
-var T_attrib_xor = 49;
-var T_xor = 14;
+export const T_attrib_xor = 49;
+export const T_xor = 14;
 
 // ~= ~
-var T_attrib_bitnot = 50;
-var T_bitnot = 15;
+export const T_attrib_bitnot = 50;
+export const T_bitnot = 15;
 
-var T_semi = 16;
-var T_comma = 17;
-var T_dot = 18;
-var T_bracesO = 19;
-var T_bracesC = 20;
-var T_parO = 21;
-var T_parC = 22;
-var T_squareO = 23;
-var T_squareC = 24;
-var T_colon = 25;//53;
+export const T_semi = 16;
+export const T_comma = 17;
+export const T_dot = 18;
+export const T_bracesO = 19;
+export const T_bracesC = 20;
+export const T_parO = 21;
+export const T_parC = 22;
+export const T_squareO = 23;
+export const T_squareC = 24;
+export const T_colon = 25;//53;
 
 
 
-function isDualOperator(code)
+export function isDualOperator(code)
 {
 	return (code == T_plus || code == T_minus) || (isOperator(code) && !canBePreUnary(code) && !isPostUnary(code));
 }
 
-function isOperator(code)
+export function isOperator(code)
 {
 	switch(code)
 	{
@@ -224,7 +226,7 @@ function isOperator(code)
 		default: return false;
 	}
 }
-function isAttribOp(code)
+export function isAttribOp(code)
 {
 	switch(code)
 	{
@@ -245,7 +247,7 @@ function isAttribOp(code)
 	}
 }
 
-function getOpPrecedence(code) //Larger number means higher precedence.
+export function getOpPrecedence(code) //Larger number means higher precedence.
 {
 	switch(code)
 	{
@@ -314,7 +316,7 @@ function getOpPrecedence(code) //Larger number means higher precedence.
 	}
 }
 
-function canBePreUnary(code)
+export function canBePreUnary(code)
 {
 	switch(code)
 	{
@@ -332,7 +334,7 @@ function canBePreUnary(code)
 	}
 }
 
-function isPostUnary(code)
+export function isPostUnary(code)
 {
 	switch(code)
 	{
@@ -342,79 +344,79 @@ function isPostUnary(code)
 	}
 }
 
-function isSeparator(code)
+export function isSeparator(code)
 {
 	return code >= T_ln && code < T_word;
 }
 
 
-var T_word = 63;
+const T_word = 63;
 //var RESERVED_WORD = 3;
-var T_RESERVEDOFF = 64;
-function getReservedWordCode(c)
+const T_RESERVEDOFF = 64;
+export function getReservedWordCode(c)
 {
 	return T_RESERVEDOFF + reserved_words.indexOf(c);
 }
-var T_programa = 64;
-var T_funcao = 65;
-var T_inclua = 66;
-var T_biblioteca = 67;
+export const T_programa = 64;
+export const T_funcao = 65;
+export const T_inclua = 66;
+export const T_biblioteca = 67;
 //var T_e = 68; deprecated
 //var T_ou = 69; deprecated
 //var T_nao = 70; deprecated
-var T_se = 71;
-var T_senao = 72;
-var T_enquanto = 73;
-var T_faca = 74;
-var T_para = 75;
-var T_escolha = 76;
-var T_caso = 77;
-var T_contrario = 78;
-var T_pare = 79;
-var T_retorne = 80;
-var T_vazio = 81;
-var T_const = 82;
+export const T_se = 71;
+export const T_senao = 72;
+export const T_enquanto = 73;
+export const T_faca = 74;
+export const T_para = 75;
+export const T_escolha = 76;
+export const T_caso = 77;
+export const T_contrario = 78;
+export const T_pare = 79;
+export const T_retorne = 80;
+export const T_vazio = 81;
+export const T_const = 82;
 //var TYPE_WORD = 4;
-var T_TYPEOFF = 96;
-function getTypeWordCode(c)
+const T_TYPEOFF = 96;
+export function getTypeWordCode(c)
 {
 	return T_TYPEOFF + type_words.indexOf(c);
 }
 
-var T_inteiro = 96;
-var T_caracter = 97;
-var T_cadeia = 98;
-var T_real = 99;
-var T_logico = 100;
+export const T_inteiro = 96;
+export const T_caracter = 97;
+export const T_cadeia = 98;
+export const T_real = 99;
+export const T_logico = 100;
 
 // VETOR
-var T_Vinteiro = 101;
-var T_Vcaracter = 102;
-var T_Vcadeia = 103;
-var T_Vreal = 104;
-var T_Vlogico = 105;
+export const T_Vinteiro = 101;
+export const T_Vcaracter = 102;
+export const T_Vcadeia = 103;
+export const T_Vreal = 104;
+export const T_Vlogico = 105;
 
 // MATRIZ
-var T_Minteiro = 106;
-var T_Mcaracter = 107;
-var T_Mcadeia = 108;
-var T_Mreal = 109;
-var T_Mlogico = 110;
+export const T_Minteiro = 106;
+export const T_Mcaracter = 107;
+export const T_Mcadeia = 108;
+export const T_Mreal = 109;
+export const T_Mlogico = 110;
 
-var T_Vetor = 111; // qualquer vetor
-var T_Matriz = 112; // qualquer matriz
+export const T_Vetor = 111; // qualquer vetor
+export const T_Matriz = 112; // qualquer matriz
 
-function convertArrayType(c)
+export function convertArrayType(c)
 {
 	return c + 5;
 }
 
-function convertMatrixType(c)
+export function convertMatrixType(c)
 {
 	return c + 10;
 }
 
-function convertArrayDimsType(c,dims)
+export function convertArrayDimsType(c,dims)
 {
 	if(dims == 1)
 	return c + 5;
@@ -422,12 +424,12 @@ function convertArrayDimsType(c,dims)
 	return c + 10;
 }
 
-function isTypeWord(code)
+export function isTypeWord(code)
 {
 	return code >= T_inteiro && code <= T_logico;
 }
 
-function getTypeWord(code)
+export function getTypeWord(code)
 {
 	switch(code)
 	{
@@ -457,24 +459,25 @@ function getTypeWord(code)
 	}
 }
 
-var T_linecomment = 128;
-var T_blockcomment = 129;
-var T_inteiroLiteral = 130;
-var T_realLiteral = 131;
-var T_cadeiaLiteral = 132;
-var T_caracterLiteral = 133;
-var T_logicoLiteral = 134;
-function isLiteral(code)
+export const T_linecomment = 128;
+export const T_blockcomment = 129;
+export const T_inteiroLiteral = 130;
+export const T_realLiteral = 131;
+export const T_cadeiaLiteral = 132;
+export const T_caracterLiteral = 133;
+export const T_logicoLiteral = 134;
+export function isLiteral(code)
 {
 	return code >= T_inteiroLiteral && code <= T_logicoLiteral;
 }
 
-function isAnyWord(code)
+// Quem usa isso?
+export function isAnyWord(code)
 {
-	return code >= T_word && code <= T_falso;
+	return code >= T_word && code <= T_logico;
 }
 
-function stringEscapeSpecials(str)
+export function stringEscapeSpecials(str)
 {
 	str = str.replace(/\\/g,"\\"+"\\");
 	str = str.replace(/\n/g,"\\"+"n");
@@ -485,21 +488,28 @@ function stringEscapeSpecials(str)
 	return str;
 }
 
-class Tokenizer {
-    constructor(input) { // esse input não pode conter \r !!!
+export class Tokenizer {
+    constructor(input,erroCallback) {
+		// Remove os \r\n e substitui por \n
+		input = input.replace(/\r\n/g,"\n");
+
 		this.input = input;
+		this.enviarErro = erroCallback;
 		this.tokens = [];
     }
 	
 	erro(token,msg)
 	{
-		enviarErro(this.input,token,msg,"sintatico");
+		if(this.enviarErro)
+		this.enviarErro(this.input,token,msg,"sintatico");
+		else
+		console.log("ERRO NO TOKENIZER:",msg);
 	}
 	
 	getRelevantTokens()
 	{
-		var ret = [];
-		for(var i =0; i< this.tokens.length;i++)
+		let ret = [];
+		for(let i =0; i< this.tokens.length;i++)
 		{
 			switch(this.tokens[i].id)
 			{
@@ -519,8 +529,8 @@ class Tokenizer {
 	
 	getTokenIndexAt(index)
 	{
-		var last = 0;
-		for(var i =0; i< this.tokens.length;i++)
+		let last = 0;
+		for(let i =0; i< this.tokens.length;i++)
 		{
 			if(this.tokens[i].index > index)
 			{
@@ -534,12 +544,12 @@ class Tokenizer {
 	
 	getTokenIndexAtRowCol(row,col)
 	{
-		var last = 0;
-		var firstIndex = -1;
-		for(var i =0; i< this.tokens.length;i++)
+		let last = 0;
+		let firstIndex = -1;
+		for(let i =0; i< this.tokens.length;i++)
 		{
-			var tokenindex = this.tokens[i].index;
-			var tokenrow = numberOfLinesUntil(tokenindex,this.input);
+			let tokenindex = this.tokens[i].index;
+			let tokenrow = numberOfLinesUntil(tokenindex,this.input);
 			
 			if(tokenrow == row && firstIndex == -1)
 			{
@@ -563,17 +573,17 @@ class Tokenizer {
 	// Adding a method to the constructor
 	tokenize()
 	{
-		var start_off = 0
+		let start_off = 0
 		
-		for(var i =0; i< this.input.length;i++)
+		for(let i =0; i< this.input.length;i++)
 		{
-			var c = this.input.charAt(i);
+			let c = this.input.charAt(i);
 			if( c == '"' || c == "'") // texto
 			{
-				var k = i+1;
+				let k = i+1;
 				for(; k< this.input.length;k++)
 				{
-					var kc = this.input.charAt(k);
+					let kc = this.input.charAt(k);
 					if(kc == "\\") k++;
 					else if( kc == c || kc == "\n" )
 					{
@@ -584,7 +594,7 @@ class Tokenizer {
 						break;
 					}
 				}
-				var str = this.input.substring(i+1,k); // remove as aspas
+				let str = this.input.substring(i+1,k); // remove as aspas
 				
 				//str = str.replace(/\\n/g,'\n');
 				//str = str.replace(/\\t/g,'\t');
@@ -612,32 +622,32 @@ class Tokenizer {
 			}
 			else if( c == '/' && this.input.charAt(i+1) == "/") // comentario de uma linha
 			{
-				var k = i+1;
+				let k = i+1;
 				for(; k< this.input.length;k++)
 				{
-					var kc = this.input.charAt(k);
+					let kc = this.input.charAt(k);
 					if( kc == "\n" )
 					{
 						break;
 					}
 				}
-				var str = this.input.substring(i,k);
+				let str = this.input.substring(i,k);
 				this.tokens.push({id:T_linecomment,index:i,txt:str});
 				i = k-1; // vai fazer +1 no for
 				start_off = i+1;
 			}
 			else if( c == '/' && this.input.charAt(i+1) == "*") // comentario de bloco
 			{
-				var k = i+1;
+				let k = i+1;
 				for(; k< this.input.length;k++)
 				{
-					var kc = this.input.charAt(k);
+					let kc = this.input.charAt(k);
 					if( kc == "/" && this.input.charAt(k-1) == "*" )
 					{
 						break;
 					}
 				}
-				var str = this.input.substring(i,k+1);
+				let str = this.input.substring(i,k+1);
 				this.tokens.push({id:T_blockcomment,index:i,txt:str});
 				i = k; // vai fazer +1 no for
 				start_off = i+1;
@@ -647,17 +657,17 @@ class Tokenizer {
 				//if( separators.indexOf(this.input.charAt(i-1)) > -1) // antes do número é um separador
 				//{
 				
-				var k = i+1;
+				let k = i+1;
 				for(; k< this.input.length;k++)
 				{
-					var kc = this.input.charAt(k);
+					let kc = this.input.charAt(k);
 					//if( separators.indexOf(kc) > -1 && kc != '.' &&  kc!= 'X' && kc!='x' && kc!='b' && kc!='B')
 					if(!(/^[0-9A-Fa-f\.XxBb]$/.test(kc)))
 					{
 						break;
 					}
 				}
-				var str = this.input.substring(i,k);
+				let str = this.input.substring(i,k);
 				if(!str.includes("."))
 					this.tokens.push({id:T_inteiroLiteral,index:i,txt:str});
 				else
@@ -670,17 +680,17 @@ class Tokenizer {
 			}
 			else if(/^[a-zA-Z_\$]$/.test(c)) // palavra
 			{
-				var palavraIndex = i;
-				var k = i+1;
+				let palavraIndex = i;
+				let k = i+1;
 				for(; k< this.input.length;k++)
 				{
-					var kc = this.input.charAt(k);
+					let kc = this.input.charAt(k);
 					if(!(/^[a-zA-Z0-9_\$]$/.test(kc)))
 					{
 						break;
 					}
 				}
-				var word = this.input.substring(i,k);// isso não iria incluir um caractere a mais??
+				let word = this.input.substring(i,k);// isso não iria incluir um caractere a mais??
 				
 				i = k-1; // vai fazer +1 no for
 				start_off = i+1;
@@ -731,11 +741,11 @@ class Tokenizer {
 				
 				//if( separatorsIgnore.indexOf(c) == -1) // c é um separador que deve ser ignorado
 				//{
-					var sepOff = 1;
-					var t0 = getSeparatorCode(c);
-					var t1 = this.input.length > i+1 ? getSeparatorCode(this.input.charAt(i+1)) : -1;
-					var t2 = this.input.length > i+2 ? getSeparatorCode(this.input.charAt(i+2)) : -1;
-					var t3 = this.input.length > i+3 ? getSeparatorCode(this.input.charAt(i+3)) : -1;
+					let sepOff = 1;
+					let t0 = getSeparatorCode(c);
+					let t1 = this.input.length > i+1 ? getSeparatorCode(this.input.charAt(i+1)) : -1;
+					let t2 = this.input.length > i+2 ? getSeparatorCode(this.input.charAt(i+2)) : -1;
+					let t3 = this.input.length > i+3 ? getSeparatorCode(this.input.charAt(i+3)) : -1;
 					
 					if(t0 == T_plus && t1 == T_plus)
 						{t0 = T_autoinc; sepOff = 2;}
@@ -817,11 +827,11 @@ class Tokenizer {
 	
 	formatHTML()
 	{
-		var lnCount = 1;
-		var string = "<span class='code-ln' id='ln"+lnCount+"'><span class='ln-n'>"+lnCount+"</span>";
-		for(var i =0; i< this.tokens.length;i++)
+		let lnCount = 1;
+		let string = "<span class='code-ln' id='ln"+lnCount+"'><span class='ln-n'>"+lnCount+"</span>";
+		for(let i =0; i< this.tokens.length;i++)
 		{
-			var t = this.tokens[i];
+			let t = this.tokens[i];
 			switch(t.id)
 			{
 				case T_ln:
@@ -842,9 +852,11 @@ class Tokenizer {
 					string += "<span class='comment-line'>"+t.txt+"</span>"; 
 				break;
 				case T_blockcomment:
-					var num_Lines = (t.txt.match(/\r?\n/g) || '').length;
+				{
+					let num_Lines = (t.txt.match(/\r?\n/g) || '').length;
 					lnCount += num_Lines;
 					string += "<span class='comment-line'>"+t.txt+"</span>"; 
+				}
 				break;
 				case T_inteiroLiteral:
 				case T_realLiteral:
@@ -857,7 +869,7 @@ class Tokenizer {
 					}
 					else if(isSeparator(t.id))
 					{
-						var sep_c = separators_names[separators.indexOf(t.txt)];
+						let sep_c = separators_names[separators.indexOf(t.txt)];
 						string += "<span class='"+sep_c+"'>"+t.txt+"</span>"; 
 					}
 					else
@@ -871,61 +883,62 @@ class Tokenizer {
 	}
 }
 
+// deprecated
 function token_replace2(input)
 {
-	var start_off = 0
-	var string = "";
-	for(var i =0; i< input.length;i++)
+	let start_off = 0
+	let string = "";
+	for(let i =0; i< input.length;i++)
 	{
-		var c = input.charAt(i);
+		let c = input.charAt(i);
 		if( c == '"' || c == "'")
 		{
-			var k = i+1;
+			let k = i+1;
 			for(; k< input.length;k++)
 			{
-				var kc = input.charAt(k);
+				let kc = input.charAt(k);
 				if(kc == "\\") k++;
 				else if( kc == c || kc == "\n" )
 				{
 					break;
 				}
 			}
-			var str = input.substring(i,k+1);
-			var word = "<span class='string-literal'>"+str+"</span>"; 
+			let str = input.substring(i,k+1);
+			let word = "<span class='string-literal'>"+str+"</span>"; 
 			string += word;
 			i = k;
 			start_off = i+1;
 		}
 		else if( c == '/' && input.charAt(i+1) == "/")
 		{
-			var k = i+1;
+			let k = i+1;
 			for(; k< input.length;k++)
 			{
-				var kc = input.charAt(k);
+				let kc = input.charAt(k);
 				if( kc == "\n" )
 				{
 					break;
 				}
 			}
-			var str = input.substring(i,k+1);
-			var word = "<span class='comment-line'>"+str+"</span>"; 
+			let str = input.substring(i,k+1);
+			let word = "<span class='comment-line'>"+str+"</span>"; 
 			string += word;
 			i = k;
 			start_off = i+1;
 		}
 		else if( c == '/' && input.charAt(i+1) == "*")
 		{
-			var k = i+1;
+			let k = i+1;
 			for(; k< input.length;k++)
 			{
-				var kc = input.charAt(k);
+				let kc = input.charAt(k);
 				if( kc == "/" && input.charAt(k-1) == "*" )
 				{
 					break;
 				}
 			}
-			var str = input.substring(i,k+1);
-			var word = "<span class='comment-line'>"+str+"</span>"; 
+			let str = input.substring(i,k+1);
+			let word = "<span class='comment-line'>"+str+"</span>"; 
 			string += word;
 			i = k;
 			start_off = i+1;
@@ -934,17 +947,17 @@ function token_replace2(input)
 		{
 			if( separators.indexOf(input.charAt(i-1)) > -1) // antes do nÃºmero Ã© um separador
 			{
-			var k = i+1;
+			let k = i+1;
 			for(; k< input.length;k++)
 			{
-				var kc = input.charAt(k);
+				let kc = input.charAt(k);
 				if( separators.indexOf(kc) > -1 && kc != '.' &&  kc!= 'X' && kc!='x' && kc!='b' && kc!='B')
 				{
 					break;
 				}
 			}
-			var str = input.substring(i,k);
-			var word = "<span class='numeric-literal'>"+str+"</span>"; 
+			let str = input.substring(i,k);
+			let word = "<span class='numeric-literal'>"+str+"</span>"; 
 			string += word;
 			i = k-1;
 			start_off = i+1;
@@ -954,14 +967,14 @@ function token_replace2(input)
 		{
 			if(i - start_off > 0)
 			{
-				var word = input.substring(start_off,i);
+				let word = input.substring(start_off,i);
 				//var begin = input.substring(0,start_off-1);
 				//var end = input.substring(i,input.length);
 				if( !(separators.indexOf(word) > -1)) // n Ã© um separador
 				{
 					word = "<span class='w-"+word+"'>"+word+"</span>"; 
-					var sep_c = separators_names[separators.indexOf(c)]
-					var sep = "<span class='"+sep_c+"'>"+c+"</span>"; 
+					let sep_c = separators_names[separators.indexOf(c)]
+					let sep = "<span class='"+sep_c+"'>"+c+"</span>"; 
 					string += word;
 					string += sep;
 					
@@ -969,16 +982,16 @@ function token_replace2(input)
 				}
 				else
 				{
-					var sep_c = separators_names[separators.indexOf(word)]
-					var sep = "<span class='"+sep_c+"'>"+word+"</span>"; 
+					let sep_c = separators_names[separators.indexOf(word)]
+					let sep = "<span class='"+sep_c+"'>"+word+"</span>"; 
 					string += sep;
 					start_off = i+1;
 				}
 			}
 			else
 			{
-				var sep_c = separators_names[separators.indexOf(c)]
-				var sep = "<span class='"+sep_c+"'>"+c+"</span>"; 
+				let sep_c = separators_names[separators.indexOf(c)]
+				let sep = "<span class='"+sep_c+"'>"+c+"</span>"; 
 				string += sep;
 				start_off = i+1;
 			}

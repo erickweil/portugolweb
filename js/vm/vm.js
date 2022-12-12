@@ -233,6 +233,9 @@ export const STATE_DELAY = 5;
 export const STATE_DELAY_REPEAT = 6;
 export const STATE_STEP = 7;
 export const STATE_ASYNC_RETURN = 8;
+
+// deveria fazer a execução da vm não ser global?
+
 let VM_delay = false;
 let VM_execJS = false;
 // frame locals
@@ -406,7 +409,7 @@ export function VMerro(msg)
 {
 	let fi = getFirstFunctionWithIndexes();
 	let i = 0;
-	
+
 	if(fi)
 		i = getTokenIndex(fi.i,fi.funcIndex);
 	// TODO

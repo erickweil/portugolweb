@@ -14,11 +14,21 @@ function assertEquals(a,b) {
 
 function test(desc, fn) {
     try {
-        console.log(desc);
-        fn();
+        let ret = fn();
+        if(ret && typeof ret.then === 'function')
+        {
+            ret.then(() => {
+                console.log(desc,"OK");
+            })
+            .catch((reason) => {
+                console.log("Erro no teste: ",desc);
+                console.error(reason);
+            })
+        }
+        else console.log(desc,"OK");
     } catch (error) {
-        console.log('\n');
-        console.error(desc,error);
+        console.log("Erro no teste ",desc);
+        console.error(error);
     }
 }
 
