@@ -9,6 +9,7 @@ function mySetTimeout(name,fun,delay)
 	if(_extras_timeouts[name])
 	{
 		console.log("Tentando agendar novamente o timeout '"+name+"' antes de executar o anterior");
+		//throw "Tentando agendar novamente o timeout '"+name+"' antes de executar o anterior"
 		return;
 	}
 	_extras_timeouts[name] = setTimeout( function() {

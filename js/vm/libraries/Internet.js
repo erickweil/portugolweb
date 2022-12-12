@@ -1,3 +1,7 @@
+import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../compiler/tokenizer.js";
+import { httpGetAsync } from "../../extras/extras.js";
+import { STATE_ASYNC_RETURN, STATE_DELAY_REPEAT, VM_async_return, VM_setDelay } from "../vm.js";
+
 export default class Internet {
 	constructor() {
 		this.members = {
@@ -14,6 +18,10 @@ export default class Internet {
 	
 	resetar()
 	{
+		this.ocupado = false;
+		this.retorno = false;
+		this.abortador = false;
+		this.tempo = 0;
 		this.tempo_limite = 10000;
 	}
 	
@@ -31,19 +39,79 @@ export default class Internet {
 	{
 		if(typeof Android !== 'undefined')
 		{
-			Android.httpgetcheck(endereco,this.tempo_limite);
+			Android.httpgetcheck(endereco,this.tempo_limite); // eslint-disable-line
 			return {state:STATE_ASYNC_RETURN}; 
 		}
-		else return {value:"Obter páginas da internet apenas funciona no aplicativo Android, pelo navegador não é possível devido a limitações de segurança que grande parte dos navegadores aplicam."};
+		else //return {value:"Obter páginas da internet apenas funciona no aplicativo Android, pelo navegador não é possível devido a limitações de segurança que grande parte dos navegadores aplicam."};
+		{
+			let ret = this.obter_texto(endereco)
+			if(ret.state == STATE_DELAY_REPEAT) {
+				return ret
+			}
+
+			return {value:ret.__sucess}
+		}
 	}
 	
 	obter_texto(endereco)
 	{
 		if(typeof Android !== 'undefined')
 		{
-			Android.httpget(endereco,this.tempo_limite);
+			Android.httpget(endereco,this.tempo_limite); // eslint-disable-line
 			return {state:STATE_ASYNC_RETURN}; 
 		}
-		else return {value:"Obter páginas da internet apenas funciona no aplicativo Android, pelo navegador não é possível devido a limitações de segurança que grande parte dos navegadores aplicam."};
+		else// return {value:"Obter páginas da internet apenas funciona no aplicativo Android, pelo navegador não é possível devido a limitações de segurança que grande parte dos navegadores aplicam."};
+		{
+			if(this.ocupado)
+			{
+				this.tempo = this.tempo + 1;
+
+				if(this.retorno !== false)
+				{
+					let ret = this.retorno;
+					this.ocupado = false;
+					this.retorno = false;	
+					this.tempo = 0;
+					this.abortador = false;				
+					return this.retorno;
+				}
+				else
+				{
+					if(this.tempo > this.tempo_limite)
+					{
+						this.abortador.abort();
+						this.ocupado = false;
+						this.retorno = false;	
+						this.tempo = 0;
+						this.abortador = false;	
+						return {value:"Tempo limite atingido",__sucess:false}
+					}
+					else 
+					{
+						VM_setDelay(1);
+						return {state:STATE_DELAY_REPEAT};
+					}
+				}
+			}
+			else
+			{
+				this.ocupado = true;
+				this.tempo = 0;
+				this.retorno = false;
+				this.abortador = new AbortController();
+				httpGetAsync(endereco, (txt) => {
+					this.retorno = {value:""+txt,__sucess:true}
+				}, { signal: this.abortador.signal})
+				.catch( (reason) => {
+					if (reason.name === 'AbortError') {
+						console.log('Fetch aborted');
+					} else {
+					this.retorno = {value:""+reason,__sucess:false}
+					}
+				});
+				VM_setDelay(1);
+				return {state:STATE_DELAY_REPEAT};
+			}
+		}
 	}
 }

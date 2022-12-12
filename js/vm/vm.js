@@ -237,7 +237,17 @@ export const STATE_ASYNC_RETURN = 8;
 // deveria fazer a execução da vm não ser global?
 
 let VM_delay = false;
+export function VM_setDelay(delay) {
+	VM_delay = delay;
+}
+export function VM_getDelay(delay) {
+	return VM_delay;
+}
+
 let VM_execJS = false;
+export function VM_getExecJS() {
+	return VM_execJS
+}
 // frame locals
 let VM_code = false;
 let VM_i = 0;
@@ -257,9 +267,18 @@ let VM_saidaDiv = false;
 let VM_textInput = false;
 let VM_codeCount = 0;
 let VM_codeMax = 500000; // se for um valor baixo dá flickering no canvas, valor alto trava tudo. (Resolvido, alterado esse máximo só quando usar a biblioteca Gráficos)
+export function VM_setCodeMax(codeMax) {
+	VM_codeMax = codeMax;
+}
+export function VM_getCodeMax() {
+	return	VM_codeMax;
+}
+
 let VM_escrevaCount = 0;
 let VM_escrevaMax = 1000;
 let enviarErro = false;
+
+
 
 export function recursiveDeclareArray(sizes,defaultValue,i)
 {
@@ -403,6 +422,10 @@ export function getTokenIndex(bcIndex,funcIndex)
 		}
 	}
 	return tokenIndex;
+}
+
+export function getCurrentTokenIndex() {
+	return getTokenIndex(VM_i,VM_funcIndex)
 }
 
 export function VMerro(msg)

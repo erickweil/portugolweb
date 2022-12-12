@@ -1,3 +1,5 @@
+import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../compiler/tokenizer.js";
+
 export default class Matematica {
 
 	constructor() {
@@ -24,7 +26,7 @@ export default class Matematica {
 	
 	arredondar(numero,casas)
 	{
-	    return {value:(+numero.toFixed(casas))};
+		return {value:(+numero.toFixed(casas))};
 	}
 	
 	potencia(base,expoente)
@@ -54,15 +56,19 @@ export default class Matematica {
 	
 	raiz(x,n)
 	{
-	   try {
-		var negate = n % 2 == 1 && x < 0;
-		if(negate)
-		  x = -x;
-		var possible = Math.pow(x, 1 / n);
-		n = Math.pow(possible, n);
-		if(Math.abs(x - n) < 1 && (x > 0 == n > 0))
-		  return {value:negate ? -possible : possible};
-	  } catch(e){}
+		try {
+			var negate = n % 2 == 1 && x < 0;
+			if(negate)
+				x = -x;
+			var possible = Math.pow(x, 1 / n);
+			n = Math.pow(possible, n);
+			if(Math.abs(x - n) < 1 && (x > 0 == n > 0))
+				return {value:negate ? -possible : possible};
+		}
+		catch(e)
+		{
+			console.log(e)
+		}
 	}
 	
 	seno(n)

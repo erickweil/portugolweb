@@ -12,7 +12,8 @@ function assertEquals(a,b) {
     console.log(a+" == "+b);
 }
 
-function test(desc, fn) {
+function test(desc, ...fn) {
+
     try {
         let ret = fn();
         if(ret && typeof ret.then === 'function')

@@ -1,3 +1,4 @@
+import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../compiler/tokenizer.js";
 export default class Objetos {
 	constructor() {
 		this.TIPO_CADEIA = 2;

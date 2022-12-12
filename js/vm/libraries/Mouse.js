@@ -1,3 +1,6 @@
+import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../compiler/tokenizer.js";
+import { TouchManager } from "../../extras/mobile.js";
+import { STATE_DELAY_REPEAT, VM_setDelay } from "../vm.js";
 export default class Mouse {
 	constructor(canvas) {
 		this.canvas = canvas;
@@ -146,7 +149,7 @@ export default class Mouse {
 		}
 		else
 		{
-			VM_delay = 1;
+			VM_setDelay(1);
 			return {state:STATE_DELAY_REPEAT};
 		}
 	}

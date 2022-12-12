@@ -1,4 +1,4 @@
-import { referenceSafeRemove } from "./extras";
+import { referenceSafeRemove } from "./extras.js";
 
 class TouchManager {
 	constructor()

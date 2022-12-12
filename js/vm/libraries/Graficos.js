@@ -1,6 +1,11 @@
+import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../compiler/tokenizer.js";
+import { closeFullscreen, getScreenDimensions, openFullscreen } from "../../extras/extras.js";
+import { STATE_BREATHING, STATE_DELAY_REPEAT, STATE_ENDED, VM_setCodeMax, VM_setDelay } from "../vm.js";
+
 export default class Graficos {
-	constructor(canvas,modal,cwindow,title,divKeys,libTeclado)
+	constructor(canvas,modal,cwindow,title,divKeys,libTeclado,isMobile)
 	{
+		this.isMobile = isMobile;
 		this.canvas = canvas;
 		this.modal = modal;
 		this.cwindow = cwindow;
@@ -133,7 +138,7 @@ export default class Graficos {
 	
 	iniciar_modo_grafico(manter_visivel)
 	{
-		VM_codeMax = 10000000; // para não dar flickering na tela
+		VM_setCodeMax(10000000); // para não dar flickering na tela
 		this.manter_visivel = manter_visivel == 0;
 		
 		var screenDim = getScreenDimensions();
@@ -200,7 +205,7 @@ export default class Graficos {
 	updateTecladoGraficos()
 	{
 		// Vamos aproveitar essa função para atualizar os botões do teclado, caso tenha algum
-		if(isMobile && this.modal.style.display !== "none")
+		if(this.isMobile && this.modal.style.display !== "none")
 		{
 			var teclas = Object.keys(this.libTeclado.checkMap);
 			var teclaCharMap = Object.keys(this.libTeclado.teclaCharMap);
@@ -343,24 +348,23 @@ export default class Graficos {
 		var ry = altura/2.0;
 		if(this.ctx.ellipse)
         {
-          //ctx.save();
-          this.ctx.beginPath();
-		 
-          this.ctx.ellipse(x + rx, y+ry, rx, ry, 0, 0, Math.PI*2);
-          //ctx.strokeStyle=style;
-		  if(preencher == 0) this.ctx.fill();
-          else this.ctx.stroke();
-          //ctx.restore();
+			//ctx.save();
+			this.ctx.beginPath();
+			this.ctx.ellipse(x + rx, y+ry, rx, ry, 0, 0, Math.PI*2);
+			//ctx.strokeStyle=style;
+			if(preencher == 0) this.ctx.fill();
+			else this.ctx.stroke();
+			//ctx.restore();
         }
 		else
 		{
 			var kappa = .5522848,
-			 ox = (largura / 2) * kappa, // control point offset horizontal
-			 oy = (altura / 2) * kappa, // control point offset vertical
-			 xe = x + w,           // x-end
-			 ye = y + h,           // y-end
-			 xm = x + w / 2,       // x-middle
-			 ym = y + h / 2;       // y-middle
+			ox = (largura / 2) * kappa, // control point offset horizontal
+			oy = (altura / 2) * kappa, // control point offset vertical
+			xe = x + largura,           // x-end
+			ye = y + altura,           // y-end
+			xm = x + largura / 2,       // x-middle
+			ym = y + altura / 2;       // y-middle
 
 			this.ctx.beginPath();
 			this.ctx.moveTo(x, ym);
@@ -449,7 +453,7 @@ export default class Graficos {
 			}
 			else
 			{
-				VM_delay = 1;
+				VM_setDelay(1);
 				return {state:STATE_DELAY_REPEAT};
 			}
 		}
@@ -474,7 +478,7 @@ export default class Graficos {
 			
 			this.imgs.push(imgObject);
 			
-			VM_delay = 1;
+			VM_setDelay(1);
 			return {state:STATE_DELAY_REPEAT};
 		}
 	}

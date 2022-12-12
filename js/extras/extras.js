@@ -136,7 +136,7 @@ function referenceSafeRemove(array,index)
 	array.pop();
 }
 
-function httpGetAsync(theUrl, callback)
+function httpGetAsync(theUrl, callback, options)
 {
     /*var xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function() { 
@@ -146,11 +146,26 @@ function httpGetAsync(theUrl, callback)
     xmlHttp.open("GET", theUrl, true); // true for asynchronous 
     xmlHttp.send(null);*/
 
-	return fetch(theUrl, {method: "GET"})
+	if(!options) options = {}
+
+	options.method = "GET"
+
+	return fetch(theUrl, options)
 	.then((response) => {
+		// check for error response
+        if (!response.ok) {
+            // get error message from body or default to response status
+            const error = response.status;
+            return Promise.reject(error);
+        }
+
 		return response.text()
 	})
 	.then((text) => {
+		if(!text) {
+			return Promise.reject("Resposta Vazia");
+		}
+
 		callback(text)
 	})
 }

@@ -1,3 +1,6 @@
+import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../compiler/tokenizer.js";
+import { STATE_DELAY_REPEAT, VM_setDelay } from "../vm.js";
+
 export default class Teclado {
 	constructor(canvas) {
 		
@@ -35,7 +38,7 @@ export default class Teclado {
 			0:"Alguma",
 			
 		44:",",
-		45:"-",
+		//45:"-",
 		45:"_",
 		46:".",
 		47:"/",
@@ -79,7 +82,7 @@ export default class Teclado {
 		89:"Y",
 		90:"Z",
 		91:"[",
-	   92:"\\",
+		92:"\\",
 		93:"]",
 		
 		96:"0",
@@ -222,7 +225,7 @@ export default class Teclado {
 			//",":108,
 			//"-":109,
 			//".":110,
-			"%":111,
+			//"%":111,
 			"DELETE":127,
 			"NUMLOCK":144,
 			"SCROLLOCK":145,
@@ -567,11 +570,11 @@ export default class Teclado {
 	
 	ler_tecla()
 	{
-		for(var i =49;i<58;i++)
+		for(let i =49;i<58;i++)
 		{
 			this.checkMap[i] = true;
 		}
-		for(var i =65;i<91;i++)
+		for(let i =65;i<91;i++)
 		{
 			this.checkMap[i] = true;
 		}
@@ -585,14 +588,14 @@ export default class Teclado {
 			
 			this.ultimaSolta = -1;
 			
-			VM_delay = 1;
+			VM_setDelay(1)
 			return {state:STATE_DELAY_REPEAT};
 		}
 		else
 		{
 			if(this.ultimaSolta == -1)
 			{
-				VM_delay = 1;
+				VM_setDelay(1)
 				return {state:STATE_DELAY_REPEAT};
 			}
 			else
