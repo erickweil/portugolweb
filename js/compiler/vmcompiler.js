@@ -547,8 +547,7 @@ export class Compiler {
 		else
 		{
 			this.erro("não encontrou a variável '"+varName+"', esqueceu de declará-la?");
-			let v = this.createVar(varName,T_cadeia,false,false);
-			return v;
+			return this.createVar(varName,T_cadeia,false,false);
 		}
 	}
 	

@@ -156,7 +156,7 @@ export default class portugolCompleter
 		
 		//if(incluaCheck)
 		//{
-			let offPonto = prefix.lastIndexOf(".");			
+			//let offPonto = prefix.lastIndexOf(".");			
 			//outAppend = "inclua biblioteca ";
 			
 			//console.info("Inclua:", linhaSemPonto);

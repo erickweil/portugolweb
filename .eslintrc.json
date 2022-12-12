@@ -20,7 +20,12 @@
         "no-var": "error",
         "semi":["error","always"],
         "no-implicit-globals":"error",
-        "no-use-before-define":"error",
+        "no-use-before-define":["error",{
+            "functions":false
+        }],
+        "no-duplicate-imports":"error",
+        "no-invalid-this": "error",
+        "no-shadow":"error",
         "import/no-absolute-path":"error",
         "import/no-self-import":"error",
         "import/extensions":["error", "always", { "js": "always" }]

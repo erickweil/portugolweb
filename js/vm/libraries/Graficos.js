@@ -393,17 +393,18 @@ export default class Graficos {
 		this.canvas.height = screenDim.height-48;
 		this.canvas.width = screenDim.width-8;
 		
+		// Está correto lançar agendar esses Timeouts?
 		let that = this;
 		window.setTimeout(function(){ // pq a tela redimensiona depois
-			let screenDim = getScreenDimensions();
-			that.canvas.height = screenDim.height-48;
-			that.canvas.width = screenDim.width-8;
+			let screenDimAgora = getScreenDimensions();
+			that.canvas.height = screenDimAgora.height-48;
+			that.canvas.width = screenDimAgora.width-8;
 		}, 50);
 		
 		window.setTimeout(function(){ // muito depois 
-			let screenDim = getScreenDimensions();
-			that.canvas.height = screenDim.height-48;
-			that.canvas.width = screenDim.width-8;
+			let screenDimAgora = getScreenDimensions();
+			that.canvas.height = screenDimAgora.height-48;
+			that.canvas.width = screenDimAgora.width-8;
 		}, 250);
 		
 		this.canvas.focus();
