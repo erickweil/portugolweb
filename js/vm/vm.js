@@ -304,7 +304,7 @@ export function recursiveDeclareArray(sizes,defaultValue,i)
 	{
 		for(let k=0;k<arr.length;k++)
 		{
-			arr[k] = this.recursiveDeclareArray(sizes,defaultValue,i+1);
+			arr[k] = recursiveDeclareArray(sizes,defaultValue,i+1);
 		}
 	}
 	else
@@ -320,6 +320,8 @@ export function recursiveDeclareArray(sizes,defaultValue,i)
 
 export function escreva(...txt)
 {
+	if(!VM_saidaDiv) throw "Desconfigurado escreva() não pode executar";
+
 	if(VM_escrevaCount > VM_escrevaMax)
 	{
 		VM_escrevaCount = 0;
@@ -336,13 +338,17 @@ export function escreva(...txt)
 export function limpa()
 {
 	VM_saida = "";
+	VM_escrevaCount = 0;
+
+	if(!VM_saidaDiv) return;
 	VM_saidaDiv.value = VM_saida;
 	VM_saidaDiv.scrollTop = VM_saidaDiv.scrollHeight;
-	VM_escrevaCount = 0;
 }
 
 export function leia()
 {
+	if(!VM_saidaDiv) throw "Desconfigurado leia() não pode executar";
+
 	let saidadiv = VM_saidaDiv.value;
 	let entrada = saidadiv.substring(VM_saida.length,saidadiv.length);
 	if(entrada.endsWith("\n"))
@@ -766,9 +772,9 @@ export function VMrun(execMax)
 				sizes.reverse();
 				
 				if(code == B_NEWARRAYGLOBAL)
-				VM_globals[arrayVar] = this.recursiveDeclareArray(sizes,defaultValue,0);
+				VM_globals[arrayVar] = recursiveDeclareArray(sizes,defaultValue,0);
 				else
-				VM_vars[arrayVar] = this.recursiveDeclareArray(sizes,defaultValue,0);
+				VM_vars[arrayVar] = recursiveDeclareArray(sizes,defaultValue,0);
 			}
 			break;
 			case B_ASTOREGLOBAL: 

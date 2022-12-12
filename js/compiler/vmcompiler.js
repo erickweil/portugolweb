@@ -1051,6 +1051,10 @@ export class Compiler {
 			
 			return T_logico;
 		}
+
+		
+		let tExprA = T_vazio;
+		let tExprB = T_vazio;
 		
 		if(expr.op == T_not)
 		{
@@ -1063,8 +1067,6 @@ export class Compiler {
 			return T_logico;
 		}
 		
-		let tExprA = T_vazio;
-		let tExprB = T_vazio;
 		if(expr.op == T_and || expr.op == T_or) // AND E OR SHORT CIRCUITING
 		{
 			if(expr.op == T_and) // AND

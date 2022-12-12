@@ -176,12 +176,6 @@ export const T_squareC = 24;
 export const T_colon = 25;//53;
 
 
-
-export function isDualOperator(code)
-{
-	return (code == T_plus || code == T_minus) || (isOperator(code) && !canBePreUnary(code) && !isPostUnary(code));
-}
-
 export function isOperator(code)
 {
 	switch(code)
@@ -344,13 +338,18 @@ export function isPostUnary(code)
 	}
 }
 
+
+export function isDualOperator(code)
+{
+	return (code == T_plus || code == T_minus) || (isOperator(code) && !canBePreUnary(code) && !isPostUnary(code));
+}
+
+export const T_word = 63;
+
 export function isSeparator(code)
 {
 	return code >= T_ln && code < T_word;
 }
-
-
-export const T_word = 63;
 //var RESERVED_WORD = 3;
 const T_RESERVEDOFF = 64;
 export function getReservedWordCode(c)

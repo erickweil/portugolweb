@@ -68,7 +68,13 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 	let lastvmTime = 0;
 	let lastvmStep = false;
 
-	let editor = false;
+	export const editor = ace.edit("myEditor",{
+			minLines: 10,
+			fontSize: fontSize+"pt",
+			useSoftTabs: false,
+			navigateWithinSoftTabs: false
+		}
+	);
 	//var screenDimension = getScreenDimensions();
 	//isMobile = true;
 	
@@ -104,13 +110,6 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 	}
 
 	console.log(ace);
-    editor = ace.edit("myEditor",{
-			minLines: 10,
-			fontSize: fontSize+"pt",
-			useSoftTabs: false,
-			navigateWithinSoftTabs: false
-		}
-	);
     editor.setTheme("ace/theme/portugol_dark");
     editor.session.setMode("ace/mode/portugol");
 	resizeEditorToFitHotbar();
@@ -178,28 +177,6 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 	{
 		ocultarHotbar();
 	}
-
-	function save() {
-		let string_cod = editor.getValue();
-		string_cod = string_cod.replace(/\r\n/g,"\n");
-		if(typeof Android !== 'undefined')
-		{
-			Android.save(string_cod); // eslint-disable-line
-		}
-		else
-		{
-			let element = document.createElement('a');
-			element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(string_cod));
-			element.setAttribute('download', 'programa.por');
-
-			element.style.display = 'none';
-			document.body.appendChild(element);
-
-			element.click();
-
-			document.body.removeChild(element);
-		}
-	}
 	
 	function android_loaded(code){
 
@@ -214,40 +191,6 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 		{
 			VM_async_return(retValue);
 			executarVM();
-		}
-	}
-
-	function load() {
-	
-		if(typeof Android !== 'undefined')
-		{
-			Android.load(); //eslint-disable-line
-		}
-		else
-		{
-	
-			let element = document.createElement('input');
-			element.setAttribute('type', 'file');
-
-			element.style.display = 'none';
-			document.body.appendChild(element);
-
-			element.click();
-			
-			element.addEventListener('change', function(){
-				let file = element.files[0];
-
-				let reader = new FileReader();
-				reader.onload = function(progressEvent)
-				{
-					editor.setValue(this.result, -1); // moves cursor to the start
-					
-					limparErros();
-				};
-				reader.readAsText(file);
-				document.body.removeChild(element);
-			});
-		
 		}
 	}
 	
@@ -359,68 +302,7 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 		
 		errosMarkers.push(editor.getSession().addMarker(new Range(annot.row, 0, annot.row, annot.columnFim), 'ace_erroportugol-marker', 'screenLine'));
 	}
-	
-	function setAutoCompleterState(checked)
-	{
-		editor.setOptions({ enableBasicAutocompletion: checked, enableLiveAutocompletion: checked });
-	}
-	
-	function setModoTurbo(checkbox)
-	{
-		VM_setExecJS( (lastvmState == STATE_ENDED) && checkbox.checked);
-		checkbox.checked = VM_getExecJS();
-		console.log("Modo: "+(VM_getExecJS() ? 'Modo Turbo' : 'Modo Normal'));
-	}
-	
-	function cursorToEnd(textarea)
-	{
-		let txtEnd =textarea.value.length;
-		textarea.selectionStart= txtEnd;
-		textarea.selectionEnd= txtEnd;
-	}
-	
-	function fonteAumentar()
-	{
-		fontSize++;
-		editor.setOptions({
-			fontSize: fontSize+"pt"
-		});
 		
-		div_saida.style.fontSize = fontSize+"pt";
-		errosSaida.style.fontSize = fontSize+"pt";
-	}
-	
-	function fonteDiminuir()
-	{
-		fontSize--;
-		editor.setOptions({
-			fontSize: fontSize+"pt"
-		});
-		
-		div_saida.style.fontSize = fontSize+"pt";
-		errosSaida.style.fontSize = fontSize+"pt";
-	}
-	
-	function toggleHotbar(show)
-	{
-		///if(document.getElementById("hotbar_commands").style.display == "block")
-		if(!show)
-		{
-			ocultarHotbar();
-			if(isMobile)
-			{
-				if(hotbar_yOffset > hotbar_middleyOffset)
-				{
-					setHotbarPosition(hotbar_middleyOffset,true);
-				}
-			}
-		}
-		else
-		{
-			mostrarHotbar();
-		}
-	}
-	
 	function mostrarHotbar()
 	{
 		// se mexer nesses numeros tudo para de funcionar deixa assim.
@@ -502,21 +384,7 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 	//var lastvm = false;
 
 	
-	function exemplo(nome)
-	{
-		if(nome == "aleatorio")
-		{
-			nome+=  Math.floor(Math.random() * 4);
-		}
-		httpGetAsync("exemplos/"+nome+".por",
-		function(code)
-		{
-			editor.setValue(code, -1); // moves cursor to the start
-			limparErros();
-		}
-		);
-		document.getElementById('modalExemplos').style.display = 'none';
-	}
+
 	
 	function compilar(string_cod,mayCompileJS)
 	{
@@ -609,115 +477,6 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 		}
 	}
 	
-	function executar(btn,passoapasso)
-	{
-		if(passoapasso && lastvmState == STATE_STEP)
-		{
-		
-			// abrir hotbar e animar
-			//if(isMobile)
-			//{
-				if(hotbar_yOffset < hotbar_extendedyOffset)
-				setHotbarPosition(hotbar_extendedyOffset,true);
-			//}
-		
-			executarVM();
-			return;
-		}
-	
-		lastvmStep = passoapasso;
-		if(btn.value == "Executar" && lastvmState == STATE_ENDED)
-		{
-			autoSave();
-			limparErros();
-			limpa();
-			
-			// abrir hotbar e animar
-			//if(isMobile)
-			//{
-				if(hotbar_yOffset < hotbar_extendedyOffset)
-				setHotbarPosition(hotbar_extendedyOffset,true);
-			//}
-			
-			let string_cod = editor.getValue();
-			try{
-			
-				let compilado = compilar(string_cod,true);
-				
-				//lastvm = new Vm(compiler.functions,string_cod,div_saida);
-				if(!compilado.success)
-				{
-					return;
-				}
-				
-				VMsetup(compilado.compiler.functions,compilado.jsgenerator.functions,libraries,compilado.compiler.globalCount,string_cod,div_saida,enviarErro);
-				
-				try{
-					if(mostrar_bytecode)
-					document.getElementById("hidden").innerHTML = VMtoString();
-				}
-				catch(e){
-					let myStackTrace = e.stack || e.stacktrace || "";
-					console.log(myStackTrace);
-				}
-				//lastvmState = lastvm.run();
-				lastvmTime = performance.now();
-				
-			}
-			catch(e)
-			{
-				let myStackTrace = e.stack || e.stacktrace || "";
-
-				console.log(myStackTrace);
-			
-				enviarErro(string_cod,{index:0},"Erro na compilação:"+e,"compilador");
-				return;
-			}
-			
-			btn.value = "Parar";
-			executarVM();
-		}
-		else if(!passoapasso) // não faz nada se clicar no passo a passo durante algum delay ou entrada de dados
-		{
-			if(btn.value == "Parar" && (lastvmState == STATE_RUNNING || lastvmState == STATE_WAITINGINPUT || lastvmState == STATE_BREATHING || lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT || lastvmState == STATE_STEP || lastvmState == STATE_ASYNC_RETURN))
-			{
-				btn.value = "Parando...";
-				if(lastvmState == STATE_WAITINGINPUT || lastvmState == STATE_STEP || lastvmState == STATE_ASYNC_RETURN || lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT)
-				{
-					if(lastvmState == STATE_STEP)
-					{
-						myClearTimeout("STATE_STEP");
-					}
-					if(lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT)
-					{
-						myClearTimeout("STATE_DELAY");
-					}
-					escreva("\n\nPrograma interrompido pelo usuário. Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
-					executarParou();
-				}
-				else if(lastvmState == STATE_RUNNING || lastvmState == STATE_BREATHING)
-				{
-					lastvmState = STATE_PENDINGSTOP; // isso pode dar problema para valores de delay muito altos.
-				}
-				else
-				{
-					console.log("botão estava em estado inconsistente: lastvmState:'"+lastvmState+"' e valor:'"+btn.value+"'");
-				}
-			}
-			else if(btn.value == "Parando..." && lastvmState == STATE_PENDINGSTOP)
-			{
-				// ta idaí?
-				lastvmState = STATE_PENDINGSTOP; // só para confirmar
-			}
-			else // para deixar o botao do jeito certo, e corrigir no caso de algum erro.
-			{
-				console.log("botão estava em estado inconsistente: lastvmState:'"+lastvmState+"' e valor:'"+btn.value+"'");
-				if(lastvmState == STATE_ENDED) btn.value = "Executar";
-				else if(lastvmState == STATE_PENDINGSTOP) btn.value = "Parando...";
-				else btn.value = "Parar";
-			}
-		}
-	}
 	
 	function executarParou()
 	{
@@ -729,23 +488,6 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 			libraries["Graficos"].encerrar_modo_grafico();
 		}
 		//limparErros();
-	}
-	
-	function executarStepStart(btn)
-	{
-		//onmousedown="this.className = 'clicou';executar(document.getElementById('btn-run'),true);this.className = 'segurando';" onmouseup="executarStepPause();this.className = '';"
-		
-		// Assim vai dar um delay maior no primeiro clique, mas se segurar o botão, executa a 10 linhas por segundo
-		btn.className = 'clicou';
-		executar(document.getElementById('btn-run'),true);
-		btn.className = 'segurando';
-	}
-	
-	// soltou o botao
-	function executarStepPause(btn)
-	{
-		myClearTimeout("STATE_STEP");
-		btn.className = '';
 	}
 	
 	function executarVM()
@@ -819,25 +561,7 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 			mySetTimeout("STATE_DELAY",executarVM, VM_getDelay());
 		}
 	}
-	
-	function receiveInput(textarea)
-	{
-		if(lastvmState == STATE_WAITINGINPUT)
-		{
-			let saidadiv = textarea.value;
-			let entrada = saidadiv.substring(VM_getSaida().length,saidadiv.length);
-			
-			if(entrada.endsWith("\n"))
-			{
-				executarVM();
-			}
-		}
-		else
-		{
-			div_saida.value = VM_getSaida();
-		}
-	}
-	
+
 	function editorFocus()
 	{
 		//if(isMobile)
@@ -860,26 +584,6 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 		//}
 	}
 	
-	function preventFocusCanvas(event) {
-		event.preventDefault();
-		event.stopPropagation();
-
-		myCanvas.focus();
-	}
-		
-	function preventFocus(event) {
-		event.preventDefault();
-		event.stopPropagation();
-		/*if (event.relatedTarget) {
-			// Revert focus back to previous blurring element
-			event.relatedTarget.focus();
-		} else {
-			// No previous focus target, blur instead
-			event.currentTarget.blur();
-		}*/
-		editor.focus();
-	}
-	
 	/*function editorBlur()
 	{
 		if(isMobile)
@@ -887,79 +591,6 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 			document.getElementById("hotbar").style.display = "none";
 		}
 	}*/	
-	
-	function editorCommand(keycode)
-	{
-		//var KEY_MODS= {
-        //    "ctrl": 1, "alt": 2, "option" : 2, "shift": 4,
-        //    "super": 8, "meta": 8, "command": 8, "cmd": 8
-        //};
-		/*
-		        FUNCTION_KEYS : {
-            8  : "Backspace",
-            9  : "Tab",
-            13 : "Return",
-            19 : "Pause",
-            27 : "Esc",
-            32 : "Space",
-            33 : "PageUp",
-            34 : "PageDown",
-            35 : "End",
-            36 : "Home",
-            37 : "Left",
-            38 : "Up",
-            39 : "Right",
-            40 : "Down",
-            44 : "Print",
-            45 : "Insert",
-            46 : "Delete",
-            96 : "Numpad0",
-            97 : "Numpad1",
-            98 : "Numpad2",
-            99 : "Numpad3",
-            100: "Numpad4",
-            101: "Numpad5",
-            102: "Numpad6",
-            103: "Numpad7",
-            104: "Numpad8",
-            105: "Numpad9",
-            '-13': "NumpadEnter",
-            112: "F1",
-            113: "F2",
-            114: "F3",
-            115: "F4",
-            116: "F5",
-            117: "F6",
-            118: "F7",
-            119: "F8",
-            120: "F9",
-            121: "F10",
-            122: "F11",
-            123: "F12",
-            144: "Numlock",
-            145: "Scrolllock"
-        },
-
-		*/
-		
-		editor.onCommandKey({}, 0, keycode);
-	}
-	function editorType(c)
-	{
-		editor.onTextInput(c);
-		
-
-		//isTyping = true;
-		//editor.getSession().insert(editor.getCursorPosition(), c);
-		//editor.focus();
-		
-		//if(shift)
-		//{
-		//	editor.onCommandKey({}, KEY_MODS.shift, keycode);
-		//}//
-		//else
-		//editor.onCommandKey({}, -1, keycode);
-	}
 	
 	function editorMove(column,row)
 	{
@@ -1361,7 +992,384 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 			}
 		}
 	}
+
+	//####################################################
+	//################# UI ###############################
+	//####################################################
+	export function executar(btn,passoapasso)
+	{
+		if(passoapasso && lastvmState == STATE_STEP)
+		{
+		
+			// abrir hotbar e animar
+			//if(isMobile)
+			//{
+				if(hotbar_yOffset < hotbar_extendedyOffset)
+				setHotbarPosition(hotbar_extendedyOffset,true);
+			//}
+		
+			executarVM();
+			return;
+		}
 	
+		lastvmStep = passoapasso;
+		if(btn.value == "Executar" && lastvmState == STATE_ENDED)
+		{
+			autoSave();
+			limparErros();
+			limpa();
+			
+			// abrir hotbar e animar
+			//if(isMobile)
+			//{
+				if(hotbar_yOffset < hotbar_extendedyOffset)
+				setHotbarPosition(hotbar_extendedyOffset,true);
+			//}
+			
+			let string_cod = editor.getValue();
+			try{
+			
+				let compilado = compilar(string_cod,true);
+				
+				//lastvm = new Vm(compiler.functions,string_cod,div_saida);
+				if(!compilado.success)
+				{
+					return;
+				}
+				
+				VMsetup(compilado.compiler.functions,compilado.jsgenerator.functions,libraries,compilado.compiler.globalCount,string_cod,div_saida,enviarErro);
+				
+				try{
+					if(mostrar_bytecode)
+					document.getElementById("hidden").innerHTML = VMtoString();
+				}
+				catch(e){
+					let myStackTrace = e.stack || e.stacktrace || "";
+					console.log(myStackTrace);
+				}
+				//lastvmState = lastvm.run();
+				lastvmTime = performance.now();
+				
+			}
+			catch(e)
+			{
+				let myStackTrace = e.stack || e.stacktrace || "";
+
+				console.log(myStackTrace);
+			
+				enviarErro(string_cod,{index:0},"Erro na compilação:"+e,"compilador");
+				return;
+			}
+			
+			btn.value = "Parar";
+			executarVM();
+		}
+		else if(!passoapasso) // não faz nada se clicar no passo a passo durante algum delay ou entrada de dados
+		{
+			if(btn.value == "Parar" && (lastvmState == STATE_RUNNING || lastvmState == STATE_WAITINGINPUT || lastvmState == STATE_BREATHING || lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT || lastvmState == STATE_STEP || lastvmState == STATE_ASYNC_RETURN))
+			{
+				btn.value = "Parando...";
+				if(lastvmState == STATE_WAITINGINPUT || lastvmState == STATE_STEP || lastvmState == STATE_ASYNC_RETURN || lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT)
+				{
+					if(lastvmState == STATE_STEP)
+					{
+						myClearTimeout("STATE_STEP");
+					}
+					if(lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT)
+					{
+						myClearTimeout("STATE_DELAY");
+					}
+					escreva("\n\nPrograma interrompido pelo usuário. Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
+					executarParou();
+				}
+				else if(lastvmState == STATE_RUNNING || lastvmState == STATE_BREATHING)
+				{
+					lastvmState = STATE_PENDINGSTOP; // isso pode dar problema para valores de delay muito altos.
+				}
+				else
+				{
+					console.log("botão estava em estado inconsistente: lastvmState:'"+lastvmState+"' e valor:'"+btn.value+"'");
+				}
+			}
+			else if(btn.value == "Parando..." && lastvmState == STATE_PENDINGSTOP)
+			{
+				// ta idaí?
+				lastvmState = STATE_PENDINGSTOP; // só para confirmar
+			}
+			else // para deixar o botao do jeito certo, e corrigir no caso de algum erro.
+			{
+				console.log("botão estava em estado inconsistente: lastvmState:'"+lastvmState+"' e valor:'"+btn.value+"'");
+				if(lastvmState == STATE_ENDED) btn.value = "Executar";
+				else if(lastvmState == STATE_PENDINGSTOP) btn.value = "Parando...";
+				else btn.value = "Parar";
+			}
+		}
+	}
+
+	export function exemplo(nome)
+	{
+		if(nome == "aleatorio")
+		{
+			nome+=  Math.floor(Math.random() * 4);
+		}
+		httpGetAsync("exemplos/"+nome+".por",
+		function(code)
+		{
+			editor.setValue(code, -1); // moves cursor to the start
+			limparErros();
+		}
+		);
+		document.getElementById('modalExemplos').style.display = 'none';
+	}
+
+	export function toggleHotbar(show)
+	{
+		///if(document.getElementById("hotbar_commands").style.display == "block")
+		if(!show)
+		{
+			ocultarHotbar();
+			if(isMobile)
+			{
+				if(hotbar_yOffset > hotbar_middleyOffset)
+				{
+					setHotbarPosition(hotbar_middleyOffset,true);
+				}
+			}
+		}
+		else
+		{
+			mostrarHotbar();
+		}
+	}
+
+	export function setModoTurbo(checkbox)
+	{
+		VM_setExecJS( (lastvmState == STATE_ENDED) && checkbox.checked);
+		checkbox.checked = VM_getExecJS();
+		console.log("Modo: "+(VM_getExecJS() ? 'Modo Turbo' : 'Modo Normal'));
+	}
+
+	export function setAutoCompleterState(checked)
+	{
+		editor.setOptions({ enableBasicAutocompletion: checked, enableLiveAutocompletion: checked });
+	}
+
+	export function executarStepStart(btn)
+	{
+		//onmousedown="this.className = 'clicou';executar(document.getElementById('btn-run'),true);this.className = 'segurando';" onmouseup="executarStepPause();this.className = '';"
+		
+		// Assim vai dar um delay maior no primeiro clique, mas se segurar o botão, executa a 10 linhas por segundo
+		btn.className = 'clicou';
+		executar(document.getElementById('btn-run'),true);
+		btn.className = 'segurando';
+	}
+	
+	// soltou o botao
+	export function executarStepPause(btn)
+	{
+		myClearTimeout("STATE_STEP");
+		btn.className = '';
+	}
+
+	export function preventFocusCanvas(event) {
+		event.preventDefault();
+		event.stopPropagation();
+
+		myCanvas.focus();
+	}
+		
+	export function preventFocus(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		/*if (event.relatedTarget) {
+			// Revert focus back to previous blurring element
+			event.relatedTarget.focus();
+		} else {
+			// No previous focus target, blur instead
+			event.currentTarget.blur();
+		}*/
+		editor.focus();
+	}
+
+	export function fonteAumentar()
+	{
+		fontSize++;
+		editor.setOptions({
+			fontSize: fontSize+"pt"
+		});
+		
+		div_saida.style.fontSize = fontSize+"pt";
+		errosSaida.style.fontSize = fontSize+"pt";
+	}
+	
+	export function fonteDiminuir()
+	{
+		fontSize--;
+		editor.setOptions({
+			fontSize: fontSize+"pt"
+		});
+		
+		div_saida.style.fontSize = fontSize+"pt";
+		errosSaida.style.fontSize = fontSize+"pt";
+	}
+
+	export function save() {
+		let string_cod = editor.getValue();
+		string_cod = string_cod.replace(/\r\n/g,"\n");
+		if(typeof Android !== 'undefined')
+		{
+			Android.save(string_cod); // eslint-disable-line
+		}
+		else
+		{
+			let element = document.createElement('a');
+			element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(string_cod));
+			element.setAttribute('download', 'programa.por');
+
+			element.style.display = 'none';
+			document.body.appendChild(element);
+
+			element.click();
+
+			document.body.removeChild(element);
+		}
+	}
+
+	export function load() {
+	
+		if(typeof Android !== 'undefined')
+		{
+			Android.load(); //eslint-disable-line
+		}
+		else
+		{
+	
+			let element = document.createElement('input');
+			element.setAttribute('type', 'file');
+
+			element.style.display = 'none';
+			document.body.appendChild(element);
+
+			element.click();
+			
+			element.addEventListener('change', function(){
+				let file = element.files[0];
+
+				let reader = new FileReader();
+				reader.onload = function(progressEvent)
+				{
+					editor.setValue(this.result, -1); // moves cursor to the start
+					
+					limparErros();
+				};
+				reader.readAsText(file);
+				document.body.removeChild(element);
+			});
+		
+		}
+	}
+	
+	export function editorCommand(keycode)
+	{
+		//var KEY_MODS= {
+        //    "ctrl": 1, "alt": 2, "option" : 2, "shift": 4,
+        //    "super": 8, "meta": 8, "command": 8, "cmd": 8
+        //};
+		/*
+		        FUNCTION_KEYS : {
+            8  : "Backspace",
+            9  : "Tab",
+            13 : "Return",
+            19 : "Pause",
+            27 : "Esc",
+            32 : "Space",
+            33 : "PageUp",
+            34 : "PageDown",
+            35 : "End",
+            36 : "Home",
+            37 : "Left",
+            38 : "Up",
+            39 : "Right",
+            40 : "Down",
+            44 : "Print",
+            45 : "Insert",
+            46 : "Delete",
+            96 : "Numpad0",
+            97 : "Numpad1",
+            98 : "Numpad2",
+            99 : "Numpad3",
+            100: "Numpad4",
+            101: "Numpad5",
+            102: "Numpad6",
+            103: "Numpad7",
+            104: "Numpad8",
+            105: "Numpad9",
+            '-13': "NumpadEnter",
+            112: "F1",
+            113: "F2",
+            114: "F3",
+            115: "F4",
+            116: "F5",
+            117: "F6",
+            118: "F7",
+            119: "F8",
+            120: "F9",
+            121: "F10",
+            122: "F11",
+            123: "F12",
+            144: "Numlock",
+            145: "Scrolllock"
+        },
+
+		*/
+		
+		editor.onCommandKey({}, 0, keycode);
+	}
+
+	export function editorType(c)
+	{
+		editor.onTextInput(c);
+		
+
+		//isTyping = true;
+		//editor.getSession().insert(editor.getCursorPosition(), c);
+		//editor.focus();
+		
+		//if(shift)
+		//{
+		//	editor.onCommandKey({}, KEY_MODS.shift, keycode);
+		//}//
+		//else
+		//editor.onCommandKey({}, -1, keycode);
+	}
+
+	export function cursorToEnd(textarea)
+	{
+		let txtEnd =textarea.value.length;
+		textarea.selectionStart= txtEnd;
+		textarea.selectionEnd= txtEnd;
+	}
+
+		
+	export function receiveInput(textarea)
+	{
+		if(lastvmState == STATE_WAITINGINPUT)
+		{
+			let saidadiv = textarea.value;
+			let entrada = saidadiv.substring(VM_getSaida().length,saidadiv.length);
+			
+			if(entrada.endsWith("\n"))
+			{
+				executarVM();
+			}
+		}
+		else
+		{
+			div_saida.value = VM_getSaida();
+		}
+	}
+	
+
 	//var TogetherJSLoaded = false;
 	//var TogetherJSConfig_hubBase = "https://togetherjs-hub.glitch.me/"
 	//function addTogheterJS(elem)

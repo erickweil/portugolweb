@@ -28,6 +28,32 @@ libraries["Objetos"] = new Objetos();
 libraries["Tipos"] = new Tipos();
 libraries["Internet"] = new Internet();
 
+
+function _enviarErroAnnot(annot)
+{
+	if(!annot) return;
+	
+	let txt = "";
+	txt += htmlEntities(annot.text)+"\n";
+	if(annot.textprev && annot.textnext)
+	{
+		txt += htmlEntities(annot.textprev+annot.textnext)+"\n";
+		txt += " ".repeat(annot.textprev.length)+"^\n\n";
+	}
+	console.error(txt);
+	/*if(annot.text)
+	errosSaida.innerHTML += htmlEntities(annot.text)+"\n";
+	if(annot.textprev && annot.textnext)
+	{
+		errosSaida.innerHTML += htmlEntities(annot.textprev+annot.textnext)+"\n";
+		errosSaida.innerHTML += " ".repeat(annot.textprev.length)+"^\n\n";
+	}
+	errosAnnot.push(annot);
+	editor.getSession().setAnnotations(errosAnnot);
+	
+	errosMarkers.push(editor.getSession().addMarker(new Range(annot.row, 0, annot.row, annot.columnFim), 'ace_erroportugol-marker', 'screenLine'));*/
+}
+
 function enviarErro(textInput,token,msg,tipoErro)
 {
 	let lineNumber = numberOfLinesUntil(token.index,textInput);
@@ -59,30 +85,6 @@ function enviarErro(textInput,token,msg,tipoErro)
 	});
 }
 
-function _enviarErroAnnot(annot)
-{
-	if(!annot) return;
-	
-	let txt = "";
-	txt += htmlEntities(annot.text)+"\n";
-	if(annot.textprev && annot.textnext)
-	{
-		txt += htmlEntities(annot.textprev+annot.textnext)+"\n";
-		txt += " ".repeat(annot.textprev.length)+"^\n\n";
-	}
-	console.error(txt);
-	/*if(annot.text)
-	errosSaida.innerHTML += htmlEntities(annot.text)+"\n";
-	if(annot.textprev && annot.textnext)
-	{
-		errosSaida.innerHTML += htmlEntities(annot.textprev+annot.textnext)+"\n";
-		errosSaida.innerHTML += " ".repeat(annot.textprev.length)+"^\n\n";
-	}
-	errosAnnot.push(annot);
-	editor.getSession().setAnnotations(errosAnnot);
-	
-	errosMarkers.push(editor.getSession().addMarker(new Range(annot.row, 0, annot.row, annot.columnFim), 'ace_erroportugol-marker', 'screenLine'));*/
-}
 
 
 export default class PortugolRuntime {

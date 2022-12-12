@@ -44,7 +44,7 @@
 <div id="myCanvasWindow">
 <div style="white-space: nowrap;">
 <input type="button" value="Janela Sem Titulo" style="float:left;background: #1E2324;" id="myCanvasWindowTitle"/>
-<input type="button" value="X" style="float:right;background: #1E2324;" onclick="executar(document.getElementById('btn-run'));"/>
+<input type="button" value="X" style="float:right;background: #1E2324;" onclick="index.executar(document.getElementById('btn-run'));"/>
 </div>
 <canvas tabindex="1" id="myCanvas" width="100" height="100"></canvas>
 <div id="myCanvasKeys">
@@ -65,30 +65,30 @@
 </div>
 <br/>
 <div class="listaExemplos">
-<h2 onclick="exemplo('branco');">Novo Programa em Branco</h2>
+<h2 onclick="index.exemplo('branco');">Novo Programa em Branco</h2>
 <hr style="border: 1px solid #01EABC;"/>
 <details><summary><h2>Básico</h2></summary>
-<h2 onclick="exemplo('variaveis');">Variáveis</h2>
-<h2 onclick="exemplo('entrada');">Entrada de dados</h2>
+<h2 onclick="index.exemplo('variaveis');">Variáveis</h2>
+<h2 onclick="index.exemplo('entrada');">Entrada de dados</h2>
 </details><details><summary><h2>Operações Matemáticas</h2></summary>
 </details><details><summary><h2>Desvios Condicionais</h2></summary>
-<h2 onclick="exemplo('condicoes');">Condições</h2>
-<h2 onclick="exemplo('repeticao');">Repetição</h2>
+<h2 onclick="index.exemplo('condicoes');">Condições</h2>
+<h2 onclick="index.exemplo('repeticao');">Repetição</h2>
 </details><details><summary><h2>Outros</h2></summary>
-<h2 onclick="exemplo('vetores');">Vetores</h2>
-<h2 onclick="exemplo('funcoes');">Funções</h2>
-<h2 onclick="exemplo('bibliotecas');">Bibliotecas</h2>
-<h2 onclick="exemplo('graficos');">Graficos</h2>
-<h2 onclick="exemplo('slide_puzzle');">Slide Puzzle</h2>
-<h2 onclick="exemplo('jogodavida');">Jogo da Vida</h2>
-<h2 onclick="exemplo('internet');">Internet</h2>
-<h2 onclick="exemplo('aleatorio');">Aleatorio</h2>
+<h2 onclick="index.exemplo('vetores');">Vetores</h2>
+<h2 onclick="index.exemplo('funcoes');">Funções</h2>
+<h2 onclick="index.exemplo('bibliotecas');">Bibliotecas</h2>
+<h2 onclick="index.exemplo('graficos');">Graficos</h2>
+<h2 onclick="index.exemplo('slide_puzzle');">Slide Puzzle</h2>
+<h2 onclick="index.exemplo('jogodavida');">Jogo da Vida</h2>
+<h2 onclick="index.exemplo('internet');">Internet</h2>
+<h2 onclick="index.exemplo('aleatorio');">Aleatorio</h2>
 </details>
 
 <hr style="border: 1px solid #01EABC;"/>
-<span style="white-space:nowrap"><input id="check-mostrar-hotbar" style="height: 20px;" name="mostrar-hotbar" type="checkbox" onchange="toggleHotbar(this.checked);"/><label for="mostrar-hotbar">Mostrar Hotbar</label></span> 
-<span style="white-space:nowrap"><input id="check-modo-turbo" style="height: 20px;" name="modo-turbo" type="checkbox" onchange="setModoTurbo(this);" title="Compila o código para Javascript, executa muito mais rápido. Só vai acelerar se não utilizar nenhuma função que pausa o código, como o leia ou o aguarde da biblioteca Util"/><label for="modo-turbo">Modo Turbo</label></span> 
-<span style="white-space:nowrap"><input id="check-auto-completar" style="height: 20px;" name="auto-completar" type="checkbox" checked="true" onchange="setAutoCompleterState(this.checked);"/><label for="auto-completar">Auto-Completar</label></span> 
+<span style="white-space:nowrap"><input id="check-mostrar-hotbar" style="height: 20px;" name="mostrar-hotbar" type="checkbox" onchange="index.toggleHotbar(this.checked);"/><label for="mostrar-hotbar">Mostrar Hotbar</label></span> 
+<span style="white-space:nowrap"><input id="check-modo-turbo" style="height: 20px;" name="modo-turbo" type="checkbox" onchange="index.setModoTurbo(this);" title="Compila o código para Javascript, executa muito mais rápido. Só vai acelerar se não utilizar nenhuma função que pausa o código, como o leia ou o aguarde da biblioteca Util"/><label for="modo-turbo">Modo Turbo</label></span> 
+<span style="white-space:nowrap"><input id="check-auto-completar" style="height: 20px;" name="auto-completar" type="checkbox" checked="true" onchange="index.setAutoCompleterState(this.checked);"/><label for="auto-completar">Auto-Completar</label></span> 
 <!--
 <hr class="mobileHidden" style="border: 1px solid #01EABC;"/>
 <button class="mobileHidden" title="A TogetherJS possibilita a utilização em grupo de um site. Permitindo editar em conjunto, chat e muito mais" onclick="TogetherJS(this);return false;">Ativar TogetherJS</button>
@@ -100,17 +100,17 @@
 
 <div id="hotbar" class="portugol-buttons" style="width:100%">
 <div id="myOutput_buttons" class="portugol-buttons" style="overflow-x:auto;white-space:nowrap;width: auto;">
-<input type="button" id="btn-run" value="Executar" onclick="executar(this,false)" title="Executa o seu código"/>
+<input type="button" id="btn-run" value="Executar" onclick="index.executar(this,false)" title="Executa o seu código"/>
 
 <input tabindex="-1" id="btn-step" type="button" style="background-image: url(icons/step.png);" value=" " 
-onmousedown="executarStepStart(this)" onmouseup="executarStepPause(this);" onmouseleave="executarStepPause(this);" 
+onmousedown="index.executarStepStart(this)" onmouseup="index.executarStepPause(this);" onmouseleave="index.executarStepPause(this);" 
 title="Executa o código mostando linha a linha a cada clique"
 />
 
-<input tabindex="-1" type="button" style="background-image: url(icons/FontPlus.png); cursor: zoom-in;" id="btn-fonteMaior" value=" " onclick="fonteAumentar()" onfocus="preventFocus(event)" title="Aumenta o tamanho da fonte"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/FontMinus.png); cursor: zoom-out;" id="btn-fonteMenor" value=" " onclick="fonteDiminuir()" onfocus="preventFocus(event)" title="Diminui o tamanho da fonte"/>
-<input type="button" style="background-image: url(icons/save.png);" id="btn-salvar" value=" " onclick="save()" title="Baixa o código"/>
-<input type="button" style="background-image: url(icons/open.png);"  id="btn-abrir" value=" " onclick="load()" title="Carrega um código"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/FontPlus.png); cursor: zoom-in;" id="btn-fonteMaior" value=" " onclick="index.fonteAumentar()" onfocus="index.preventFocus(event)" title="Aumenta o tamanho da fonte"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/FontMinus.png); cursor: zoom-out;" id="btn-fonteMenor" value=" " onclick="index.fonteDiminuir()" onfocus="index.preventFocus(event)" title="Diminui o tamanho da fonte"/>
+<input type="button" style="background-image: url(icons/save.png);" id="btn-salvar" value=" " onclick="index.save()" title="Baixa o código"/>
+<input type="button" style="background-image: url(icons/open.png);"  id="btn-abrir" value=" " onclick="index.load()" title="Carrega um código"/>
 <!--<input type="button" tabindex="-1" id="btn-mostrar-hotbar" value="Ocultar" onclick='toggleHotbar();' onfocus="preventFocus(event)"/>-->
 <input type="button" id="btn-exemplos" value="Exemplos" onclick="document.getElementById('modalExemplos').style.display = 'table';"  title="Abre o menu inicial"/>
 
@@ -121,46 +121,46 @@ title="Executa o código mostando linha a linha a cada clique"
 </div>
 
 <div id="hotbar_commands" style="overflow-x:auto;white-space:nowrap;width: auto;">
-<input tabindex="-1" type="button" value="TAB" onclick="editorCommand(9)" onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/arrowL.png);" value=" " onclick="editorCommand(37)" onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/arrowR.png);" value=" " onclick="editorCommand(39)" onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/arrowU.png);" value=" " onclick="editorCommand(38)" onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/arrowD.png);" value=" " onclick="editorCommand(40)" onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value="DEL" onclick="editorCommand(46)" onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/undo.png);" value=" " onclick="editor.undo()" onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/redo.png);" value=" " onclick="editor.redo()" onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/autocomplete.png);" value=" " onclick="editor.execCommand('startAutocomplete');" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="TAB" onclick="index.editorCommand(9)" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/arrowL.png);" value=" " onclick="index.editorCommand(37)" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/arrowR.png);" value=" " onclick="index.editorCommand(39)" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/arrowU.png);" value=" " onclick="index.editorCommand(38)" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/arrowD.png);" value=" " onclick="index.editorCommand(40)" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="DEL" onclick="index.editorCommand(46)" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/undo.png);" value=" " onclick="index.editor.undo()" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/redo.png);" value=" " onclick="index.editor.redo()" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/autocomplete.png);" value=" " onclick="index.editor.execCommand('startAutocomplete');" onfocus="index.preventFocus(event)"/>
 </div>
 <div id="hotbar_keys" style="overflow-x:auto;white-space:nowrap;width: auto;">
 
 
-<input tabindex="-1" type="button" value="+" onclick='editorType("+")' onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value="-" onclick='editorType("-")' onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value="*" onclick='editorType("*")' onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value="/" onclick='editorType("/")' onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value="\" onclick="editorType('\\')" onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value="=" onclick='editorType("=")' onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value='"' onclick="editorType('&quot;')" onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value="(" onclick="editorType('(')" onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value=")" onclick="editorType(')')" onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value="{" onclick="editorType('{')" onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value="}" onclick="editorType('}')" onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value="[" onclick="editorType('[')" onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value="]" onclick="editorType(']')" onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value="%" onclick='editorType("%")' onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value="'" onclick='editorType("&#39;")' onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value=":" onclick='editorType(":")' onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value=";" onclick='editorType(";")' onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value=">" onclick='editorType(">")' onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value=">=" onclick='editorType(">=")' onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value="<" onclick='editorType("<")' onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value="<=" onclick='editorType("<=")' onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value="==" onclick='editorType("==")' onfocus="preventFocus(event)"/>
-<input tabindex="-1" type="button" value="!=" onclick='editorType("!=")' onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" value="+" onclick='index.editorType("+")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="-" onclick='index.editorType("-")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="*" onclick='index.editorType("*")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="/" onclick='index.editorType("/")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="\" onclick="index.editorType('\\')" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="=" onclick='index.editorType("=")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value='"' onclick="index.editorType('&quot;')" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="(" onclick="index.editorType('(')" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value=")" onclick="index.editorType(')')" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="{" onclick="index.editorType('{')" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="}" onclick="index.editorType('}')" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="[" onclick="index.editorType('[')" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="]" onclick="index.editorType(']')" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="%" onclick='index.editorType("%")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="'" onclick='index.editorType("&#39;")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value=":" onclick='index.editorType(":")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value=";" onclick='index.editorType(";")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value=">" onclick='index.editorType(">")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value=">=" onclick='index.editorType(">=")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="<" onclick='index.editorType("<")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="<=" onclick='index.editorType("<=")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="==" onclick='index.editorType("==")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="!=" onclick='index.editorType("!=")' onfocus="index.preventFocus(event)"/>
 
 </div>
 <div id="myOutput" style="position:relative;">
-<div class="saida" id="saida"><div id="errorArea"></div><div class="saida" id="hidden"></div><textarea id="textAreaSaida" onclick="cursorToEnd(this)" onkeyup="cursorToEnd(this)" oninput="receiveInput(this)">??</textarea>
+<div class="saida" id="saida"><div id="errorArea"></div><div class="saida" id="hidden"></div><textarea id="textAreaSaida" onclick="index.cursorToEnd(this)" onkeyup="index.cursorToEnd(this)" oninput="index.receiveInput(this)">??</textarea>
 
 </div>
 
@@ -188,7 +188,11 @@ title="Executa o código mostando linha a linha a cada clique"
 </script>
 
 <script type="module" src="/js/index.js"></script>
+<script type="module">
+  import * as index from "/js/index.js";
 
+  window.index = index;
+</script>
 <!--
     NÃO FAZER ASSIM MAIS
 < !-- coisinhas -- >
