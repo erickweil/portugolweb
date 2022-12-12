@@ -1,4 +1,11 @@
-function getDefaultValue(code,global)
+import { B_ADD, B_ALOAD, B_ALOADGLOBAL, B_AND, B_ASTORE, B_ASTOREGLOBAL, B_B2S, B_CLEAR, B_DIV, B_DUP, B_F2I, B_F2S, B_FALSE, B_GOTO, B_I2S, B_iDIV, B_IFCMPEQ, B_IFCMPGE, B_IFCMPGT, B_IFCMPLE, B_IFCMPLT, B_IFCMPNE, B_IFEQ, B_IFNE, B_INVOKE, B_LIBINVOKE, B_LIBLOAD, B_LOAD, B_LOADGLOBAL, B_MUL, B_NEG, B_NEWARRAY, B_NEWARRAYGLOBAL, B_NO, B_NOT, B_OR, B_POP, B_PUSH, B_READ_BOOL, B_READ_CHAR, B_READ_FLOAT, B_READ_INT, B_READ_STRING, B_REM, B_RET, B_RETVALUE, B_SHL, B_SHR, B_STORE, B_STOREGLOBAL, B_SUB, B_SWAP, B_TRUE, B_WAITINPUT, B_WRITE, B_XOR 
+} from "../vm/vm.js";
+import { STATEMENT_block, STATEMENT_caso, STATEMENT_declArr, STATEMENT_declArrValues, STATEMENT_declVar, STATEMENT_enquanto, STATEMENT_escolha, STATEMENT_expr, STATEMENT_facaEnquanto, STATEMENT_para, STATEMENT_pare, STATEMENT_ret, STATEMENT_se 
+} from "./parser.js";
+import { convertArrayType, convertMatrixType, getSeparator, getTypeWord, isAttribOp, T_and, T_attrib, T_attrib_bitand, T_attrib_bitnot, T_attrib_bitor, T_attrib_div, T_attrib_minus, T_attrib_mul, T_attrib_plus, T_attrib_rem, T_attrib_shiftleft, T_attrib_shiftright, T_attrib_xor, T_autodec, T_autoinc, T_bitand, T_bitnot, T_bitor, T_cadeia, T_cadeiaLiteral, T_caracter, T_caracterLiteral, T_div, T_dot, T_equals, T_ge, T_gt, T_inteiro, T_inteiroLiteral, T_le, T_logico, T_logicoLiteral, T_lt, T_Matriz, T_Minteiro, T_minus, T_Mlogico, T_mul, T_not, T_notequals, T_or, T_parO, T_plus, T_pre_autodec, T_pre_autoinc, T_real, T_realLiteral, T_rem, T_shiftleft, T_shiftright, T_squareO, T_unary_minus, T_unary_plus, T_vazio, T_Vetor, T_Vinteiro, T_Vlogico, T_word, T_xor 
+} from "./tokenizer.js";
+
+export function getDefaultValue(code,global)
 {
 	switch(code)
 	{
@@ -14,13 +21,13 @@ function getDefaultValue(code,global)
 // debug
 //function checarCompatibilidadeTipo(tA,tB,op)
 //{
-//	var ret = _checarCompatibilidadeTipo(tA,tB,op);
+//	let ret = _checarCompatibilidadeTipo(tA,tB,op);
 //
 //	console.log(getTypeWord(tA)+" "+getSeparator(op)+" "+getTypeWord(tB)+" --> "+ret);
 //	return ret;
 //}
 
-function checarCompatibilidadeTipo(tA,tB,op)
+export function checarCompatibilidadeTipo(tA,tB,op)
 {
 	// T_Vetor é o coringa para vetores
 	if(tA == T_Vetor)
@@ -124,7 +131,7 @@ function checarCompatibilidadeTipo(tA,tB,op)
 	}
 }
 
-function getTipoRetorno(tA,tB)
+export function getTipoRetorno(tA,tB)
 {
 	if(tA == tB) return tA;
 	if(tA == T_cadeia || tB == T_cadeia) return T_cadeia;
@@ -134,10 +141,10 @@ function getTipoRetorno(tA,tB)
 	return tA;
 }
 
-function funcArgsToStr(types)
+export function funcArgsToStr(types)
 {
-	var str = getTypeWord(types[0]);
-	for(var i=1;i<types.length;i++)
+	let str = getTypeWord(types[0]);
+	for(let i=1;i<types.length;i++)
 	{
 		str += ", ";
 		str += getTypeWord(types[i]);
@@ -192,7 +199,7 @@ class SwitchScope {
 	
 	getNextCasoJump()
 	{
-		var ret = this.casoJumps[this.casoJumpsIndex];
+		let ret = this.casoJumps[this.casoJumpsIndex];
 		this.casoJumpsIndex++;
 		return ret;
 	}
@@ -238,7 +245,7 @@ class Scope {
 	
 	getVar(varName)
 	{
-		var v = this.vars[varName];
+		let v = this.vars[varName];
 		if(!v && this.parentScope)
 		{
 			v = this.parentScope.getVar(varName);
@@ -249,8 +256,8 @@ class Scope {
 	
 }
 // http://blog.jamesdbloom.com/JavaCodeToByteCode_PartOne.html
-class Compiler {
-    constructor(codeTree,libraries,tokens,textInput,saida_div) {
+export class Compiler {
+    constructor(codeTree,libraries,tokens,textInput,saida_div,erroCallback) {
 		this.codeTree = codeTree;
 		this.tokens = tokens;
 		this.textInput = textInput;
@@ -263,32 +270,36 @@ class Compiler {
 		this.incluas = [];
 		this.scope = false;
 		this.loopScope = false;
+		this.enviarErro = erroCallback;
 	}
 	
 	erro(msg)
 	{	
-		enviarErro(this.textInput,{index:this.lastIndex},msg,"contexto");
+		if(this.enviarErro)
+		this.enviarErro(this.textInput,{index:this.lastIndex},msg,"contexto");
+		else
+		console.log("ERRO NO COMPILADOR:",msg)
 	}
 	
 	getFuncIndex(name,funcArgs)
 	{
-		for(var i=0;i<this.functions.length;i++)
+		for(let i=0;i<this.functions.length;i++)
 		{
 			if(this.functions[i].name == name)
 			{
-				var funcPars = this.functions[i].parameters;
+				let funcPars = this.functions[i].parameters;
 				
 				if(funcPars.length != funcArgs.length)
 					continue; // deve ter o mesmo número de argumentos
 				
-				var funcCompatible = true;
-				for(var k=0;k<funcPars.length;k++)
+				let funcCompatible = true;
+				for(let k=0;k<funcPars.length;k++)
 				{
-					var typeCheck = funcPars[k].type;
+					let typeCheck = funcPars[k].type;
 					
 					if(funcPars[k].id == STATEMENT_declArr)
 					{
-						var dims = funcPars[k].size_expr.length;
+						let dims = funcPars[k].size_expr.length;
 						if(dims == 1) typeCheck = convertArrayType(typeCheck);
 						if(dims == 2) typeCheck = convertMatrixType(typeCheck);
 					}
@@ -326,7 +337,7 @@ class Compiler {
 		}
 		
 		if(func.parameters)
-		for(var i=0;i<func.parameters.length;i++)
+		for(let i=0;i<func.parameters.length;i++)
 		{
 			if(func.parameters[i].byRef)
 			{
@@ -338,12 +349,12 @@ class Compiler {
 		
 		if(!func.funCalls || func.funCalls.length == 0) return true;
 	
-		for(var i=0;i<func.funCalls.length;i++)
+		for(let i=0;i<func.funCalls.length;i++)
 		{
 			// dont look again on same func to avoid recursion
 			//if(prev_funcs.indexOf(func.funCalls[i]) == -1)
 			//{
-				var next_funcs = Array.from(prev_funcs);
+				let next_funcs = Array.from(prev_funcs);
 				next_funcs.push(func.funCalls[i]);
 				if(!this.checkFuncJsSafety(func.funCalls[i],depth+1,next_funcs))
 				{
@@ -360,8 +371,8 @@ class Compiler {
 	
 	compile()
 	{
-		var funcoes = this.codeTree.funcoes;
-		var variaveisGlobais = this.codeTree.variaveis;
+		let funcoes = this.codeTree.funcoes;
+		let variaveisGlobais = this.codeTree.variaveis;
 		
 		this.incluas = this.codeTree.incluas;
 		
@@ -428,19 +439,19 @@ class Compiler {
 		
 		this.scope = new Scope(this.scope,true,false); // cria um scopo para as variaveis globais
 		
-		var funcInit = {name:"#globalInit",bytecode:[],bytecodeIndexes:{},varCount:0,jsSafe:false };
+		let funcInit = {name:"#globalInit",bytecode:[],bytecodeIndexes:{},varCount:0,jsSafe:false };
 		this.funcScopeRef = new FunctionScopeRef();
 		this.compileStatements(variaveisGlobais,funcInit);
 		this.functions.push(funcInit);
 		
 		
-		var FuncOff = this.functions.length;
+		let FuncOff = this.functions.length;
 		
-		for(var i=0;i<funcoes.length;i++)
+		for(let i=0;i<funcoes.length;i++)
 		{
 			this.functions.push({name:funcoes[i].name,parameters:funcoes[i].parameters,type:funcoes[i].type,bytecode:[],bytecodeIndexes:{},varCount:0,jsSafe:true });
 		}
-		for(var i=0;i<funcoes.length;i++)
+		for(let i=0;i<funcoes.length;i++)
 		{
 			this.funcScopeRef = new FunctionScopeRef();
 			this.scope = new Scope(this.scope,false,this.funcScopeRef); // cria um scopo para rodar a funcao, se, enquanto e qualquer coisa...	
@@ -456,9 +467,9 @@ class Compiler {
 			
 			
 		}
-		for(var i=0;i<this.functions.length;i++)
+		for(let i=0;i<this.functions.length;i++)
 		{
-			var func = this.functions[i];
+			let func = this.functions[i];
 			func.jsSafe = this.checkFuncJsSafety(func,0,[func]);
 			
 			//if(func.jsSafe !== true)
@@ -467,7 +478,7 @@ class Compiler {
 		
 		
 		funcInit.bytecode.push(B_INVOKE);
-		var funcIndex = this.getFuncIndex("inicio",[]);
+		let funcIndex = this.getFuncIndex("inicio",[]);
 		funcInit.bytecode.push(funcIndex);
 		funcInit.bytecode.push(0); // nenhum argumento
 		//funcInit.bytecode.push(B_RET); // nao pode esquecer
@@ -483,7 +494,7 @@ class Compiler {
 	
 	replaceAllBy(bc,indexes,value)
 	{
-		for(var i=0;i<indexes.length;i++)
+		for(let i=0;i<indexes.length;i++)
 		{
 			bc[indexes[i]] = value;
 		}
@@ -491,7 +502,7 @@ class Compiler {
 	
 	createVar(varName,type,isConst,isArray,arrayDim)
 	{
-		var v = this.scope.getVar(varName);
+		let v = this.scope.getVar(varName);
 		if(v)
 		{
 			this.erro("a variável '"+varName+"' já foi declarada");
@@ -499,7 +510,7 @@ class Compiler {
 		}
 		else
 		{
-			var vType = type;
+			let vType = type;
 			if(isArray)
 			{
 				if(arrayDim == 1)
@@ -527,8 +538,8 @@ class Compiler {
 	
 	getVar(varName)
 	{
-		//var v = this.vars[varName];
-		var v = this.scope.getVar(varName);
+		//let v = this.vars[varName];
+		let v = this.scope.getVar(varName);
 		if(v)
 		{
 			return v;
@@ -536,18 +547,18 @@ class Compiler {
 		else
 		{
 			this.erro("não encontrou a variável '"+varName+"', esqueceu de declará-la?");
-			var v = this.createVar(varName,T_cadeia,false,false);
+			let v = this.createVar(varName,T_cadeia,false,false);
 			return v;
 		}
 	}
 	
 	compileDeclArray(values,bc,v,arrayDim,indexes)
 	{
-		for(var k =0;k<values.length;k++)
+		for(let k =0;k<values.length;k++)
 		{
 			if(arrayDim <= 1)
 			{
-				var tExpr = this.compileExpr(values[k],bc,v.arrayType);
+				let tExpr = this.compileExpr(values[k],bc,v.arrayType);
 				this.tryConvertType(v.arrayType,tExpr,bc);
 				
 				if(!checarCompatibilidadeTipo(v.arrayType,tExpr,T_attrib))
@@ -555,7 +566,7 @@ class Compiler {
 					this.erro("não pode colocar "+getTypeWord(tExpr)+" em uma variável do tipo "+getTypeWord(v.arrayType));
 				}
 				
-				for(var j=0;j<indexes.length;j++)
+				for(let j=0;j<indexes.length;j++)
 				{
 					bc.push(B_PUSH);
 					bc.push(indexes[j]);
@@ -579,11 +590,11 @@ class Compiler {
 	
 	compileFunctionRet(func,expr)
 	{
-		var bc = func.bytecode;
+		let bc = func.bytecode;
 				
 		if(expr)
 		{
-			var tipoRet = this.compileExpr(expr,bc,-1);
+			let tipoRet = this.compileExpr(expr,bc,-1);
 			if(tipoRet == T_vazio)
 			{
 				this.erro("não usar esta expressão para retornar, pois ela não produz valor nenhum, arrume esta expressão.");
@@ -597,12 +608,12 @@ class Compiler {
 		
 		if(func.parameters)
 		{
-			for(var i=0;i<func.parameters.length;i++)
+			for(let i=0;i<func.parameters.length;i++)
 			{
 				// precisa empurrar os valores das variáveis de referência na stack
 				if(func.parameters[i].byRef && func.parameters[i].id == STATEMENT_declVar)
 				{
-					var v = this.getVar(func.parameters[i].name);
+					let v = this.getVar(func.parameters[i].name);
 					
 					bc.push(B_LOAD);
 					bc.push(v.index);
@@ -625,8 +636,8 @@ class Compiler {
 	
 	shallowExtract(statements,statID)
 	{
-		var statsExtracred = [];
-		for(var i =0;i<statements.length;i++)
+		let statsExtracred = [];
+		for(let i =0;i<statements.length;i++)
 		{
 			if(statements[i].id == STATEMENT_block)
 			{
@@ -644,27 +655,28 @@ class Compiler {
 	compileStatements(statements,func)
 	{
 		//,this.functions[FuncOff+i].bytecode,this.functions[FuncOff+i].variableMap);
-		var bc = func.bytecode;
-		//var variableMap = func.variableMap;
-		var bcIndex = func.bytecodeIndexes;
-		for(var i=0;i<statements.length;i++)
+		let bc = func.bytecode;
+		//let variableMap = func.variableMap;
+		let bcIndex = func.bytecodeIndexes;
+		for(let i=0;i<statements.length;i++)
 		{
-			var stat = statements[i];
+			let stat = statements[i];
 			this.lastIndex = stat.index;
 			
 			bcIndex[bc.length] = this.lastIndex;
 			switch(stat.id)
 			{
 				case STATEMENT_declArr:
-					var arrayDim = stat.size_expr.length;
-					var v = this.createVar(stat.name,stat.type,stat.isConst,true,arrayDim);
+				{
+					let arrayDim = stat.size_expr.length;
+					let v = this.createVar(stat.name,stat.type,stat.isConst,true,arrayDim);
 					
-					var declared = 0;
-					for(var k =0;k<arrayDim;k++)
+					let declared = 0;
+					for(let k =0;k<arrayDim;k++)
 					{
 						if(stat.size_expr[k])
 						{
-							var tExpr = this.compileExpr(stat.size_expr[k],bc,T_inteiro); // tipo inteiro para indexar array
+							let tExpr = this.compileExpr(stat.size_expr[k],bc,T_inteiro); // tipo inteiro para indexar array
 							this.tryConvertType(T_inteiro,tExpr,bc);
 							
 							declared++;
@@ -682,8 +694,8 @@ class Compiler {
 					}
 					else if(stat.expr && stat.expr.id == STATEMENT_declArrValues && declared == 0)
 					{
-						var valuesLeng = stat.expr.expr;
-						for(var k =0;k<arrayDim;k++)
+						let valuesLeng = stat.expr.expr;
+						for(let k =0;k<arrayDim;k++)
 						{
 							if(k > 0) valuesLeng = valuesLeng[0];
 							bc.push(B_PUSH);
@@ -704,7 +716,7 @@ class Compiler {
 						}
 						else if(stat.expr.id == STATEMENT_expr)
 						{
-							var tExpr = this.compileExpr(stat.expr.expr,bc,v.type);
+							let tExpr = this.compileExpr(stat.expr.expr,bc,v.type);
 														
 							if(!checarCompatibilidadeTipo(v.type,tExpr,T_attrib))
 							{
@@ -715,12 +727,14 @@ class Compiler {
 							bc.push(v.index);
 						}
 					}
+				}
 				break;
 				case STATEMENT_declVar:
-					var v = this.createVar(stat.name,stat.type,stat.isConst,false);
+				{
+					let v = this.createVar(stat.name,stat.type,stat.isConst,false);
 					if(stat.expr)
 					{
-						var tExpr = this.compileExpr(stat.expr,bc,stat.type);
+						let tExpr = this.compileExpr(stat.expr,bc,stat.type);
 						this.tryConvertType(v.type,tExpr,bc);
 						
 						if(!checarCompatibilidadeTipo(v.type,tExpr,T_attrib))
@@ -731,8 +745,10 @@ class Compiler {
 						bc.push(v.global ? B_STOREGLOBAL : B_STORE);
 						bc.push(v.index);
 					}
+				}
 				break;
 				case STATEMENT_expr:
+				{
 					if(!isAttribOp(stat.expr.op) 
 					&& stat.expr.op != T_autoinc
 					&& stat.expr.op != T_autodec
@@ -743,22 +759,23 @@ class Compiler {
 					{
 						this.erro("Esta expressão não pode ficar sozinha, talvez tenha esquecido um operador matemático");
 					}
-					var tipoRet = this.compileExpr(stat.expr,bc,T_vazio);
+					let tipoRet = this.compileExpr(stat.expr,bc,T_vazio);
 					if(tipoRet != T_vazio) bc.push(B_POP); // para não encher a stack com coisa inútil
+				}
 				break;
-				
 				case STATEMENT_block:
 					this.scope = new Scope(this.scope,false,this.funcScopeRef); // cria um scopo para rodar a funcao, se, enquanto e qualquer coisa...
 						this.compileStatements(stat.statements,func);
 					this.scope = this.scope.parentScope;
 				break;
 				case STATEMENT_se:
-					//var trueJumps = [];
-					var falseJumps = [];
+				{
+					//let trueJumps = [];
+					let falseJumps = [];
 					this.compileLogicalExpr(stat.expr,bc,false,falseJumps);
 					
 					//bc.push(B_IFEQ);
-					//var jumpTrueIndex = bc.length;
+					//let jumpTrueIndex = bc.length;
 					//bc.push(0);
 					//this.replaceAllBy(bc,trueJumps,bc.length); // determina o inicio do bloco true
 					this.compileStatements(stat.statements_true,func);
@@ -767,7 +784,7 @@ class Compiler {
 					if(stat.statements_false)
 					{
 						bc.push(B_GOTO);
-						var jumpFalseIndex = bc.length;
+						let jumpFalseIndex = bc.length;
 						bc.push(0);
 						//bc[jumpTrueIndex] = bc.length; // ajusta o index de onde acaba o True Block
 						this.replaceAllBy(bc,falseJumps,bc.length); // determina o inicio do bloco false
@@ -781,11 +798,13 @@ class Compiler {
 						//bc[jumpTrueIndex] = bc.length; // ajusta o index de onde acaba o True Block
 						this.replaceAllBy(bc,falseJumps,bc.length); // determina o inicio do bloco false
 					}
+				}
 				break;
 				case STATEMENT_enquanto:
-					var falseJumps = [];
+				{	
+					let falseJumps = [];
 					
-					var loopStart = bc.length; // inicio dos statements
+					let loopStart = bc.length; // inicio dos statements
 					
 					this.compileLogicalExpr(stat.expr,bc,false,falseJumps);
 					
@@ -799,12 +818,14 @@ class Compiler {
 					bc.push(loopStart); // para voltar
 					
 					this.replaceAllBy(bc,falseJumps,bc.length); // determina onde ir para sair do loop
+				}
 				break;
 				case STATEMENT_facaEnquanto:
-					var trueJumps = [];
-					var falseJumps = [];
+				{
+					let trueJumps = [];
+					let falseJumps = [];
 					
-					var loopStart = bc.length; // inicio dos statements
+					let loopStart = bc.length; // inicio dos statements
 					
 					this.loopScope = new LoopScope(this.loopScope,falseJumps);
 					
@@ -817,9 +838,11 @@ class Compiler {
 					this.replaceAllBy(bc,trueJumps,loopStart); // determina onde ir para sair do loop da condicao
 					
 					this.replaceAllBy(bc,falseJumps,bc.length); // determina onde ir para sair do loop se tiver algum pare
+				}
 				break;
 				case STATEMENT_para:
-					var falseJumps = [];
+				{
+					let falseJumps = [];
 					
 					this.scope = new Scope(this.scope,false,this.funcScopeRef); // escopo para as variáveis decl
 					
@@ -828,7 +851,7 @@ class Compiler {
 						this.compileStatements(stat.decl,func); // declaracao
 					}
 					
-					var loopStart = bc.length; // inicio dos statements
+					let loopStart = bc.length; // inicio dos statements
 					
 					if(stat.expr)
 					this.compileLogicalExpr(stat.expr,bc,false,falseJumps); // condicao
@@ -841,7 +864,7 @@ class Compiler {
 					
 					if(stat.inc)
 					{
-						var tipoRet = this.compileExpr(stat.inc,bc,T_vazio);
+						let tipoRet = this.compileExpr(stat.inc,bc,T_vazio);
 						if(tipoRet != T_vazio) bc.push(B_POP); // para não encher a stack com coisa inútil
 					}
 					
@@ -851,8 +874,10 @@ class Compiler {
 					this.replaceAllBy(bc,falseJumps,bc.length); // determina onde ir para sair do loop
 					
 					this.scope = this.scope.parentScope; // fim do escopo
+				}
 				break;
 				case STATEMENT_pare:
+				{
 					if(this.loopScope)
 					{
 						bc.push(B_GOTO);
@@ -863,30 +888,32 @@ class Compiler {
 					{
 						this.erro("o 'pare' não faz sentido aqui, nenhum laço de repetição para parar.");
 					}
+				}
 				break;
 				case STATEMENT_ret:
 					this.compileFunctionRet(func,stat.expr);
 				break;
 				case STATEMENT_escolha:
+				{
 					//console.log("escolha não funciona ainda");	
 
-					var tipoRet = this.compileExpr(stat.expr,bc,-1);
+					let tipoRet = this.compileExpr(stat.expr,bc,-1);
 					if(tipoRet == T_vazio)
 					{
 						this.erro("A expressão do escolha deveria retornar um valor...");
 					}
 					
-					var falseJumps = [];
+					let falseJumps = [];
 					
-					var casosExpressions = this.shallowExtract(stat.statements,STATEMENT_caso);
+					let casosExpressions = this.shallowExtract(stat.statements,STATEMENT_caso);
 					
 					if(casosExpressions.length == 0)
 					{
 						this.erro("escolha-caso sem casos? não faz sentido algum.");
 					}
 					
-					var casoJumps = [];
-					for(var k=0;k<casosExpressions.length;k++)
+					let casoJumps = [];
+					for(let k=0;k<casosExpressions.length;k++)
 					{
 						if(casosExpressions[k].contrario)
 						{
@@ -898,7 +925,7 @@ class Compiler {
 							bc.push(B_DUP);// duplica o valor da expressão na stack
 							
 							// deveria checar o tipo?
-							var casoTipoRet = this.compileExpr(casosExpressions[k].expr,bc,tipoRet);
+							let casoTipoRet = this.compileExpr(casosExpressions[k].expr,bc,tipoRet);
 							if(casoTipoRet != tipoRet)
 							{
 								this.erro("O caso deveria ter o mesmo tipo que o valor do escolha");
@@ -922,20 +949,21 @@ class Compiler {
 					
 					if(!this.loopScope.contrario)
 					{ // se não tem o caso contrário
-						var jumpIndex = this.loopScope.getContrarioJump();
+						let jumpIndex = this.loopScope.getContrarioJump();
 						bc[jumpIndex] = bc.length;
 					}
 					
 					this.loopScope = this.loopScope.parentScope;
 										
 					this.replaceAllBy(bc,falseJumps,bc.length); // determina onde ir para sair do escolha, nos pare's
+				}
 				break;
 				case STATEMENT_caso:
 					//console.log("caso não funciona ainda");
 					
 					if(this.loopScope && this.loopScope instanceof SwitchScope)
 					{
-						var jumpIndex = false;
+						let jumpIndex = false;
 						if(stat.contrario)
 						{
 							jumpIndex = this.loopScope.getContrarioJump();
@@ -977,7 +1005,7 @@ class Compiler {
 	compileLogicalExpr(expr,bc,trueJumps,falseJumps)
 	{
 		if(
-		   expr.op != T_and
+		expr.op != T_and
 		&& expr.op != T_or
 		&& expr.op != T_ge
 		&& expr.op != T_gt
@@ -987,7 +1015,7 @@ class Compiler {
 		&& expr.op != T_notequals
 		&& expr.op != T_not)
 		{
-			var tExprA = this.compileExpr(expr,bc,T_logico);
+			let tExprA = this.compileExpr(expr,bc,T_logico);
 			if(tExprA != T_logico && (trueJumps !== false || falseJumps !== false))
 			{
 				this.erro("esta deveria ser uma expressão lógica. lembre-se que '=' é diferente de '==' ");
@@ -1035,13 +1063,13 @@ class Compiler {
 			return T_logico;
 		}
 		
-		var tExprA = T_vazio;
-		var tExprB = T_vazio;
+		let tExprA = T_vazio;
+		let tExprB = T_vazio;
 		if(expr.op == T_and || expr.op == T_or) // AND E OR SHORT CIRCUITING
 		{
 			if(expr.op == T_and) // AND
 			{
-				var myFalseJumps = [];
+				let myFalseJumps = [];
 				if(falseJumps !== false) myFalseJumps = falseJumps;
 				// tem que avaliar todos e averiguar se todos são verdadeiro. mas se for falso já pula!
 				tExprA = this.compileLogicalExpr(expr[0],bc,false,myFalseJumps);
@@ -1051,8 +1079,8 @@ class Compiler {
 				
 				if(trueJumps === false && falseJumps === false) // vai pular se for falso, continuar se for verdadeiro
 				{
-					var endIndex = bc.length +6;
-					var falseIndex = bc.length +4;
+					let endIndex = bc.length +6;
+					let falseIndex = bc.length +4;
 					
 					this.replaceAllBy(bc,myFalseJumps,falseIndex); // determina para que pulem para ca
 					
@@ -1070,7 +1098,7 @@ class Compiler {
 			}
 			if(expr.op == T_or) // OR
 			{
-				var myTrueJumps = [];
+				let myTrueJumps = [];
 				if(trueJumps !== false) myTrueJumps = trueJumps;
 				// tem que avaliar todos e averiguar se tem pelo menos um verdadeiro. mas se for verdadeiro já pula!
 				tExprA = this.compileLogicalExpr(expr[0],bc,myTrueJumps,false); // se for falso continua. se for verdadeiro pula pro final
@@ -1079,8 +1107,8 @@ class Compiler {
 								
 				if(trueJumps === false && falseJumps === false) // vai pular se for verdadeiro, continuar se for falso
 				{
-					var endIndex = bc.length +6;
-					var trueIndex = bc.length +4;
+					let endIndex = bc.length +6;
+					let trueIndex = bc.length +4;
 					
 					this.replaceAllBy(bc,myTrueJumps,trueIndex); // determina para que pulem para ca
 					
@@ -1147,8 +1175,8 @@ class Compiler {
 			
 			if(trueJumps === false && falseJumps === false)
 			{
-				var endIndex = bc.length +7;
-				var falseIndex = bc.length +5;
+				let endIndex = bc.length +7;
+				let falseIndex = bc.length +5;
 				
 				bc.push(falseIndex); // o jump do op
 				bc.push(B_PUSH);
@@ -1192,9 +1220,9 @@ class Compiler {
 	{
 		if(v.isArray && member && member.expr) // se está indexando
 		{
-			for(var k = 0;k<member.expr.length;k++)
+			for(let k = 0;k<member.expr.length;k++)
 			{
-				var tExpri = this.compileExpr(member.expr[k],bc,T_inteiro); // espera retorno inteiro do index do array
+				let tExpri = this.compileExpr(member.expr[k],bc,T_inteiro); // espera retorno inteiro do index do array
 				if(tExpri == T_vazio)
 				{
 					this.erro("a expressão que indica a posição do vetor não retorna valor nenhum");
@@ -1235,7 +1263,7 @@ class Compiler {
 		if(!expr) return T_vazio;
 		
 		if(
-		   expr.op == T_and
+			expr.op == T_and
 		|| expr.op == T_or
 		|| expr.op == T_ge
 		|| expr.op == T_gt
@@ -1247,11 +1275,11 @@ class Compiler {
 		
 		if(expr.length == 2)
 		{
-			var tExprA = T_vazio;
-			var tExprB = T_vazio;
+			let tExprA = T_vazio;
+			let tExprB = T_vazio;
 			if(expr.op == T_attrib)
 			{
-				var v = this.getVar(expr[0].name);
+				let v = this.getVar(expr[0].name);
 				if(v.isArray && expr[0].expr)
 				{
 					tExprA = v.arrayType;
@@ -1277,7 +1305,7 @@ class Compiler {
 			}
 			else 
 			{
-				var tExpr = -1;
+				let tExpr = -1;
 				if(isAttribOp(expr.op))
 				{
 					tExpr = expr[0].type;
@@ -1305,7 +1333,7 @@ class Compiler {
 					}
 				}
 				
-				var tRet = getTipoRetorno(tExprA,tExprB); // quando é divisão retorna real ou inteiro?
+				let tRet = getTipoRetorno(tExprA,tExprB); // quando é divisão retorna real ou inteiro?
 				
 				if(tRet != tExprA && (tRet == T_inteiro || tRet == T_cadeia))
 				{
@@ -1374,7 +1402,7 @@ class Compiler {
 				
 				if(isAttribOp(expr.op))
 				{
-					var v = this.getVar(expr[0].name);
+					let v = this.getVar(expr[0].name);
 					if(typeExpected != T_vazio)
 						bc.push(B_DUP); // o valor fica na stack. mds isso vai da o maior problema
 					
@@ -1400,11 +1428,16 @@ class Compiler {
 			switch(expr.op)
 			{
 				case T_unary_plus:return this.compileExpr(expr[0],bc,-1);
-				case T_unary_minus:var tExpr = this.compileExpr(expr[0],bc,-1);bc.push(B_NEG);return tExpr;
+				case T_unary_minus:
+				{
+					let tExpr = this.compileExpr(expr[0],bc,-1);bc.push(B_NEG);
+					return tExpr;
+				}
 				case T_autoinc:
 				case T_pre_autoinc:
-					var v = this.getVar(expr[0].name);
-					var tExpr = this.compileExpr(expr[0],bc,-1);
+				{
+					let v = this.getVar(expr[0].name);
+					let tExpr = this.compileExpr(expr[0],bc,-1);
 					
 					if(expr.op == T_autoinc && typeExpected != T_vazio)
 						bc.push(B_DUP); // o valor ANTERIOR fica na stack.
@@ -1421,10 +1454,12 @@ class Compiler {
 					if(typeExpected != T_vazio) // deu DUP
 						return tExpr;
 					else return T_vazio; // não deu DUP
+				}
 				case T_autodec:
 				case T_pre_autodec:
-					var v = this.getVar(expr[0].name);
-					var tExpr = this.compileExpr(expr[0],bc,-1);
+				{
+					let v = this.getVar(expr[0].name);
+					let tExpr = this.compileExpr(expr[0],bc,-1);
 					
 					if(expr.op == T_autodec && typeExpected != T_vazio)
 						bc.push(B_DUP);  // o valor ANTERIOR fica na stack.
@@ -1441,19 +1476,24 @@ class Compiler {
 					if(typeExpected != T_vazio) // deu DUP
 						return tExpr;
 					else return T_vazio; // não deu DUP
-				case T_bitnot:var tExpr = this.compileExpr(expr[0],bc,-1);bc.push(B_NOT);return tExpr;
+				}
+				case T_bitnot:
+				{
+					let tExpr = this.compileExpr(expr[0],bc,-1);bc.push(B_NOT);
+					return tExpr;
+				}
 				//case T_not:tis.compileExpr(expr[0],bc,variableMap);break;
 				case T_parO: // methCall
 				{
-					var args = expr.args;
+					let args = expr.args;
 					if(expr.name == "escreva")
 					{
-						for(var i =0;i<args.length;i++)
+						for(let i =0;i<args.length;i++)
 						{
-							var tExpr = this.compileExpr(args[i],bc,-1);
+							let tExpr = this.compileExpr(args[i],bc,-1);
 							this.tryConvertType(T_cadeia,tExpr,bc);
 							bc.push(B_INVOKE);
-							var funcIndex = this.getFuncIndex(expr.name,[]);
+							let funcIndex = this.getFuncIndex(expr.name,[]);
 							bc.push(funcIndex);
 							bc.push(1);
 						}
@@ -1463,10 +1503,10 @@ class Compiler {
 					{
 						console.log("Marcou como unsafe porque chamou a função leia");
 						this.funcScopeRef.jsSafe = false;
-						var methName= expr.name;
+						let methName= expr.name;
 						if(args.length == 1)
 						{
-							var v = this.getVar(args[0].name);
+							let v = this.getVar(args[0].name);
 							if(v.isArray)
 								methName += "$"+getTypeWord(v.arrayType);
 							else
@@ -1474,7 +1514,7 @@ class Compiler {
 
 							this.compileExpr(args[0],bc,-1);
 							bc.push(B_INVOKE);
-							var funcIndex = this.getFuncIndex(methName,[]);
+							let funcIndex = this.getFuncIndex(methName,[]);
 							bc.push(funcIndex);
 							bc.push(args.length);
 							
@@ -1488,15 +1528,15 @@ class Compiler {
 					}
 					else
 					{
-						var methName= expr.name;
-						var funcArgs = [];
+						let methName= expr.name;
+						let funcArgs = [];
 											
-						for(var i =0;i<args.length;i++)
+						for(let i =0;i<args.length;i++)
 						{
 							funcArgs.push(this.compileExpr(args[i],bc,-1));
 							/*if(func.parameters[i].byRef)
 							{
-								var refFake_v = this.createVar(methName+"$"+i+"$"+bc.length,func.parameters[i].type,false,true,1);
+								let refFake_v = this.createVar(methName+"$"+i+"$"+bc.length,func.parameters[i].type,false,true,1);
 								refVars[i] = {fakeV:refFake_v,realV:args[i]};
 								// criando array de 1 dimensão
 								bc.push(B_NEWARRAY);
@@ -1513,8 +1553,8 @@ class Compiler {
 						}
 						bc.push(B_INVOKE);
 						
-						var funcIndex = this.getFuncIndex(methName,funcArgs);
-						var func = this.functions[funcIndex];
+						let funcIndex = this.getFuncIndex(methName,funcArgs);
+						let func = this.functions[funcIndex];
 						
 						this.funcScopeRef.addFuncCall(func);
 						
@@ -1525,12 +1565,12 @@ class Compiler {
 						// a stack estará com as variáveis por referência, caso houver
 						// em ordem reversa!
 						if(funcIndex != 0)
-						for(var i =args.length-1;i>=0;i--)
+						for(let i =args.length-1;i>=0;i--)
 						{
 							if(func.parameters[i].byRef && func.parameters[i].id != STATEMENT_declArr)
 							{							
 								// guardando valor da stack na variável
-								var refV = this.getVar(args[i].name);
+								let refV = this.getVar(args[i].name);
 								this.compileMemberAttrib(args[i],refV,bc);
 							}
 						}
@@ -1539,8 +1579,9 @@ class Compiler {
 						return func.type;
 					}
 				}
-				case T_word: 
-					var v = this.getVar(expr.name);
+				case T_word:
+				{
+					let v = this.getVar(expr.name);
 					
 					// chamadas de funções usam o vetor como uma variável...
 					//if(v.isArray) 
@@ -1549,6 +1590,7 @@ class Compiler {
 					bc.push(v.global ? B_LOADGLOBAL : B_LOAD);
 					bc.push(v.index);
 					return v.type;
+				}
 				case T_inteiroLiteral:bc.push(B_PUSH);bc.push(this.baseParseInt(expr.value));return T_inteiro;
 				case T_realLiteral:bc.push(B_PUSH);bc.push(parseFloat(expr.value));return T_real;
 				case T_cadeiaLiteral:bc.push(B_PUSH);bc.push(expr.value);return T_cadeia;
@@ -1559,10 +1601,11 @@ class Compiler {
 				case T_logicoLiteral: bc.push(B_PUSH);bc.push(expr.value == "verdadeiro" ? B_TRUE : B_FALSE);return T_logico; 
 				// vetor[ expr ]
 				case T_squareO:
-					//var tExpri = this.compileExpr(expr.expr[0],bc,T_inteiro);
-					for(var k = 0;k<expr.expr.length;k++)
+				{
+					//let tExpri = this.compileExpr(expr.expr[0],bc,T_inteiro);
+					for(let k = 0;k<expr.expr.length;k++)
 					{
-						var tExpri = this.compileExpr(expr.expr[k],bc,T_inteiro); // espera retorno inteiro do index do array
+						let tExpri = this.compileExpr(expr.expr[k],bc,T_inteiro); // espera retorno inteiro do index do array
 						if(tExpri == T_vazio)
 						{
 							this.erro("a expressão que indica a posição do vetor não retorna valor nenhum");
@@ -1571,7 +1614,7 @@ class Compiler {
 						else if(tExpri != T_inteiro) this.erro("para acessar um vetor ou matriz, deve informar um valor numérico do tipo inteiro.");
 					}
 					
-					var v = this.getVar(expr.name);
+					let v = this.getVar(expr.name);
 					
 					bc.push(v.global ? B_ALOADGLOBAL : B_ALOAD);
 					bc.push(v.index);
@@ -1580,12 +1623,14 @@ class Compiler {
 					if(expr.expr.length != v.arrayDim) this.erro("sua matriz é de "+v.arrayDim+" dimensões, porém indexou "+expr.expr.length+" dimensões.");
 					
 					return v.arrayType;
+				}
 				case T_dot:
-					var biblioteca = expr.name;
-					var campo = expr.expr;
+				{
+					let biblioteca = expr.name;
+					let campo = expr.expr;
 					
-					var declarado = false;
-					for(var k=0;k<this.incluas.length;k++)
+					let declarado = false;
+					for(let k=0;k<this.incluas.length;k++)
 					{
 						if(this.incluas[k].name == biblioteca || this.incluas[k].alias == biblioteca)
 						{
@@ -1600,7 +1645,7 @@ class Compiler {
 						this.erro("a biblioteca "+biblioteca+" não foi inclusa no programa");
 					}
 					
-					var libObj = this.libraries[biblioteca];
+					let libObj = this.libraries[biblioteca];
 					
 					if(!libObj)
 					{
@@ -1625,16 +1670,16 @@ class Compiler {
 					}
 					else if(campo.op == T_parO)
 					{
-						var funcPars = libObj.members[campo.name].parameters;
+						let funcPars = libObj.members[campo.name].parameters;
 						
 						if(funcPars.length != campo.args.length)
 						{
 							this.erro("a função "+campo.name+" espera "+funcPars.length+" argumentos, foram passados apenas "+campo.args.length);
 						}
 						
-						for(var k =0;k<campo.args.length;k++)
+						for(let k =0;k<campo.args.length;k++)
 						{
-							var tExpr = this.compileExpr(campo.args[k],bc,funcPars[k].type);
+							let tExpr = this.compileExpr(campo.args[k],bc,funcPars[k].type);
 							
 							if(!checarCompatibilidadeTipo(funcPars[k].type,tExpr,T_attrib))
 							this.erro("a função "+campo.name+" esperava o tipo "+getTypeWord(funcPars[k].type)+" no parâmetro "+funcPars[k].name+" porém foi fornecido o tipo "+getTypeWord(tExpr));
@@ -1653,6 +1698,7 @@ class Compiler {
 					}
 					
 				return libObj.members[campo.name].type;
+				}
 			}
 		}
 	}

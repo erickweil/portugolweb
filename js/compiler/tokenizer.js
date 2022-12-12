@@ -85,12 +85,12 @@ export const separator_tokens =
 
 // SEPARATOR 
 const T_SEPARATOROFF = 0;
-function getSeparator(c)
+export function getSeparator(c)
 {
 	return separator_tokens[c-T_SEPARATOROFF];
 }
 
-function getSeparatorCode(c)
+export function getSeparatorCode(c)
 {
 	return T_SEPARATOROFF + separators.indexOf(c);
 }
@@ -350,7 +350,7 @@ export function isSeparator(code)
 }
 
 
-const T_word = 63;
+export const T_word = 63;
 //var RESERVED_WORD = 3;
 const T_RESERVEDOFF = 64;
 export function getReservedWordCode(c)

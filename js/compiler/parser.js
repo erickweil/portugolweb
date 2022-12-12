@@ -1,21 +1,24 @@
-var STATEMENT_declVar = 1;
-var STATEMENT_declArr = 10;
-var STATEMENT_declArrValues = 13;
-var STATEMENT_expr = 2;
-var STATEMENT_block = 3;
-var STATEMENT_se = 4;
-var STATEMENT_enquanto = 5;
-var STATEMENT_facaEnquanto = 6;
-var STATEMENT_para = 7;
-var STATEMENT_pare = 8;
-var STATEMENT_ret = 9;
-var STATEMENT_escolha = 11;
-var STATEMENT_caso = 12;
+import { canBePreUnary, getOpPrecedence, isDualOperator, isLiteral, isOperator, isPostUnary, isTypeWord, T_arrow, T_attrib, T_autodec, T_autoinc, T_biblioteca, T_bitand, T_bracesC, T_bracesO, T_caso, T_colon, T_comma, T_const, T_contrario, T_dot, T_enquanto, T_escolha, T_faca, T_funcao, T_inclua, T_inteiroLiteral, T_minus, T_para, T_parC, T_pare, T_parO, T_plus, T_pre_autodec, T_pre_autoinc, T_programa, T_retorne, T_se, T_semi, T_senao, T_squareC, T_squareO, T_unary_minus, T_unary_plus, T_vazio, T_word 
+} from "./tokenizer.js";
+
+export const STATEMENT_declVar = 1;
+export const STATEMENT_declArr = 10;
+export const STATEMENT_declArrValues = 13;
+export const STATEMENT_expr = 2;
+export const STATEMENT_block = 3;
+export const STATEMENT_se = 4;
+export const STATEMENT_enquanto = 5;
+export const STATEMENT_facaEnquanto = 6;
+export const STATEMENT_para = 7;
+export const STATEMENT_pare = 8;
+export const STATEMENT_ret = 9;
+export const STATEMENT_escolha = 11;
+export const STATEMENT_caso = 12;
 
 function pmatch(index,tokens)
 {
-	var ti = index;
-	for (var i = 2; i < arguments.length && ti < tokens.length; i++) {
+	let ti = index;
+	for (let i = 2; i < arguments.length && ti < tokens.length; i++) {
 		if(tokens[ti].id != arguments[i])
 		{
 			return false;
@@ -26,11 +29,11 @@ function pmatch(index,tokens)
 }
 
 
-function getAllVariableParserDecl(stats,ret)
+export function getAllVariableParserDecl(stats,ret)
 {
-	for(var i=0;i<stats.length;i++)
+	for(let i=0;i<stats.length;i++)
 	{
-		var s = stats[i];
+		let s = stats[i];
 	
 		if(!s.id)// funcao
 		{
@@ -69,11 +72,12 @@ function getAllVariableParserDecl(stats,ret)
 	}
 }
 
-class Parser {
-    constructor(tokens,textInput) {
+export class Parser {
+    constructor(tokens,textInput,erroCallback) {
 		this.tokens = tokens;
 		this.textInput = textInput;
 		this.tree = [];
+		this.enviarErro = erroCallback;
     }
 	
 	erro(token,msg)
@@ -82,7 +86,10 @@ class Parser {
 		//console.log("linha "+numberOfLinesUntil(token.index,this.textInput)+", erro:"+msg);
 		//console.log("perto de '"+line+"'");
 		//this.errors.push({token:token,msg:msg});
-		enviarErro(this.textInput,token,msg,"semantico");
+		if(this.enviarErro)
+		this.enviarErro(this.textInput,token,msg,"semantico");
+		else
+		console.log("ERRO NO PARSER:",msg)
 	}
 	
 
@@ -91,7 +98,7 @@ class Parser {
 	{
 		if(!pmatch(0,this.tokens,T_programa)){ this.erro(this.tokens[0],"não encontrou o programa."); return null;}
 		
-		var blockres = this.extractBlock(1,this.tokens,T_bracesO,T_bracesC);
+		let blockres = this.extractBlock(1,this.tokens,T_bracesO,T_bracesC);
 		this.tree = this.parsePrograma(blockres.block);
 		
 		return this.tree;
@@ -99,10 +106,10 @@ class Parser {
 	
 	parsePrograma(tokens)
 	{
-		var programaTree = {incluas:[],variaveis:[],funcoes:[]};
-		for(var i=0;i<tokens.length;i++)
+		let programaTree = {incluas:[],variaveis:[],funcoes:[]};
+		for(let i=0;i<tokens.length;i++)
 		{
-			var t = tokens[i].id;
+			let t = tokens[i].id;
 			// incluas
 			if(t == T_inclua)
 			{
@@ -120,12 +127,12 @@ class Parser {
 			//else if(pmatch(i,tokens,T_funcao))
 			else if(t == T_funcao)
 			{
-				var funcType = T_vazio;
-				var funcArrType = false;
-				var funcArrDim = false;
+				let funcType = T_vazio;
+				let funcArrType = false;
+				let funcArrDim = false;
 				
-				var funcPars = [];
-				var funcStats = [];
+				let funcPars = [];
+				let funcStats = [];
 				i++;// n entendeu?
 				//          i
 				// funcao <tipo>[] nome ( <pars> ) { <bloco> }
@@ -160,7 +167,7 @@ class Parser {
 				}
 				
 				this.processingFuncType = funcType; // para decidir sobre os retorne
-				var funcName = tokens[i].txt;
+				let funcName = tokens[i].txt;
 				//                i -->
 				// funcao <tipo> nome ( <pars> ) { <bloco> }
 				i++;
@@ -198,8 +205,8 @@ class Parser {
 		}
 
 		i++;		
-		var biblioteca = tokens[i].txt;
-		var alias = false;
+		let biblioteca = tokens[i].txt;
+		let alias = false;
 		
 		if(tokens[i+1].id == T_arrow)
 		{
@@ -226,7 +233,7 @@ class Parser {
 		i++;
 		while(tokens[i].id != T_parC) // se tem alguma coisa
 		{
-			var isConst = false;
+			let isConst = false;
 			
 			if(tokens[i].id == T_const)
 			{
@@ -240,9 +247,9 @@ class Parser {
 				i++;
 				break;
 			}
-			var tIndex = tokens[i].index;
-			var varType = tokens[i].id;i++;
-			var byRef = false;
+			let tIndex = tokens[i].index;
+			let varType = tokens[i].id;i++;
+			let byRef = false;
 			// ***** Passando por Referência *******
 			
 			if(tokens[i].id == T_bitand)
@@ -258,12 +265,12 @@ class Parser {
 				i++;
 				break;
 			}
-			var varName = tokens[i].txt;i++;
+			let varName = tokens[i].txt;i++;
 			
 			
 			if(tokens[i].id == T_squareO)
 			{
-				var arrayDimExpr = [];
+				let arrayDimExpr = [];
 				do
 				{
 					//            i --->
@@ -304,12 +311,12 @@ class Parser {
 	
 	parseStatementOrBlock(i,tokens,tree)
 	{
-		var t = tokens[i].id;
-		var tIndex = tokens[i].index;
+		let t = tokens[i].id;
+		let tIndex = tokens[i].index;
 		// inicio de bloco { statements }
 		if(t == T_bracesO)
 		{
-			var statements = [];
+			let statements = [];
 			// i -->
 			// { ...
 			i++; 
@@ -332,8 +339,8 @@ class Parser {
 	
 	parseStatement(i,tokens,tree)
 	{
-		var t = tokens[i].id;
-		var tIndex = tokens[i].index;
+		let t = tokens[i].id;
+		let tIndex = tokens[i].index;
 		
 		//declaracão de variáveis, vetor, matriz
 		// type word = expression [, word = expression]
@@ -352,7 +359,7 @@ class Parser {
 		}
 		else if(t == T_retorne)
 		{
-			var exprTree = false;
+			let exprTree = false;
 			if(this.processingFuncType != T_vazio) // se a função tem retorno
 			{
 				i++;
@@ -367,9 +374,9 @@ class Parser {
 		// "se" ( expression ) block
 		else if(t == T_se)
 		{
-			var logic_Expr = [];
-			var statements_true = [];
-			var statements_false = false;
+			let logic_Expr = [];
+			let statements_true = [];
+			let statements_false = false;
 			// i -->
 			// se    (   expr   )
 			i++;
@@ -406,8 +413,8 @@ class Parser {
 		// "faca" block "enquanto" ( expression )
 		else if(t == T_enquanto)
 		{
-			var logic_Expr = [];
-			var statements = [];
+			let logic_Expr = [];
+			let statements = [];
 			// i -->
 			// enquanto (   expr   )
 			i++;
@@ -431,8 +438,8 @@ class Parser {
 		}
 		else if(t == T_faca)
 		{
-			var logic_Expr = [];
-			var statements = [];
+			let logic_Expr = [];
+			let statements = [];
 			//  i -->
 			// faca  statementOrBlock enquanto ( expr )
 			i++;
@@ -460,10 +467,10 @@ class Parser {
 		// "para" ( {var declaration | expression} ; expression ; expression ) block
 		else if(t == T_para)
 		{
-			var decl = false;
-			var logic_Expr = false;
-			var inc = false;
-			var statements = [];
+			let decl = false;
+			let logic_Expr = false;
+			let inc = false;
+			let statements = [];
 			//  i -->
 			// para  (
 			i++;
@@ -543,8 +550,8 @@ class Parser {
 		// "escolha" ( expression ) { // body }
 		else if(t == T_escolha)
 		{
-			var escolha_Expr = [];
-			var statements = [];
+			let escolha_Expr = [];
+			let statements = [];
 			// i -->
 			// escolha (   expr   )
 			i++;
@@ -572,8 +579,8 @@ class Parser {
 		// "caso" "contrario" :
 		else if(t == T_caso)
 		{
-			var caso_Expr = [];
-			var caso_contrario = false;
+			let caso_Expr = [];
+			let caso_contrario = false;
 			// i -->
 			// caso expr :
 			i++;
@@ -609,7 +616,7 @@ class Parser {
 		else
 		{
 			//funcaoTree.push("expressao");
-			var exprTree = [];
+			let exprTree = [];
 			i = this.parseExpressao(i,tokens,exprTree,0);
 			tree.push({id:STATEMENT_expr,index:tIndex,expr:exprTree[0]});
 		}
@@ -628,7 +635,7 @@ class Parser {
 			
 			if(tokens[i].id == T_bracesO)
 			{
-				var expr = []
+				let expr = []
 				i = this.parseDeclArray(i,tokens,expr);
 				tree.push(expr);
 			}
@@ -647,7 +654,7 @@ class Parser {
 	
 	parseDeclVariavel(i,tokens,tree)
 	{	
-		var isConst = false;
+		let isConst = false;
 		if(tokens[i].id == T_const)
 		{
 			isConst = true;
@@ -656,7 +663,7 @@ class Parser {
 			i++;
 		}
 		
-		var varType = tokens[i].id;
+		let varType = tokens[i].id;
 		
 		if(!isTypeWord(varType))
 		{
@@ -667,7 +674,7 @@ class Parser {
 			
 		while(true)
 		{
-			var tIndex= tokens[i+1].index; // index para saber onde está o erro na hora da execução
+			let tIndex= tokens[i+1].index; // index para saber onde está o erro na hora da execução
 			// arrays
 			// type word [ expression ] = { expression, ... }
 			// type word [ ] = { expression, ... }
@@ -682,8 +689,8 @@ class Parser {
 				//    i -->
 				//  type word [ expr?  ]    =   {  expression, ... }
 				i++;
-				var varName = tokens[i].txt;
-				var arrayDimExpr = [];
+				let varName = tokens[i].txt;
+				let arrayDimExpr = [];
 				do
 				{
 					if(tokens[i+2].id != T_squareC)
@@ -702,7 +709,7 @@ class Parser {
 				}
 				while(tokens[i+1].id == T_squareO);
 				
-				var declExpr = false;
+				let declExpr = false;
 				
 					//                         i ------->
 					//  type word [ expression ]    =   {  expression, ... }
@@ -712,14 +719,14 @@ class Parser {
 					i++;
 					if(tokens[i+1].id == T_bracesO)
 					{
-						var ArrayValuesExpr = [];
+						let ArrayValuesExpr = [];
 						i = this.parseDeclArray(i+1,tokens,ArrayValuesExpr);
 						declExpr.id = STATEMENT_declArrValues;
 						declExpr.expr = ArrayValuesExpr;
 					}
 					else
 					{
-						var exprTree = [];
+						let exprTree = [];
 						i = this.parseExpressao(i+1,tokens,exprTree,0); // NAO ESQUECER!
 						
 						declExpr.id = STATEMENT_expr;
@@ -732,16 +739,16 @@ class Parser {
 			else if(tokens[i+1].id == T_word && tokens[i+2].id == T_attrib)
 			{
 				
-				var varName = tokens[i+1].txt;
-				var exprTree = [];
+				let varName = tokens[i+1].txt;
+				let exprTree = [];
 				i = this.parseExpressao(i+3,tokens,exprTree,0); // NAO ESQUECER!
 				
 				tree.push({id:STATEMENT_declVar,index:tIndex,type:varType,isConst:isConst,name:varName,expr:exprTree[0]});
 			}
 			else if(tokens[i+1].id == T_word)
 			{
-				var varName = tokens[i+1].txt;
-				var exprTree = false;
+				let varName = tokens[i+1].txt;
+				let exprTree = false;
 				
 				if(isConst)
 				{
@@ -770,9 +777,9 @@ class Parser {
 	parseExpressao(i,tokens,tree,prevPrecedence) // n me pergunte como foi que consegui fazer essa parte funcionar, até eu me surpreendi!
 	{
 		
-		var t = tokens[i].id;
+		let t = tokens[i].id;
 		
-		var member0 = [];
+		let member0 = [];
 		// unaryop member
 		if(isOperator(t)) // op ...
 		{
@@ -834,7 +841,7 @@ class Parser {
 				return i;
 			}
 			
-			var op = tokens[i].id;
+			let op = tokens[i].id;
 			
 			if(getOpPrecedence(op) <= prevPrecedence) // acabou aqui, tem que voltar pro operador anterior
 			{	
@@ -847,7 +854,7 @@ class Parser {
 			}
 			else // tem que continuar procurando expressoes, pq esse operador tem mais precedencia
 			{
-				var m0 = member0;
+				let m0 = member0;
 				member0 = [m0];
 				member0.op = op;
 				
@@ -867,11 +874,11 @@ class Parser {
 		//word . word ( [, expression] )
 		if(pmatch(i,tokens,T_word,T_dot))
 		{
-			var biblioteca = tokens[i].txt;
+			let biblioteca = tokens[i].txt;
 			
 			i += 2;
 			
-			var campo = {op:T_word,name:tokens[i].txt};
+			let campo = {op:T_word,name:tokens[i].txt};
 			if(tokens[i+1].id == T_parO)
 			{
 				campo = [];
@@ -892,11 +899,11 @@ class Parser {
 		//word [ expression ] [ expression ]
 		else if(pmatch(i,tokens,T_word,T_squareO))
 		{
-			var word = tokens[i].txt;
+			let word = tokens[i].txt;
 
-			var exprTree = [];
+			let exprTree = [];
 			//i = this.parseExpressao(i,tokens,exprTree,0);
-			var arrayDimExpr = [];
+			let arrayDimExpr = [];
 
 			//  i
 			//word [ expression ] [ expression ]
@@ -955,12 +962,12 @@ class Parser {
 	
 	parseMethCall(i,tokens,tree)
 	{
-	    // i
+		// i
 		//word ( [, expression] )
-		var methName = tokens[i].txt;
+		let methName = tokens[i].txt;
 		i++; // já sabe que é (, nem adianta checar
 		
-		var args = [];
+		let args = [];
 		if(tokens[i+1].id != T_parC) // quando é tipo funcao();
 		{
 			while(true)
@@ -995,7 +1002,7 @@ class Parser {
 	
 	skipTo(index,tokens,tk)
 	{
-		for(var i=index;i<tokens.length;i++)
+		for(let i=index;i<tokens.length;i++)
 		{
 			if(tokens[i].id == tk) return i;
 		}
@@ -1004,14 +1011,14 @@ class Parser {
 
 	extractBlock(index,tokens,SEPopen,SEPclose)
 	{
-		var block = [];
-		/*var prev_index = index;
+		let block = [];
+		/*let prev_index = index;
 		index = this.skipTo(index,tokens,SEPopen);
 		if(index <= -1)
 		{
 			this.erro(tokens[prev_index],"esperando por inicio de bloco, mas não achou");
 		}*/
-		var depth = 0;
+		let depth = 0;
 		if(tokens[index].id != SEPopen)
 		{
 			this.erro(tokens[index],"esqueceu de abrir o bloco, antes de '"+tokens[index].txt+"'");
@@ -1023,7 +1030,7 @@ class Parser {
 			depth += 1;
 		}
 		
-		var i=index;
+		let i=index;
 		for(;i<tokens.length;i++)
 		{
 
