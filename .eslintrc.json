@@ -19,6 +19,7 @@
         "no-constant-condition":"off",
         "no-var": "error",
         "semi":["error","always"],
+        "no-implicit-globals":"error",
         "import/no-absolute-path":"error",
         "import/no-self-import":"error",
         "import/extensions":["error", "always", { "js": "always" }]

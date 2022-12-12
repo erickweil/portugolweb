@@ -1,14 +1,16 @@
+import * as ace from '../../lib/ace-src-min-noconflict/ace.js';
+
 ace.define('ace/mode/portugol',function(require, exports, module) {
 "use strict";
 
-var oop = require("../lib/oop");
-var DocCommentHighlightRules = require("./doc_comment_highlight_rules").DocCommentHighlightRules;
-var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
+let oop = ace.require("../lib/oop");
+let DocCommentHighlightRules = ace.require("./doc_comment_highlight_rules").DocCommentHighlightRules;
+let TextHighlightRules = ace.require("./text_highlight_rules").TextHighlightRules;
 
-var JavaHighlightRules = function() {
+let JavaHighlightRules = function() {
 
     // taken from http://download.oracle.com/javase/tutorial/java/nutsandbolts/_keywords.html
-    var keywords = (
+    let keywords = (
     "abstract|continue|for|new|switch|" +
     "assert|default|goto|package|synchronized|" +
     "boolean|do|if|private|this|" +
@@ -22,10 +24,10 @@ var JavaHighlightRules = function() {
     "var"
     );
 
-    var buildinConstants = ("null|Infinity|NaN|undefined");
+    let buildinConstants = ("null|Infinity|NaN|undefined");
 
 
-    var langClasses = (
+    let langClasses = (
         "AbstractMethodError|AssertionError|ClassCircularityError|"+
         "ClassFormatError|Deprecated|EnumConstantNotPresentException|"+
         "ExceptionInInitializerError|IllegalAccessError|"+
@@ -52,7 +54,7 @@ var JavaHighlightRules = function() {
         "Cloneable|Class|CharSequence|Comparable|String|Object"
     );
 
-    var keywordMapper = this.createKeywordMapper({
+    let keywordMapper = this.createKeywordMapper({
         "variable.language": "this",
         "keyword": keywords,
         "constant.language": buildinConstants,

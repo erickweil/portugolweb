@@ -240,11 +240,14 @@ let VM_delay = false;
 export function VM_setDelay(delay) {
 	VM_delay = delay;
 }
-export function VM_getDelay(delay) {
+export function VM_getDelay() {
 	return VM_delay;
 }
 
 let VM_execJS = false;
+export function VM_setExecJS(v) {
+	VM_execJS = v;
+}
 export function VM_getExecJS() {
 	return VM_execJS;
 }
@@ -263,8 +266,15 @@ let VM_functions = false;
 let VM_jsfunctions = false;
 let VM_libraries = false;
 let VM_saida = false;
+export function VM_getSaida() {
+	return	VM_saida;
+}
 let VM_saidaDiv = false;
 let VM_textInput = false;
+export function VM_getTextInput() {
+	return	VM_textInput;
+}
+
 let VM_codeCount = 0;
 let VM_codeMax = 500000; // se for um valor baixo dá flickering no canvas, valor alto trava tudo. (Resolvido, alterado esse máximo só quando usar a biblioteca Gráficos)
 export function VM_setCodeMax(codeMax) {

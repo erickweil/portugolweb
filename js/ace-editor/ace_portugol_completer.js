@@ -1,4 +1,7 @@
-class portugolCompleter
+import { getAllVariableParserDecl } from "../compiler/parser.js";
+import { getTypeWord, reserved_words, type_words, T_parO, T_word } from "../compiler/tokenizer.js";
+
+export default class portugolCompleter
 {
 	constructor(libraries)
 	{
@@ -60,7 +63,7 @@ class portugolCompleter
 		
 		if(id == T_word)
 		{
-			var ret = name;
+			let ret = name;
 			
 			if(caption)
 			{
@@ -73,15 +76,15 @@ class portugolCompleter
 		}
 		else if(id == T_parO)
 		{
-			var ret = name+"(";
+			let ret = name+"(";
 			
 			if(member.parameters)
 			{
-				for(var i=0;i<member.parameters.length;i++)
+				for(let i=0;i<member.parameters.length;i++)
 				{
 					if(i > 0) ret += ",";
 					
-					var p = member.parameters[i];
+					let p = member.parameters[i];
 					if(typeof p === 'object')
 					{
 						ret += getTypeWord(p.type);
@@ -104,14 +107,14 @@ class portugolCompleter
 	
 	getCompletions(editor, session, pos, prefix, callback) {
 		
-		var firstvmTime = performance.now();
-		var lastvmTime = firstvmTime;
+		let firstvmTime = performance.now();
+		let lastvmTime = firstvmTime;
 		//prefix = prefix.trim();
-		var sugestoes = []; // Lista de sugestões
-		var outPrefix = prefix; // Prefixo do identificador que está sendo escrito, e será substituido
+		let sugestoes = []; // Lista de sugestões
+		let outPrefix = prefix; // Prefixo do identificador que está sendo escrito, e será substituido
 		
 		
-		var entireLine = editor.session.getLine(pos.row);
+		let entireLine = editor.session.getLine(pos.row);
 		
 		//if(this.tokenizer)
 		//{
@@ -120,7 +123,7 @@ class portugolCompleter
 		//	console.log("row:"+pos.row+",col:"+pos.column+" i:"+tokenindex+":'"+token.txt+"'");
 		//}
 		
-		var millis_tokens = Math.trunc(performance.now()-lastvmTime);
+		let millis_tokens = Math.trunc(performance.now()-lastvmTime);
 		lastvmTime = performance.now();
 		//this.retrievePrecedingIdentifier(line, pos.column, identifierRegex);
 		//var outAppend = ""; // ??
@@ -128,13 +131,13 @@ class portugolCompleter
 		// value é o valor a ser checado
 		// caption é o valor que será exibido na lista
 		// meta é a palavrinha que aparece depois
-		for(var i =0;i<this.listaPalavras.length;i++)
+		for(let i =0;i<this.listaPalavras.length;i++)
 		{
-			var p = this.listaPalavras[i];
+			let p = this.listaPalavras[i];
 			sugestoes.push({value:p,caption:p,meta:"sugestão",tooltip:"",score:0});
 		}
 		
-		var millis_palavras = Math.trunc(performance.now()-lastvmTime);
+		let millis_palavras = Math.trunc(performance.now()-lastvmTime);
 		lastvmTime = performance.now();
 		/*var bibliotecaCheck = /^.*[\D]\.[a-z0-9_]*$/.test(entireLine.toLowerCase());
 		if(!bibliotecaCheck && this.incluas)
@@ -153,27 +156,27 @@ class portugolCompleter
 		
 		//if(incluaCheck)
 		//{
-			var offPonto = prefix.lastIndexOf(".");			
+			let offPonto = prefix.lastIndexOf(".");			
 			//outAppend = "inclua biblioteca ";
 			
 			//console.info("Inclua:", linhaSemPonto);
 			//sugestoes = [];
-			for(var i =0;i<this.librariesNames.length;i++)
+			for(let i =0;i<this.librariesNames.length;i++)
 			{
-				var libName = this.librariesNames[i];
-				var sugValue = "inclua biblioteca "+libName+" --> "+libName.toLowerCase().charAt(0);
+				let libName = this.librariesNames[i];
+				let sugValue = "inclua biblioteca "+libName+" --> "+libName.toLowerCase().charAt(0);
 				sugestoes.push({value:sugValue,caption:sugValue,meta:"Biblioteca",tooltip:"Incluir a biblioteca",score:0});
 			}
 		//}
 		
-		var millis_incluas = Math.trunc(performance.now()-lastvmTime);
+		let millis_incluas = Math.trunc(performance.now()-lastvmTime);
 		lastvmTime = performance.now();
 		
 		if(this.functions)
 		{
-			for(var i =0;i<this.functions.length;i++)
+			for(let i =0;i<this.functions.length;i++)
 			{
-				var entry = this.functions[i];
+				let entry = this.functions[i];
 				if(entry.name.includes("$") || entry.name.includes("#")) continue; // pula os leia$inteiro, leia$cadeia, etc...
 				
 				sugestoes.push({
@@ -189,14 +192,14 @@ class portugolCompleter
 		}
 		
 		
-		var millis_funcoes = Math.trunc(performance.now()-lastvmTime);
+		let millis_funcoes = Math.trunc(performance.now()-lastvmTime);
 		lastvmTime = performance.now();
 		
 		if(this.variaveisGlobais)
 		{
-			for(var i =0;i<this.variaveisGlobais.length;i++)
+			for(let i =0;i<this.variaveisGlobais.length;i++)
 			{
-				var entry = this.variaveisGlobais[i];
+				let entry = this.variaveisGlobais[i];
 				
 				sugestoes.push({
 							caption: this.getFunctionDefinition(entry.name,entry,true,T_word),
@@ -208,15 +211,15 @@ class portugolCompleter
 			}
 		}
 		
-		var millis_globais = Math.trunc(performance.now()-lastvmTime);
+		let millis_globais = Math.trunc(performance.now()-lastvmTime);
 		lastvmTime = performance.now();
 		
 		// deveria encontrar em que escopo está?
 		if(this.todasvariaveis)
 		{
-			for(var i =0;i<this.todasvariaveis.length;i++)
+			for(let i =0;i<this.todasvariaveis.length;i++)
 			{
-				var entry = this.todasvariaveis[i];
+				let entry = this.todasvariaveis[i];
 				
 				sugestoes.push({
 							caption: this.getFunctionDefinition(entry.name,entry,true,T_word),
@@ -229,21 +232,21 @@ class portugolCompleter
 		}
 		
 		
-		var millis_variaveis = Math.trunc(performance.now()-lastvmTime);
+		let millis_variaveis = Math.trunc(performance.now()-lastvmTime);
 		lastvmTime = performance.now();
 		
 		if(this.incluas)
 		{
 			
-			var offPonto = entireLine.lastIndexOf(".");
-			var linhaSemPonto = "";
+			let offPonto = entireLine.lastIndexOf(".");
+			let linhaSemPonto = "";
 			if(offPonto != -1)
 			{
 				//outPrefix = prefix.substring(offPonto+1);
 				linhaSemPonto = entireLine.substring(0,offPonto);
 			}
 			
-			var cursorNoPonto = offPonto+1==pos.column;
+			let cursorNoPonto = offPonto+1==pos.column;
 			
 			//outAppend = linhaSemPonto+".";
 			
@@ -251,7 +254,7 @@ class portugolCompleter
 			
 			//var libsugestoes = [];
 			
-			for(var i =0;i<this.librariesNames.length;i++)
+			for(let i =0;i<this.librariesNames.length;i++)
 			{
 				sugestoes.push({
 							caption: this.librariesNames[i],
@@ -264,7 +267,7 @@ class portugolCompleter
 				if(cursorNoPonto && linhaSemPonto.endsWith(this.librariesNames[i]))
 				{
 					
-					var lib = this.libraries[this.librariesNames[i]];
+					let lib = this.libraries[this.librariesNames[i]];
 				
 					sugestoes = sugestoes.concat( Object.keys(lib.members).map(entry=>{
 						return {
@@ -279,9 +282,9 @@ class portugolCompleter
 			}
 			if(this.incluas)
 			{
-				for(var i =0;i<this.incluas.length;i++)
+				for(let i =0;i<this.incluas.length;i++)
 				{
-					var inclua = this.incluas[i];
+					let inclua = this.incluas[i];
 					
 					sugestoes.push({
 							caption: inclua.alias + " ("+inclua.name+")",
@@ -294,7 +297,7 @@ class portugolCompleter
 					if(cursorNoPonto && linhaSemPonto.endsWith(inclua.alias))
 					{
 						
-						var lib = this.libraries[inclua.name];
+						let lib = this.libraries[inclua.name];
 					
 						sugestoes = sugestoes.concat( Object.keys(lib.members).map(entry=>{
 						return {
@@ -316,7 +319,7 @@ class portugolCompleter
 			//}
 		}
 		
-		var millis_bibliotecas = Math.trunc(performance.now()-lastvmTime);
+		let millis_bibliotecas = Math.trunc(performance.now()-lastvmTime);
 		lastvmTime = performance.now();
 		
 		//console.info(entireLine+" ("+outPrefix+") --> "+sugestoes.map(entry=>{

@@ -1,61 +1,74 @@
+import { checkIsMobile } from "./extras/mobile.js";
+import Calendario from "./vm/libraries/Calendario.js";
+import Graficos from "./vm/libraries/Graficos.js";
+import Internet from "./vm/libraries/Internet.js";
+import Matematica from "./vm/libraries/Matematica.js";
+import Mouse from "./vm/libraries/Mouse.js";
+import Objetos from "./vm/libraries/Objetos.js";
+import Teclado from "./vm/libraries/Teclado.js";
+import Texto from "./vm/libraries/Texto.js";
+import Tipos from "./vm/libraries/Tipos.js";
+import Util from "./vm/libraries/Util.js";
 
+import portugolCompleter from "./ace-editor/ace_portugol_completer.js";
+import { escreva, getCurrentTokenIndex, getTokenIndex, limpa, STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMrun, VMsetup, VMtoString, VM_async_return, VM_getCodeMax, VM_getDelay, VM_getExecJS, VM_getSaida, VM_getTextInput, VM_setExecJS 
+} from "./vm/vm.js";
+import { elementIsAllScrolled, getScreenDimensions, httpGetAsync, numberOfLinesUntil } from "./extras/extras.js";
+import { htmlEntities, Tokenizer } from "./compiler/tokenizer.js";
+import { Parser } from "./compiler/parser.js";
+import { Compiler } from "./compiler/vmcompiler.js";
+import JsGenerator from "./compiler/jsgenerator.js";
+import { myClearTimeout, mySetTimeout } from "./extras/timeout.js";
+import { persistentGetValue, persistentStoreValue } from "./extras/persistent.js";
+
+
+import * as ace from '../lib/ace-src-min-noconflict/ace.js';
 	//var codigo = document.getElementById("myEditor");
-	var saida = document.getElementById("textAreaSaida");
-	var errosSaida =document.getElementById("errorArea");
+	const saida = document.getElementById("textAreaSaida");
+	const errosSaida =document.getElementById("errorArea");
 //for( var i = 0;i< codigos.length;i++)
 //{
 	//var div_port = codigo;
-	var div_saida = saida;
+	let div_saida = saida;
 	
-	var myCanvasModal = document.getElementById("myCanvasModal");
-	var myCanvasWindow = document.getElementById("myCanvasWindow");
-	var myCanvasWindowTitle = document.getElementById("myCanvasWindowTitle");
-	var myCanvas = document.getElementById("myCanvas");
-	var myCanvasKeys = document.getElementById("myCanvasKeys");
+	const myCanvasModal = document.getElementById("myCanvasModal");
+	const myCanvasWindow = document.getElementById("myCanvasWindow");
+	const myCanvasWindowTitle = document.getElementById("myCanvasWindowTitle");
+	const myCanvas = document.getElementById("myCanvas");
+	const myCanvasKeys = document.getElementById("myCanvasKeys");
 	//var string_cod = decodeEntities(div_port.innerHTML);
-	var fontSize = 10;
+	let fontSize = 10;
 	
-	var isMobile = checkIsMobile();
-	var hotbar = document.getElementById("hotbar");
-    var hotbar_currentY;
-    var hotbar_initialY;
-	var hotbar_clickY;
+	let isMobile = checkIsMobile();
+	const hotbar = document.getElementById("hotbar");
+    let hotbar_currentY;
+    let hotbar_initialY;
+	let hotbar_clickY;
 	// se mexer nesses numeros tudo para de funcionar deixa assim.
-	var hotbar_initialHeight = 200;
+	let hotbar_initialHeight = 200;
 	
-	var hotbar_minyOffset = 40;
-	var hotbar_collapsedyOffset = 80;
-	var hotbar_middleyOffset = 120;
-	var hotbar_extendedyOffset = 295;
+	let hotbar_minyOffset = 40;
+	let hotbar_collapsedyOffset = 80;
+	let hotbar_middleyOffset = 120;
+	let hotbar_extendedyOffset = 295;
 	//var hotbar_maxyOffset = 300;
-    var hotbar_yOffset = hotbar_collapsedyOffset;
-	var hotbar_active = false;
-	var hotbar_textarea = false;
-	var hotbar_isDragging = false;
-	var mostrar_bytecode = false;
+    let hotbar_yOffset = hotbar_collapsedyOffset;
+	let hotbar_active = false;
+	let hotbar_textarea = false;
+	let hotbar_isDragging = false;
+	let mostrar_bytecode = false;
+
+
+	
+	let execMesmoComErros = false;
+
+	let lastvmState = STATE_ENDED;
+	let lastvmTime = 0;
+	let lastvmStep = false;
+
+	let editor = false;
 	//var screenDimension = getScreenDimensions();
 	//isMobile = true;
-	
-	if(isMobile)
-	{
-		//hotbar.style.display = "block";
-		
-		//var myOutput = document.getElementById("myOutput");
-		//hotbar.appendChild(myOutput);
-		//hotbar.insertBefore(document.getElementById("myOutput_buttons"),document.getElementById("hotbar_commands"));
-				
-		
-		document.body.classList.add('mobile');
-		//document.getElementById("myEditor").classList.add('mobile');
-		//myOutput.classList.add('mobile');
-		//document.getElementById("myOutput_buttons").classList.add('mobile');
-		//saida.classList.add('mobile');
-		mostrarHotbar();
-	}
-	else
-	{
-		ocultarHotbar();
-	}
 	
 	hotbar.addEventListener("touchstart", hotbar_dragStart, false);
 	hotbar.addEventListener("touchend", hotbar_dragEnd, false);
@@ -71,7 +84,7 @@
 	window.addEventListener("resize", resizeEditorToFitHotbar);
 	
 
-	var libraries = {};
+	let libraries = {};
 	libraries["Util"] = new Util();
 	libraries["Calendario"] = new Calendario();
 	libraries["Matematica"] = new Matematica();
@@ -87,7 +100,8 @@
 	if(isMobile) {
 		fontSize = 9;
 	}
-    var editor = ace.edit("myEditor",{
+
+    editor = ace.edit("myEditor",{
 			minLines: 10,
 			fontSize: fontSize+"pt",
 			useSoftTabs: false,
@@ -113,19 +127,19 @@
 		scrollPastEnd: 0.5
 	});
 	
-	var langTools = ace.require('ace/ext/language_tools');
-	var myPortugolCompleter = new portugolCompleter(libraries);
+	let langTools = ace.require('ace/ext/language_tools');
+	let myPortugolCompleter = new portugolCompleter(libraries);
 	langTools.setCompleters();		
 	langTools.addCompleter(myPortugolCompleter);
 	
 	editor.commands.on("afterExec", function(e){
      if (e.command.name == "insertstring" && /^[\.]$/.test(e.args)) {
-         editor.execCommand("startAutocomplete")
+         editor.execCommand("startAutocomplete");
      }
-	})
+	});
 	
 	
-	var last_code = getAutoSave();
+	let last_code = getAutoSave();
 	if(last_code)
 		editor.setValue(last_code,-1);
 			
@@ -134,21 +148,42 @@
 	
 
 	
-	var errosAnnot = [];
-	var errosMarkers = [];
+	let errosAnnot = [];
+	let errosMarkers = [];
 	
-	var Range = ace.require("ace/range").Range;
+	let Range = ace.require("ace/range").Range;
+
+	if(isMobile)
+	{
+		//hotbar.style.display = "block";
+		
+		//var myOutput = document.getElementById("myOutput");
+		//hotbar.appendChild(myOutput);
+		//hotbar.insertBefore(document.getElementById("myOutput_buttons"),document.getElementById("hotbar_commands"));
+				
+		
+		document.body.classList.add('mobile');
+		//document.getElementById("myEditor").classList.add('mobile');
+		//myOutput.classList.add('mobile');
+		//document.getElementById("myOutput_buttons").classList.add('mobile');
+		//saida.classList.add('mobile');
+		mostrarHotbar();
+	}
+	else
+	{
+		ocultarHotbar();
+	}
 
 	function save() {
 		let string_cod = editor.getValue();
 		string_cod = string_cod.replace(/\r\n/g,"\n");
 		if(typeof Android !== 'undefined')
 		{
-			Android.save(string_cod);
+			Android.save(string_cod); // eslint-disable-line
 		}
 		else
 		{
-			const element = document.createElement('a');
+			let element = document.createElement('a');
 			element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(string_cod));
 			element.setAttribute('download', 'programa.por');
 
@@ -181,12 +216,12 @@
 	
 		if(typeof Android !== 'undefined')
 		{
-			Android.load();
+			Android.load(); //eslint-disable-line
 		}
 		else
 		{
 	
-			const element = document.createElement('input');
+			let element = document.createElement('input');
 			element.setAttribute('type', 'file');
 
 			element.style.display = 'none';
@@ -195,9 +230,9 @@
 			element.click();
 			
 			element.addEventListener('change', function(){
-				const file = element.files[0];
+				let file = element.files[0];
 
-				const reader = new FileReader();
+				let reader = new FileReader();
 				reader.onload = function(progressEvent)
 				{
 					editor.setValue(this.result, -1); // moves cursor to the start
@@ -225,10 +260,10 @@
 		if(tipoErros)
 		{
 			// apaga os erros e re-envia os que nao é para apagar
-			_errosAnnot = errosAnnot;
+			let _errosAnnot = errosAnnot;
 			errosAnnot = [];
 			editor.getSession().setAnnotations(errosAnnot);
-			for(var i=0;i<_errosAnnot.length;i++)
+			for(let i=0;i<_errosAnnot.length;i++)
 			{
 				if(!tipoErros.includes(_errosAnnot[i].myErrorType) && _errosAnnot[i].type == "error")
 				{
@@ -245,17 +280,17 @@
 	
 	function realcarLinha(textInput,index,scrollTo)
 	{
-		var linha = numberOfLinesUntil(index,textInput);
-		var prev_line = textInput.substring(textInput.lastIndexOf('\n', index)+1,index).replace(/\t/g,'    ');
-		var next_line = textInput.substring(index,textInput.indexOf('\n', index));
-		var coluna = prev_line.length;
-		var colunaFim = coluna+next_line.length;
+		let linha = numberOfLinesUntil(index,textInput);
+		let prev_line = textInput.substring(textInput.lastIndexOf('\n', index)+1,index).replace(/\t/g,'    ');
+		let next_line = textInput.substring(index,textInput.indexOf('\n', index));
+		let coluna = prev_line.length;
+		let colunaFim = coluna+next_line.length;
 		
 		errosAnnot.push({
-		  row: linha-1,
-		  column: coluna,
-		  text: "", // Or the Json reply from the parser 
-		  type: "information" // also warning and information
+			row: linha-1,
+			column: coluna,
+			text: "", // Or the Json reply from the parser 
+			type: "information" // also warning and information
 		});
 		editor.getSession().setAnnotations(errosAnnot);
 		
@@ -269,16 +304,16 @@
 	
 	function enviarErro(textInput,token,msg,tipoErro)
 	{
-		var lineNumber = numberOfLinesUntil(token.index,textInput);
-		var prev_line = textInput.substring(textInput.lastIndexOf('\n', token.index)+1,token.index).replace(/\t/g,'    ');
-		var next_line = textInput.substring(token.index,textInput.indexOf('\n', token.index));
-		var colNumber = prev_line.length;
-		var logprev = "Linha "+lineNumber+":"+prev_line;
+		let lineNumber = numberOfLinesUntil(token.index,textInput);
+		let prev_line = textInput.substring(textInput.lastIndexOf('\n', token.index)+1,token.index).replace(/\t/g,'    ');
+		let next_line = textInput.substring(token.index,textInput.indexOf('\n', token.index));
+		let colNumber = prev_line.length;
+		let logprev = "Linha "+lineNumber+":"+prev_line;
 		
 		try {
-			ERRO();
+			throw "ERRO";
 		} catch (e) {
-			var myStackTrace = e.stack || e.stacktrace || "";
+			let myStackTrace = e.stack || e.stacktrace || "";
 			
 			console.log(myStackTrace);
 		}
@@ -287,14 +322,14 @@
 		
 		_enviarErroAnnot(//(lineNumber,colNumber,colNumber+next_line.length,msg,tipoErro);
 		{
-		  row: lineNumber-1,
-		  column: colNumber,
-		  columnFim: colNumber+next_line.length,
-		  textprev: logprev,
-		  textnext: next_line,
-		  text: msg, // Or the Json reply from the parser 
-		  type: "error", // also warning and information
-		  myErrorType: tipoErro
+			row: lineNumber-1,
+			column: colNumber,
+			columnFim: colNumber+next_line.length,
+			textprev: logprev,
+			textnext: next_line,
+			text: msg, // Or the Json reply from the parser 
+			type: "error", // also warning and information
+			myErrorType: tipoErro
 		});
 	}
 	
@@ -327,13 +362,14 @@
 	
 	function setModoTurbo(checkbox)
 	{
-		VM_execJS = (lastvmState == STATE_ENDED) && checkbox.checked;checkbox.checked = VM_execJS;
-		console.log("Modo: "+(VM_execJS ? 'Modo Turbo' : 'Modo Normal'));
+		VM_setExecJS( (lastvmState == STATE_ENDED) && checkbox.checked);
+		checkbox.checked = VM_getExecJS();
+		console.log("Modo: "+(VM_getExecJS() ? 'Modo Turbo' : 'Modo Normal'));
 	}
 	
 	function cursorToEnd(textarea)
 	{
-		var txtEnd =textarea.value.length;
+		let txtEnd =textarea.value.length;
 		textarea.selectionStart= txtEnd;
 		textarea.selectionEnd= txtEnd;
 	}
@@ -342,7 +378,7 @@
 	{
 		fontSize++;
 		editor.setOptions({
-		  fontSize: fontSize+"pt"
+			fontSize: fontSize+"pt"
 		});
 		
 		div_saida.style.fontSize = fontSize+"pt";
@@ -353,7 +389,7 @@
 	{
 		fontSize--;
 		editor.setOptions({
-		  fontSize: fontSize+"pt"
+			fontSize: fontSize+"pt"
 		});
 		
 		div_saida.style.fontSize = fontSize+"pt";
@@ -425,11 +461,10 @@
 		setHotbarPosition(hotbar_extendedyOffset);
 	}
 	
-	var execMesmoComErros = false;
 	function check_execErros()
 	{
 		// Get the checkbox
-		var btn = document.getElementById("btn-execErros");
+		let btn = document.getElementById("btn-execErros");
 
 		// If the checkbox is checked, display the output text
 		execMesmoComErros = !execMesmoComErros;
@@ -460,9 +495,7 @@
 	}*/
 	
 	//var lastvm = false;
-	var lastvmState = STATE_ENDED;
-	var lastvmTime = 0;
-	var lastvmStep = false;
+
 	
 	function exemplo(nome)
 	{
@@ -482,21 +515,22 @@
 	
 	function compilar(string_cod,mayCompileJS)
 	{
-		var first_Time = performance.now();
+		let first_Time = performance.now();
 		
-		var last_Time = first_Time;
-		var token_Time = 0;
-		var tree_Time = 0;
-		var compiler_Time = 0;
-		
+		let last_Time = first_Time;
+		let token_Time = 0;
+		let tree_Time = 0;
+		let compiler_Time = 0;
+		let other_Time = 0;
+
 		try{
-		var nErrosInicio = errosAnnot.length;
+			let nErrosInicio = errosAnnot.length;
 		string_cod = string_cod.replace(/\r\n/g,"\n");
 		
 		
 		last_Time = performance.now();
 		
-		var tokenizer = new Tokenizer(string_cod);
+		let tokenizer = new Tokenizer(string_cod,enviarErro);
 		//console.log(tokenizer.tokenize());
 		tokenizer.tokenize();
 		
@@ -505,14 +539,14 @@
 		
 		if(!execMesmoComErros && errosAnnot.length > nErrosInicio)
 		{
-			ret = {success:false,"tokenizer":tokenizer};
+			let ret = {success:false,"tokenizer":tokenizer};
 			myPortugolCompleter.setCompiler(ret);
 			return ret;
 		}
 		//div_port.innerHTML = tokenizer.formatHTML();
 		
-		var relevantTokens = tokenizer.getRelevantTokens();
-		var tree = new Parser(relevantTokens,string_cod).parse();
+		let relevantTokens = tokenizer.getRelevantTokens();
+		let tree = new Parser(relevantTokens,string_cod,enviarErro).parse();
 		//console.log(tree);
 		
 		tree_Time = Math.trunc(performance.now() - last_Time);
@@ -520,18 +554,18 @@
 		
 		if(!execMesmoComErros && errosAnnot.length > nErrosInicio)
 		{
-			ret = {success:false,"tokenizer":tokenizer,"tree":tree};
+			let ret = {success:false,"tokenizer":tokenizer,"tree":tree};
 			myPortugolCompleter.setCompiler(ret);
 			return ret;
 		}
 		
-		var librariesNames = Object.keys(libraries);
-		for(var i =0;i<librariesNames.length;i++)
+		let librariesNames = Object.keys(libraries);
+		for(let i =0;i<librariesNames.length;i++)
 		{
 			libraries[librariesNames[i]].resetar();
 		}
 		
-		var compiler = new Compiler(tree,libraries,relevantTokens,string_cod,div_saida);
+		let compiler = new Compiler(tree,libraries,relevantTokens,string_cod,div_saida,enviarErro);
 		compiler.compile();
 		
 		compiler_Time = Math.trunc(performance.now() - last_Time);
@@ -539,26 +573,26 @@
 		
 		if(!execMesmoComErros && errosAnnot.length > nErrosInicio)
 		{
-			ret = {success:false,"tokenizer":tokenizer,"tree":tree,"compiler":compiler};
+			let ret = {success:false,"tokenizer":tokenizer,"tree":tree,"compiler":compiler};
 			myPortugolCompleter.setCompiler(ret);
 			return ret;
 		}
 		
-		var jsgenerator = {"functions":false};
-		if(mayCompileJS && VM_execJS)
+		let jsgenerator = {"functions":false};
+		if(mayCompileJS && VM_getExecJS())
 		{
 			try{
-				jsgenerator = new JsGenerator(tree,libraries,relevantTokens,string_cod,div_saida);
+				jsgenerator = new JsGenerator(tree,libraries,relevantTokens,string_cod,enviarErro);
 				jsgenerator.compile();
 				
 			}
 			catch(e){
-				var myStackTrace = e.stack || e.stacktrace || "";
+				let myStackTrace = e.stack || e.stacktrace || "";
 				console.log(myStackTrace);
 			}
 		}
 		
-		ret = {success:true,"tokenizer":tokenizer,"tree":tree,"compiler":compiler,"jsgenerator":jsgenerator};
+		let ret = {success:true,"tokenizer":tokenizer,"tree":tree,"compiler":compiler,"jsgenerator":jsgenerator};
 		myPortugolCompleter.setCompiler(ret);
 		return ret;
 		}
@@ -600,10 +634,10 @@
 				setHotbarPosition(hotbar_extendedyOffset,true);
 			//}
 			
-			var string_cod = editor.getValue();
+			let string_cod = editor.getValue();
 			try{
 			
-				var compilado = compilar(string_cod,true);
+				let compilado = compilar(string_cod,true);
 				
 				//lastvm = new Vm(compiler.functions,string_cod,div_saida);
 				if(!compilado.success)
@@ -611,14 +645,14 @@
 					return;
 				}
 				
-				VMsetup(compilado.compiler.functions,compilado.jsgenerator.functions,libraries,compilado.compiler.globalCount,string_cod,div_saida);
+				VMsetup(compilado.compiler.functions,compilado.jsgenerator.functions,libraries,compilado.compiler.globalCount,string_cod,div_saida,enviarErro);
 				
 				try{
 					if(mostrar_bytecode)
 					document.getElementById("hidden").innerHTML = VMtoString();
 				}
 				catch(e){
-					var myStackTrace = e.stack || e.stacktrace || "";
+					let myStackTrace = e.stack || e.stacktrace || "";
 					console.log(myStackTrace);
 				}
 				//lastvmState = lastvm.run();
@@ -627,7 +661,7 @@
 			}
 			catch(e)
 			{
-				var myStackTrace = e.stack || e.stacktrace || "";
+				let myStackTrace = e.stack || e.stacktrace || "";
 
 				console.log(myStackTrace);
 			
@@ -694,7 +728,7 @@
 	
 	function executarStepStart(btn)
 	{
-	    //onmousedown="this.className = 'clicou';executar(document.getElementById('btn-run'),true);this.className = 'segurando';" onmouseup="executarStepPause();this.className = '';"
+		//onmousedown="this.className = 'clicou';executar(document.getElementById('btn-run'),true);this.className = 'segurando';" onmouseup="executarStepPause();this.className = '';"
 		
 		// Assim vai dar um delay maior no primeiro clique, mas se segurar o botão, executa a 10 linhas por segundo
 		btn.className = 'clicou';
@@ -722,11 +756,11 @@
 		if(lastvmStep)
 		{
 
-			i = getTokenIndex(VM_i,VM_funcIndex);
-			ui = i;
+			let i = getCurrentTokenIndex();
+			let ui = i;
 			
 			limparErros();
-			realcarLinha(VM_textInput,i,true);
+			realcarLinha(VM_getTextInput(),i,true);
 			
 			do
 			{
@@ -735,7 +769,7 @@
 				//console.log(i+","+ui+","+lastvmState);
 				
 				ui = i;
-				i = getTokenIndex(VM_i,VM_funcIndex);
+				i = getCurrentTokenIndex();
 			}
 			while( (i == 0 || i == ui) && lastvmState == STATE_BREATHING);
 			
@@ -744,7 +778,7 @@
 			if(lastvmState == STATE_BREATHING)
 			{
 				lastvmState = STATE_STEP;
-				var btnStep = document.getElementById('btn-step');
+				let btnStep = document.getElementById('btn-step');
 				if(btnStep.className=="clicou")
 				{
 					mySetTimeout("STATE_STEP",executarVM,1000);
@@ -757,7 +791,7 @@
 		}
 		else
 		{	
-			lastvmState = VMrun(VM_codeMax);
+			lastvmState = VMrun(VM_getCodeMax());
 		}
 		//VM_saidaDiv.value = VM_saida;
 		if(lastvmState == STATE_ENDED)
@@ -777,7 +811,7 @@
 			mySetTimeout("STATE_BREATHING",executarVM, 0); // permite o navegador ficar responsivo
 		}
 		else if(lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT) {
-			mySetTimeout("STATE_DELAY",executarVM, VM_delay);
+			mySetTimeout("STATE_DELAY",executarVM, VM_getDelay());
 		}
 	}
 	
@@ -785,8 +819,8 @@
 	{
 		if(lastvmState == STATE_WAITINGINPUT)
 		{
-			var saidadiv = textarea.value;
-			var entrada = saidadiv.substring(VM_saida.length,saidadiv.length);
+			let saidadiv = textarea.value;
+			let entrada = saidadiv.substring(VM_getSaida().length,saidadiv.length);
 			
 			if(entrada.endsWith("\n"))
 			{
@@ -795,7 +829,7 @@
 		}
 		else
 		{
-			div_saida.value = VM_saida;
+			div_saida.value = VM_getSaida();
 		}
 	}
 	
@@ -929,7 +963,7 @@
 	
 	function editorDelete()
 	{
-		var p = editor.getCursorPosition();
+		let p = editor.getCursorPosition();
 		editor.getSession().replace(new Range(p.row, p.column, p.row, p.column+1), "");
 	}
 	
@@ -974,7 +1008,7 @@
 	}
 	
 	function hotbar_dragStart(e) {
-		var yValue = 0;
+		let yValue = 0;
 		if (e.type === "touchstart") {
 			yValue = -e.touches[0].clientY;
 		} else {
@@ -1045,7 +1079,7 @@
     }
 
     function hotbar_drag(e) {
-		var yValue = 0
+		let yValue = 0;
 		if (e.type === "touchmove") {
 			yValue = -e.touches[0].clientY;
 		} else {
@@ -1055,9 +1089,9 @@
 			hotbar.style.cursor = "grabbing";
 		}
 		
-		var hotbar_lastY = hotbar_currentY;
+		let hotbar_lastY = hotbar_currentY;
 		hotbar_currentY = yValue - hotbar_initialY;
-		var yOff = Math.abs(hotbar_clickY - yValue);
+		let yOff = Math.abs(hotbar_clickY - yValue);
 		//console.log("drag:"+hotbar_initialY);
 		
 		
@@ -1112,7 +1146,7 @@
 		
 		
 		//el.style.transform = "translate3d(0px,	  " + yPos + "px, 0)";
-		var screenDimension = getScreenDimensions();
+		let screenDimension = getScreenDimensions();
 		hotbar_yOffset = Math.max(hotbar_minyOffset,yPos);
 		hotbar_yOffset = Math.min(hotbar_yOffset,screenDimension.height-5);
 		//hotbar_yOffset = Math.min(hotbar_maxyOffset,yPos);
@@ -1125,7 +1159,8 @@
 	function resizeEditorToFitHotbar(e)
 	{
 		if(!editor) return;
-		var h = window.innerHeight
+
+		let h = window.innerHeight
 		|| document.documentElement.clientHeight
 		|| document.body.clientHeight;
 		
@@ -1136,7 +1171,7 @@
 		editor.resize();
 		
 		
-		var isHotbarVisible = document.getElementById("hotbar_commands").style.display != "none";
+		let isHotbarVisible = document.getElementById("hotbar_commands").style.display != "none";
 		
 		
 		
@@ -1149,7 +1184,9 @@
 	
 	function resizeEditorMax()
 	{
-		var screenDimension = getScreenDimensions();
+		if(!editor) return;
+
+		let screenDimension = getScreenDimensions();
 		
 		document.getElementById("myEditor").style.height = (screenDimension.height)+"px";
 		editor.resize();
@@ -1161,24 +1198,24 @@
 	//https://stackoverflow.com/questions/821011/prevent-a-webpage-from-navigating-away-using-javascript
 	window.onbeforeunload = function() {
 	return "";
-	}
+	};
 	
 	function autoSave()
 	{
 		try {
 			persistentStoreValue("code",editor.getValue());
-			var autoComplete = document.getElementById("check-auto-completar").checked;
+			let autoComplete = document.getElementById("check-auto-completar").checked;
 			persistentStoreValue("autoComplete",autoComplete);
 			
-			var modoTurbo = document.getElementById("check-modo-turbo").checked;
+			let modoTurbo = document.getElementById("check-modo-turbo").checked;
 			persistentStoreValue("modoTurbo",modoTurbo);
 			
-			var mostrarHotbar = document.getElementById("check-mostrar-hotbar").checked;
+			let mostrarHotbar = document.getElementById("check-mostrar-hotbar").checked;
 			persistentStoreValue("mostrarHotbar",mostrarHotbar);
 			
 			
 		} catch (e) {
-			var myStackTrace = e.stack || e.stacktrace || "";
+			let myStackTrace = e.stack || e.stacktrace || "";
 
 			console.log(myStackTrace);
 		}
@@ -1186,11 +1223,11 @@
 	
 	function getAutoSave()
 	{
-		var last_code = persistentGetValue("code");
+		let last_code = persistentGetValue("code");
 		//var hideHotbar = (""+persistentGetValue("hideHotbar")) == "true";
-		var mostrarHotbar = persistentGetValue("mostrarHotbar");
-		var autoComplete = persistentGetValue("autoComplete");
-		var modoTurbo = persistentGetValue("modoTurbo");
+		let mostrarHotbar = persistentGetValue("mostrarHotbar");
+		let autoComplete = persistentGetValue("autoComplete");
+		let modoTurbo = persistentGetValue("modoTurbo");
 		
 		if(typeof(autoComplete) == "string")
 		{
@@ -1211,7 +1248,7 @@
 		}
 		else
 		{
-			document.getElementById("check-modo-turbo").checked = VM_execJS; 
+			document.getElementById("check-modo-turbo").checked = VM_getExecJS(); 
 		}
 		
 		if(typeof(mostrarHotbar) == "string")
@@ -1229,8 +1266,8 @@
 	setInterval(autoSave, 30000);
 	
 	
-	var _PreCompileLastHash = -1;
-	var _PreCompileCompileHash = -1;
+	let _PreCompileLastHash = -1;
+	let _PreCompileCompileHash = -1;
 	// Para melhorar o auto completar e para não ficar os erros para sempre na tela
 	// Talvez vai deixar um pouco mais lento, mas só compila se ficar uns 4 a 5 segundos sem escrever nada
 	// Também não compila duas vezes seguidas o mesmo código
@@ -1246,11 +1283,11 @@
 			// Apenas se não estiver executando
 			if(lastvmState == STATE_ENDED)
 			{
-				var string_cod = editor.getValue();
+				let string_cod = editor.getValue();
 				
 				// Vai Detectar se escreveu algo ou nao usando hash mesmo??
 				//var codigoHash = stringHashCode(string_cod);
-				var codigoHash = string_cod.length;
+				let codigoHash = string_cod.length;
 				// 1. não pre compila se escreveu algo nos últimos 2 segundos
 				if(_PreCompileLastHash != codigoHash)
 				{
@@ -1273,12 +1310,12 @@
 				limparErros(["sintatico","semantico","contexto"]);
 				
 				
-				var compilado = compilar(string_cod,false);
+				let compilado = compilar(string_cod,false);
 				
 				//console.log("Compilou:"+compilado.success+" Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
 			}
 		} catch (e) {
-			var myStackTrace = e.stack || e.stacktrace || "";
+			let myStackTrace = e.stack || e.stacktrace || "";
 
 			console.log(myStackTrace);
 		}
@@ -1308,7 +1345,7 @@
 		//else{
 		//	console.log("BBB");
 		//}
-		var fullscreenElement = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement;
+		let fullscreenElement = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement;
 		if(!fullscreenElement)
 		{
 			if(lastvmState != STATE_ENDED) {
