@@ -17,9 +17,11 @@
   },
   "homepage": "https://github.com/erickweil/portugolweb#readme",
   "devDependencies": {
+    "@types/ace": "^0.0.48",
     "eslint": "^8.29.0"
   },
   "dependencies": {
+    "ace-builds": "^1.14.0",
     "eslint-plugin-import": "^2.26.0"
   }
 }

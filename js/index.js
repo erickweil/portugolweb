@@ -22,7 +22,9 @@ import { myClearTimeout, mySetTimeout } from "./extras/timeout.js";
 import { persistentGetValue, persistentStoreValue } from "./extras/persistent.js";
 
 
-import * as ace from '../lib/ace-src-min-noconflict/ace.js';
+import * as __ace from '../lib/ace-src-min-noconflict/ace.js';
+const ace = window.ace;
+ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 	//var codigo = document.getElementById("myEditor");
 	const saida = document.getElementById("textAreaSaida");
 	const errosSaida =document.getElementById("errorArea");
@@ -101,6 +103,7 @@ import * as ace from '../lib/ace-src-min-noconflict/ace.js';
 		fontSize = 9;
 	}
 
+	console.log(ace);
     editor = ace.edit("myEditor",{
 			minLines: 10,
 			fontSize: fontSize+"pt",
@@ -127,10 +130,12 @@ import * as ace from '../lib/ace-src-min-noconflict/ace.js';
 		scrollPastEnd: 0.5
 	});
 	
-	let langTools = ace.require('ace/ext/language_tools');
+	ace.require('ace/ext/language_tools',(langTools) => {
+		langTools.setCompleters();		
+		langTools.addCompleter(myPortugolCompleter);
+	});
 	let myPortugolCompleter = new portugolCompleter(libraries);
-	langTools.setCompleters();		
-	langTools.addCompleter(myPortugolCompleter);
+	
 	
 	editor.commands.on("afterExec", function(e){
      if (e.command.name == "insertstring" && /^[\.]$/.test(e.args)) {
