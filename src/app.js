@@ -2,7 +2,7 @@ import { checkIsMobile } from "./extras/mobile.js";
 
 import { STATE_ASYNC_RETURN, STATE_ENDED, STATE_WAITINGINPUT, VM_getExecJS, VM_getSaida, VM_setExecJS 
 } from "./vm/vm.js";
-import { elementIsAllScrolled, getScreenDimensions, httpGetAsync, numberOfLinesUntil, cursorToEnd as _cursorToEnd } from "./extras/extras.js";
+import { httpGetAsync, numberOfLinesUntil, cursorToEnd as _cursorToEnd } from "./extras/extras.js";
 import { htmlEntities } from "./compiler/tokenizer.js";
 import { myClearTimeout } from "./extras/timeout.js";
 import { persistentGetValue, persistentStoreValue } from "./extras/persistent.js";
@@ -18,40 +18,21 @@ import Hotbar from "./pages/index/hotbar.js";
 	const myCanvasWindowTitle = document.getElementById("myCanvasWindowTitle");
 	const myCanvas = document.getElementById("myCanvas");
 	const myCanvasKeys = document.getElementById("myCanvasKeys");
+	const hotbar = document.getElementById("hotbar");
 
 	let fontSize = 10;
 	
 	let isMobile = checkIsMobile();
-	if(isMobile) {
-		fontSize = 9;
-	}
+	if(isMobile) { fontSize = 9; }
 
 	let mostrar_bytecode = false;
 
 	let portugolRun = new PortugolRuntime(div_saida);
-	portugolRun.iniciarBibliotecas(myCanvas,myCanvasModal,myCanvasWindow,myCanvasWindowTitle,myCanvasKeys);
 
 	export const editorManager = new EditorManager();
-
-
-	const hotbar = document.getElementById("hotbar");
-	let hotbarManager = new Hotbar(hotbar,div_saida,errosSaida,isMobile,(sz) => {
+	const hotbarManager = new Hotbar(hotbar,div_saida,errosSaida,isMobile,(sz) => {
 		editorManager.resizeEditor(sz);
 	});
-
-	editorManager.initEditor("myEditor",fontSize,portugolRun.libraries,isMobile,() => {
-		if(isMobile)
-		{
-			hotbarManager.collapseUntil("MIDDLE");
-		}
-		else
-		{
-			hotbarManager.collapseUntil("EXTENDED");
-		}
-	});
-
-	div_saida.style.fontSize = fontSize+"pt";
-	errosSaida.style.fontSize = fontSize+"pt";
 	
 	//####################################################
 	//################# UI ###############################
@@ -76,7 +57,10 @@ import Hotbar from "./pages/index/hotbar.js";
 			try{
 				let compilado = portugolRun.compilar(string_cod,enviarErro,VM_getExecJS());
 				editorManager.updateAutoComplete(compilado);
-				if(!compilado.success) return;
+				if(!compilado.success) {
+					console.log(portugolRun.errosCount+" Erros na compilação:");
+					return;
+				}
 				
 				btn.value = "Parar";
 				portugolRun.executar(string_cod,compilado,enviarErro)
@@ -332,37 +316,12 @@ import Hotbar from "./pages/index/hotbar.js";
 			portugolRun.notifyAsyncReturn(retValue);
 		}
 	}
-
 	window.android_loaded = android_loaded;
 	window.android_async_return = android_async_return;
 	
-	if(isMobile) {
-		if(typeof Android === 'undefined')
-		{
-			editorManager.setValue("programa\n{\n\tfuncao inicio()\n\t{\n\t\t\n\t\tescreva(\"Baixe o aplicativo na play store:\\n\")\n\t\tescreva(\"https://play.google.com/store/apps/details?id=br.erickweil.portugolweb \\n\")\n\t\t\n\t}\n}\n");
-		}
-	}
-
-	function setEditorFromAutoSave() {
-		let last_code = getAutoSave();
-		if(last_code)
-			editorManager.setValue(last_code);
-	}
-	setEditorFromAutoSave();
-
-	hotbarManager.resizeEditorToFitHotbar();
-	if(isMobile)
-	{
-		document.body.classList.add('mobile');
-		hotbarManager.mostrarHotbar();
-	}
-	else
-	{
-		hotbarManager.ocultarHotbar();
-	}
-	
 	function limparErros(tipoErros)
 	{
+		console.log("limpando erros");
 		editorManager.removeMarkers();
 		errosSaida.innerHTML = "";
 		if(tipoErros)
@@ -418,17 +377,6 @@ import Hotbar from "./pages/index/hotbar.js";
 		else
 			btn.value = "Parar em Erros";
 	}
-		
-	/*function editorMove(column,row)
-	{
-		editor.gotoLine((editor.getCursorPosition().row+1) + row, editor.getCursorPosition().column + column); 
-	}
-	
-	function editorDelete()
-	{
-		let p = editor.getCursorPosition();
-		editor.getSession().replace(new Range(p.row, p.column, p.row, p.column+1), "");
-	}*/
 	
 	function autoSave()
 	{
@@ -492,10 +440,7 @@ import Hotbar from "./pages/index/hotbar.js";
 		
 		return last_code;
 	}
-	
-	setInterval(autoSave, 30000);
-	
-	
+		
 	let _PreCompileLastHash = -1;
 	let _PreCompileCompileHash = -1;
 	// Para melhorar o auto completar e para não ficar os erros para sempre na tela
@@ -539,7 +484,7 @@ import Hotbar from "./pages/index/hotbar.js";
 				limparErros(["sintatico","semantico","contexto"]);
 				
 				
-				let compilado = portugolRun.compilar(string_cod,false);
+				let compilado = portugolRun.compilar(string_cod,enviarErro,false);
 				editorManager.updateAutoComplete(compilado);
 
 				//console.log("Compilou:"+compilado.success+" Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
@@ -551,13 +496,6 @@ import Hotbar from "./pages/index/hotbar.js";
 		}
 	}
 	
-	setInterval(autoPreCompile, 5000);
-	
-	//https://stackoverflow.com/questions/821011/prevent-a-webpage-from-navigating-away-using-javascript
-	window.onbeforeunload = function() {
-		return "";
-	};
-
 	function exitHandler()
 	{
 		let fullscreenElement = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement;
@@ -572,6 +510,36 @@ import Hotbar from "./pages/index/hotbar.js";
 		}
 	}
 
+	/**
+	 * Finalizado declarações...
+	 * Iniciando o editor e a interface
+	 * 
+	 */
+	
+	portugolRun.iniciarBibliotecas(myCanvas,myCanvasModal,myCanvasWindow,myCanvasWindowTitle,myCanvasKeys);
+
+	editorManager.initEditor("myEditor",fontSize,portugolRun.libraries,isMobile,() => {
+		if(isMobile)
+		{
+			hotbarManager.collapseUntil("MIDDLE");
+		}
+		else
+		{
+			hotbarManager.collapseUntil("EXTENDED");
+		}
+	});
+
+	div_saida.style.fontSize = fontSize+"pt";
+	errosSaida.style.fontSize = fontSize+"pt";
+
+	setInterval(autoSave, 30000);
+	setInterval(autoPreCompile, 5000);
+
+	//https://stackoverflow.com/questions/821011/prevent-a-webpage-from-navigating-away-using-javascript
+	window.onbeforeunload = function() {
+		return "";
+	};
+
 	if (document.addEventListener)
 	{
 		//window.addEventListener("resize", hideHotBarWhenLandscape);
@@ -579,4 +547,29 @@ import Hotbar from "./pages/index/hotbar.js";
 		document.addEventListener('mozfullscreenchange', exitHandler, false);
 		document.addEventListener('MSFullscreenChange', exitHandler, false);
 		document.addEventListener('webkitfullscreenchange', exitHandler, false);
+	}
+
+	if(isMobile) {
+		if(typeof Android === 'undefined')
+		{
+			editorManager.setValue("programa\n{\n\tfuncao inicio()\n\t{\n\t\t\n\t\tescreva(\"Baixe o aplicativo na play store:\\n\")\n\t\tescreva(\"https://play.google.com/store/apps/details?id=br.erickweil.portugolweb \\n\")\n\t\t\n\t}\n}\n");
+		}
+	}
+
+	function setEditorFromAutoSave() {
+		let last_code = getAutoSave();
+		if(last_code)
+			editorManager.setValue(last_code);
+	}
+	setEditorFromAutoSave();
+
+	hotbarManager.resizeEditorToFitHotbar();
+	if(isMobile)
+	{
+		document.body.classList.add('mobile');
+		hotbarManager.mostrarHotbar();
+	}
+	else
+	{
+		hotbarManager.ocultarHotbar();
 	}

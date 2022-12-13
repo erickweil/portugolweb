@@ -192,16 +192,12 @@ export default class EditorManager {
 		this.editor.getSession().setAnnotations(this.errosAnnot);
 		
 		this.errosMarkers.push(
-            this.editor.getSession()
-            .addMarker(
-                new Range(
+            this.editor.getSession().addMarker(new Range(
                     annot.row, 
                     0, 
                     annot.row, 
-                    annot.columnFim
-                ), 
-                'ace_erroportugol-marker', 'screenLine'
-        ));
+                    annot.columnFim),'ace_erroportugol-marker', 'screenLine')
+        );
     }
 
     highlight(linha,coluna,colunaFim,scrollTo) {

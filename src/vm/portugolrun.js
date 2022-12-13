@@ -83,7 +83,8 @@ export default class PortugolRuntime {
 			
 			that.errosCount++;
 			try {
-				throw "ERRO";
+				let obj = {};
+				console.log(obj.erro.erromesmo);
 			} catch (e) {
 				let myStackTrace = e.stack || e.stacktrace || "";
 				
@@ -229,7 +230,7 @@ export default class PortugolRuntime {
 	compilar(string_cod,erroCallback,mayCompileJS)
 	{
 		let first_Time = performance.now();
-		
+		this.errosCount = 0;	
 		let last_Time = first_Time;
 		let token_Time = 0;
 		let tree_Time = 0;
