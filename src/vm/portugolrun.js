@@ -2,7 +2,7 @@ import JsGenerator from "../compiler/jsgenerator.js";
 import { Parser } from "../compiler/parser.js";
 import { Tokenizer } from "../compiler/tokenizer.js";
 import { Compiler } from "../compiler/vmcompiler.js";
-import { numberOfLinesUntil } from "../extras/extras.js";
+import { cursorToEnd, numberOfLinesUntil } from "../extras/extras.js";
 import { myClearTimeout, mySetTimeout } from "../extras/timeout.js";
 import Calendario from "./libraries/Calendario.js";
 import Graficos from "./libraries/Graficos.js";
@@ -42,6 +42,10 @@ function _doExec(that,resolve)
 	else if(state == STATE_WAITINGINPUT || state == STATE_ASYNC_RETURN)
 	{
 		// Vai continuar depois
+		if(typeof that.div_saida.focus === 'function')
+			that.div_saida.focus();
+			
+		cursorToEnd(that.div_saida);
 		return;
 	}
 	else if(state == STATE_BREATHING)
@@ -191,31 +195,32 @@ export default class PortugolRuntime {
 				{
 					myClearTimeout("STATE_DELAY");
 				}
-								
-				escreva("\n\nPrograma interrompido pelo usuário. Tempo de execução:"+Math.trunc(performance.now()-this.lastvmTime)+" milissegundos");
 				
-				this.executarParou();
+				this.executarParou("Programa interrompido pelo usuário.");
+				return true;
 			}
 			else if(this.lastvmState == STATE_RUNNING || this.lastvmState == STATE_BREATHING)
 			{
 				this.lastvmState = STATE_PENDINGSTOP; // isso pode dar problema para valores de delay muito altos.
+				return false;
 			}
 			else
 			{
 				console.log("estado inconsistente: lastvmState:'"+this.lastvmState+"'");
+				return false;
 			}
 		}
 		else if(this.lastvmState == STATE_PENDINGSTOP)
 		{
-			// ta idaí?
-			this.lastvmState = STATE_PENDINGSTOP; // só para confirmar
+			// Se mandar parar denovo faz parar.
+			myClearTimeout("EXEC");
+			this.executarParou("Programa interrompido pelo usuário.");
+			return true;
 		}
 		else // para deixar o botao do jeito certo, e corrigir no caso de algum erro.
 		{
 			console.log("botão estava em estado inconsistente: lastvmState:'"+this.lastvmState);
-			//if(lastvmState == STATE_ENDED) btn.value = "Executar";
-			//else if(lastvmState == STATE_PENDINGSTOP) btn.value = "Parando...";
-			//else btn.value = "Parar";
+			return false;
 		}
 		
 	}
@@ -315,17 +320,12 @@ export default class PortugolRuntime {
 		return this.lastvmState;
 	}
 
-	receiveInput(entrada)
+	// A entrada deve ser concatenada na div_saída
+	notifyReceiveInput()
 	{
 		if(this.lastvmState == STATE_WAITINGINPUT)
 		{
-			//let entrada = input.substring(VM_getSaida().length,input.length);
-			
-			if(entrada && entrada.endsWith("\n"))
-			{
-				//executarVM();
-				this.promisefn();
-			}
+			this.promisefn();
 		}
 		else
 		{
@@ -333,7 +333,7 @@ export default class PortugolRuntime {
 		}
 	}
 
-	asyncReturn(retValue)
+	notifyAsyncReturn(retValue)
 	{
 		if(this.lastvmState == STATE_ASYNC_RETURN)
 		{

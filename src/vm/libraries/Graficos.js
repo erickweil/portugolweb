@@ -225,7 +225,7 @@ export default class Graficos {
 						{
 							tvalue = String.fromCharCode(t);
 						}
-						resHTML += "<input type=\"button\" value=\""+tvalue+"\" ontouchstart=\"GraficosBtnTypeDown('"+t+"')\" ontouchend=\"GraficosBtnTypeUp('"+t+"')\" onfocus=\"preventFocusCanvas(event)\" style=\"background: #1E2324;\">";
+						resHTML += "<input type=\"button\" value=\""+tvalue+"\" ontouchstart=\"index.GraficosBtnTypeDown('"+t+"')\" ontouchend=\"index.GraficosBtnTypeUp('"+t+"')\" onfocus=\"index.preventFocusCanvas(event)\" style=\"background: #1E2324;\">";
 					}
 				}
 			}

@@ -171,6 +171,15 @@ function httpGetAsync(theUrl, callback, options)
 	});
 }
 
+function cursorToEnd(textarea)
+{
+	if(!textarea || !textarea.value) return;
+
+	let txtEnd =textarea.value.length;
+	textarea.selectionStart= txtEnd;
+	textarea.selectionEnd= txtEnd;
+}
+
 /*function convertPromise(func)
 {
 	return new Promise( (resolve,reject) => {
@@ -193,5 +202,6 @@ export {
 	getScreenDimensions,
 	addEvent,
 	referenceSafeRemove,
-	httpGetAsync
+	httpGetAsync,
+	cursorToEnd
 };

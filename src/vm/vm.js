@@ -350,6 +350,8 @@ export function leia()
 	if(!VM_saidaDiv) throw "Desconfigurado leia() não pode executar";
 
 	let saidadiv = VM_saidaDiv.value;
+	saidadiv = saidadiv.replace(/\r\n/g,"\n");
+	
 	let entrada = saidadiv.substring(VM_saida.length,saidadiv.length);
 	if(entrada.endsWith("\n"))
 	{
