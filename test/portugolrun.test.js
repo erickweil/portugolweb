@@ -29,6 +29,7 @@ function doExecCheck(input) {
 
 
     const run = new PortugolRuntime({value:""});
+    run.escrever_tempo = false;
 
     const compilado = run.compilar(input,false,false);
     //assert(compilado.success);
@@ -62,4 +63,7 @@ describe("PortugolRuntime",() => {
     testExemplo("olamundo.por");
     testExemplo("fibonacci.por");
     testExemplo("primos.por");
+    testExemplo("autoincremento.por");
+    testExemplo("vetorescape.por");
+    testExemplo("operadores.por");
 });

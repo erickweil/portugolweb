@@ -14,7 +14,7 @@ import Teclado from "./libraries/Teclado.js";
 import Texto from "./libraries/Texto.js";
 import Tipos from "./libraries/Tipos.js";
 import Util from "./libraries/Util.js";
-import { STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMrun, VMsetup, VMtoString, VM_getCodeMax, VM_getDelay, VM_getExecJS 
+import { escreva, STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMrun, VMsetup, VMtoString, VM_async_return, VM_getCodeMax, VM_getDelay, VM_getExecJS 
 } from "./vm.js";
 
 function debug_exibe_bytecode() {
@@ -27,6 +27,33 @@ function debug_exibe_bytecode() {
 	}
 }
 
+function _doExec(that,resolve)
+{
+	let state = that.executarVM();
+
+	if(state == STATE_ENDED)
+	{
+		resolve(that.div_saida.value);
+	}
+	else if(state == STATE_DELAY || state == STATE_DELAY_REPEAT)
+	{
+		mySetTimeout("STATE_DELAY",that.promisefn,VM_getDelay());
+	}
+	else if(state == STATE_WAITINGINPUT || state == STATE_ASYNC_RETURN)
+	{
+		// Vai continuar depois
+		return;
+	}
+	else if(state == STATE_BREATHING)
+	{
+		mySetTimeout("EXEC",that.promisefn,0);
+	}
+	else
+	{
+		throw "Estado desconhecido:"+state;
+	}
+}
+
 export default class PortugolRuntime {
     constructor(div_saida) {
 		this.lastvmState = STATE_ENDED;
@@ -34,9 +61,11 @@ export default class PortugolRuntime {
 		this.errosCount = 0;
 		this.execMesmoComErros = false;
 		this.mostrar_bytecode = false;
+		this.escrever_tempo = true; // Programa finalizado etc...
 		this.div_saida = div_saida;
 
 		this.libraries = {};
+		this.promisefn = false;
     }
 
 	getErroMiddleCallback(erroCallback) {
@@ -142,34 +171,8 @@ export default class PortugolRuntime {
 				that.lastvmTime = performance.now();
 
 				// Loop Assíncrono de execução
-				const tryExec = () => {
-					if(that.lastvmState == STATE_PENDINGSTOP)
-					{
-						that.executarParou();
-						return;
-					}
-
-					let delay = that.executarVM();
-
-					if(that.lastvmState == STATE_ENDED)
-					{
-						resolve(that.div_saida.value);
-						return;
-					}
-					else if(that.lastvmState == STATE_DELAY || that.lastvmState == STATE_DELAY_REPEAT)
-					{
-						mySetTimeout("STATE_DELAY",tryExec,delay);
-					}
-					else if(that.lastvmState.STATE_WAITINGINPUT || that.lastvmState.STATE_ASYNC_RETURN)
-					{
-						throw "Não funciona";
-					}
-					else
-					{
-						mySetTimeout("EXEC",tryExec,0);
-					}
-				};
-				tryExec();
+				that.promisefn = ()=>{_doExec(that,resolve);};
+				that.promisefn();
 		});
 		}
 	}
@@ -188,7 +191,9 @@ export default class PortugolRuntime {
 				{
 					myClearTimeout("STATE_DELAY");
 				}
-				//escreva("\n\nPrograma interrompido pelo usuário. Tempo de execução:"+Math.trunc(performance.now()-this.lastvmTime)+" milissegundos");
+								
+				escreva("\n\nPrograma interrompido pelo usuário. Tempo de execução:"+Math.trunc(performance.now()-this.lastvmTime)+" milissegundos");
+				
 				this.executarParou();
 			}
 			else if(this.lastvmState == STATE_RUNNING || this.lastvmState == STATE_BREATHING)
@@ -294,44 +299,60 @@ export default class PortugolRuntime {
 	{
 		if(this.lastvmState == STATE_PENDINGSTOP) {
 			// blz então
-			//escreva("\n\nPrograma interrompido pelo usuário. Tempo de execução:"+Math.trunc(performance.now()-this.lastvmTime)+" milissegundos");
-			this.executarParou();
-			return 0;
+			this.executarParou("Programa interrompido pelo usuário.");
+			return this.lastvmState;
 		}
+
 		this.lastvmState = STATE_RUNNING;
 		
-
 		this.lastvmState = VMrun(VM_getCodeMax());
 		
 		if(this.lastvmState == STATE_ENDED)
 		{
-			//escreva("\n\nPrograma finalizado. Tempo de execução:"+Math.trunc(performance.now()-this.lastvmTime)+" milissegundos");
-			this.executarParou();
-			return 0;
+			this.executarParou("Programa finalizado.");
 		}
-		else if(this.lastvmState == STATE_WAITINGINPUT) {
-			//div_saida.focus();
+
+		return this.lastvmState;
+	}
+
+	receiveInput(entrada)
+	{
+		if(this.lastvmState == STATE_WAITINGINPUT)
+		{
+			//let entrada = input.substring(VM_getSaida().length,input.length);
 			
-			//if(isMobile)
-			//setTimeout(function(){window.dispatchEvent(new Event('resize'));}, 200); // pq n funciona?
-			
-			//cursorToEnd(div_saida);
-			return -1;
+			if(entrada && entrada.endsWith("\n"))
+			{
+				//executarVM();
+				this.promisefn();
+			}
 		}
-		else if(this.lastvmState == STATE_BREATHING) {
-			return 0;
-		}
-		else if(this.lastvmState == STATE_DELAY || this.lastvmState == STATE_DELAY_REPEAT) {
-			return VM_getDelay();
-		}
-		else if(this.lastvmState == STATE_ASYNC_RETURN) {
-			//?
-			return -1;
+		else
+		{
+			throw "Não estava esperando input";
 		}
 	}
 
-	executarParou()
+	asyncReturn(retValue)
 	{
+		if(this.lastvmState == STATE_ASYNC_RETURN)
+		{
+			VM_async_return(retValue);
+			//executarVM();
+			this.promisefn();
+		}
+		else
+		{
+			throw "Não estava esperando async return";
+		}
+	}
+
+	executarParou(msg)
+	{
+		if(this.escrever_tempo)
+		escreva("\n\n"+msg+" Tempo de execução:"+Math.trunc(performance.now()-this.lastvmTime)+" milissegundos");
+
+		this.promisefn = false;
 		this.lastvmState = STATE_ENDED;
 		if(this.libraries["Graficos"] && this.libraries["Graficos"].telaCheia)
 		{
