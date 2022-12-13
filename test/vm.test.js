@@ -1,10 +1,13 @@
-import { T_vazio } from '../js/compiler/tokenizer.js';
-import * as vm from '../js/vm/vm.js';
+import { T_vazio } from '../src/compiler/tokenizer.js';
+import * as vm from '../src/vm/vm.js';
 
-import { assert, assertEquals, test, testAll } from './test.js';
+//import { assert, assertEquals, test, testAll } from './test.js';
+import {jest,describe,expect,test} from '@jest/globals';
 
-export function runTests() {
-return testAll("vm",
+import { doFetchMock } from './jestmocks.js';
+doFetchMock();
+
+describe("Testando VM", () => {
 
     test("Executar Hello World via bytecode direto:", () => {
         let saida = {value:"",scrollTop:0};
@@ -41,7 +44,6 @@ return testAll("vm",
 
         vm.VMrun(10000);
 
-        assertEquals(saida.value,"Hello World");
-    })
-);
-}
+        expect(saida.value).toBe("Hello World");
+    });
+});

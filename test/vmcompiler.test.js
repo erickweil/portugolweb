@@ -1,7 +1,12 @@
-import { Compiler } from '../js/compiler/vmcompiler.js';
-import { Parser } from '../js/compiler/parser.js';
-import { Tokenizer } from '../js/compiler/tokenizer.js';
-import { assert, assertEquals, test, testAll } from './test.js';
+import { Compiler } from '../src/compiler/vmcompiler.js';
+import { Parser } from '../src/compiler/parser.js';
+import { Tokenizer } from '../src/compiler/tokenizer.js';
+//import { assert, assertEquals, test, testAll } from './test.js';
+
+import {jest,describe,expect,test} from '@jest/globals';
+
+import { doFetchMock } from './jestmocks.js';
+doFetchMock();
 
 function erroCounterFn(counterRef) {
     return (input,token,msg,tipo) => {
@@ -10,8 +15,8 @@ function erroCounterFn(counterRef) {
     };
 }
 
-export function runTests() {
-return testAll("vmcompiler",
+
+describe("Testando VmCompiler", () => {
 
     test("Compilar programa Hello World:", () => {
         let erroCounter = {value:0};
@@ -28,8 +33,6 @@ return testAll("vmcompiler",
         let compiler = new Compiler(tree,[],tokens,input,null,erroCounterFn(erroCounter));
         compiler.compile();
 
-        assert(erroCounter.value == 0 && compiler.getFuncIndex("teste",[]) != -1);
-    })
-
-);
-}
+        expect(erroCounter.value == 0 && compiler.getFuncIndex("teste",[]) != -1).toBe(true);
+    });
+});

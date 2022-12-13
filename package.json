@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "Portugol Web",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "lint": "npx eslint ./"
+    "lint": "npx eslint ./",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "repository": {
     "type": "git",
@@ -24,6 +26,9 @@
   },
   "dependencies": {
     "ace-builds": "^1.14.0",
-    "eslint-plugin-import": "^2.26.0"
+    "eslint-plugin-import": "^2.26.0",
+    "jest": "^29.3.1",
+    "jest-environment-jsdom": "^29.3.1",
+    "node-fetch": "^3.3.0"
   }
 }

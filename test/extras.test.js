@@ -9,20 +9,23 @@ import {
 	addEvent,
 	referenceSafeRemove,
 	httpGetAsync
-} from '../js/extras/extras.js';
+} from '../src/extras/extras.js';
 
-import { assert, assertEquals, test, testAll } from './test.js';
+import {jest,describe,expect,test} from '@jest/globals';
 
-export function runTests() {
-return testAll("extras",
+import { doFetchMock } from './jestmocks.js';
+doFetchMock();
+
+
+
+describe("extras",() => {
 
 	test("numberOfLinesUntil:", () => {
-		assertEquals(numberOfLinesUntil(4,"aaa\nbbb\nccc"), 2);
-	}),
+		expect(numberOfLinesUntil(4,"aaa\nbbb\nccc")).toBe(2);
+	});
 
 	test("hashCode:", () => {
-		assertEquals(stringHashCode("ERICK"), stringHashCode("ER"+"ICK"));
-	})
+		expect(stringHashCode("ERICK")).toBe(stringHashCode("ER"+"ICK"));
+	});
 
-);
-}
+});

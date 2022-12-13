@@ -1,6 +1,10 @@
 import { httpGetAsync } from "../src/extras/extras.js";
 import PortugolRuntime from "../src/vm/portugolrun.js";
-import { assert, assertEquals, test, testAll } from './test.js';
+//import { assert, assertEquals, test, testAll } from './test.js';
+import {jest,describe,expect,test} from '@jest/globals';
+
+import { doFetchMock } from './jestmocks.js';
+doFetchMock();
 
 function erroCounterFn(counterRef) {
     return (input,token,msg,tipo) => {
@@ -18,26 +22,25 @@ function doExecCheck(input) {
     const ex_fim = lninput.lastIndexOf("---")-1;
     const ex_inicio = lninput.lastIndexOf("---",ex_fim)+4;
     const ex_txt = lninput.substring(ex_inicio,ex_fim);
-    assert(ex_txt != false);
+    if(!ex_txt) throw "Não tem o que o código deveria produzir";
+    //assert(ex_txt != false);
 
 
     const run = new PortugolRuntime({value:""});
 
     const compilado = run.compilar(input,false,false);
-    assert(compilado.success);
+    //assert(compilado.success);
+    if(!compilado.success) throw "Erro na compilação";
 
     return run.executar(input,compilado,false).then((saida) => {
         if(!saida) return Promise.reject("Saída Vazia");
 
-        assertEquals(saida,ex_txt);
+        expect(saida).toBe(ex_txt);
     });
 }
 
 function testExemplo(exemplo) {
-    return test(exemplo,() => {
-        /*return httpGetAsync("/test/programas/"+exemplo, (txt) => {
-            execContarErros(txt);
-        });*/
+    test(exemplo,() => {
         return fetch("/test/programas/"+exemplo, {method:"GET"})
         .then((response) => {
             if (!response.ok) return Promise.reject(response.status);    
@@ -53,11 +56,8 @@ function testExemplo(exemplo) {
 }
 
 
-export function runTests() {
-return testAll("portugolrun",
-
-    testExemplo("olamundo.por"),
-    testExemplo("fibonacci.por"),
-    testExemplo("primos.por")
-);
-}
+describe("PortugolRuntime",() => {
+    testExemplo("olamundo.por");
+    testExemplo("fibonacci.por");
+    testExemplo("primos.por");
+});

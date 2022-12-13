@@ -1,6 +1,10 @@
-import { Parser } from '../js/compiler/parser.js';
-import { Tokenizer } from '../js/compiler/tokenizer.js';
-import { assert, assertEquals, test, testAll } from './test.js';
+import { Parser } from '../src/compiler/parser.js';
+import { Tokenizer } from '../src/compiler/tokenizer.js';
+//import { assert, assertEquals, test, testAll } from './test.js';
+import {jest,describe,expect,test} from '@jest/globals';
+
+import { doFetchMock } from './jestmocks.js';
+doFetchMock();
 
 function erroCounterFn(counterRef) {
     return (input,token,msg,tipo) => {
@@ -9,8 +13,7 @@ function erroCounterFn(counterRef) {
     };
 }
 
-export function runTests() {
-return testAll("parser",
+describe("parser",() => {
 
     test("Parse programa Hello World:", () => {
         let erroCounter = {value:0};
@@ -22,7 +25,6 @@ return testAll("parser",
         let parser = new Parser(tokenizer.getRelevantTokens(),input,erroCounterFn(erroCounter));
         let tree = parser.parse();
 
-        assert(erroCounter.value == 0);
-    })
-);
-}
+        expect(erroCounter.value).toBe(0);
+    });
+});
