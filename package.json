@@ -18,7 +18,9 @@
   "homepage": "https://github.com/erickweil/portugolweb#readme",
   "devDependencies": {
     "@types/ace": "^0.0.48",
-    "eslint": "^8.29.0"
+    "eslint": "^8.29.0",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
   },
   "dependencies": {
     "ace-builds": "^1.14.0",

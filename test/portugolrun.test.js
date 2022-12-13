@@ -1,5 +1,5 @@
-import { httpGetAsync } from "../js/extras/extras.js";
-import PortugolRuntime from "../js/vm/portugolrun.js";
+import { httpGetAsync } from "../src/extras/extras.js";
+import PortugolRuntime from "../src/vm/portugolrun.js";
 import { assert, assertEquals, test, testAll } from './test.js';
 
 function erroCounterFn(counterRef) {
