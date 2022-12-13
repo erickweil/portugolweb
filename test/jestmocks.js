@@ -1,4 +1,4 @@
-/* eslint-disable */
+/* eslint-env node, jest */
 
 import {jest,describe,expect,test} from '@jest/globals';
 import {default as nodefetch} from 'node-fetch';
@@ -7,6 +7,7 @@ import {default as nodefetch} from 'node-fetch';
 import { TextEncoder, TextDecoder } from 'util';
 
 import { readFile } from 'fs/promises';
+import { fileURLToPath } from 'url';
 
 export function doFetchMock() {
     /*global.fetch = jest.fn(() =>
@@ -20,8 +21,26 @@ export function doFetchMock() {
     global.fetch = (url,options) => {
         if(url.startsWith("/"))
         {
-            return nodefetch("http://127.0.0.1"+url,options);
-            //return readFile(url,{encoding:"utf8"})
+            //return nodefetch("file://."+url,options);
+
+            return readFile(new URL(".."+url, import.meta.url),{encoding:"utf8"})
+            .then((file) => {
+                return new Promise((resolve,reject) => {
+                    resolve({
+                        ok: true,
+                        status: 200,
+                        statusText: "OK",
+                        url: url,
+                        text: () => {
+                            // eslint-disable-next-line
+                            return new Promise((resolve,reject) => {
+                                resolve(file);
+                            });
+                        }
+                    });
+                });
+            });
+            
         }
         else return nodefetch(url,options);
     };

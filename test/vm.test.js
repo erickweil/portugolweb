@@ -1,3 +1,5 @@
+/* eslint-env node, jest */
+
 import { T_vazio } from '../src/compiler/tokenizer.js';
 import * as vm from '../src/vm/vm.js';
 

@@ -1,3 +1,5 @@
+/* eslint-env node, jest */
+
 import { Compiler } from '../src/compiler/vmcompiler.js';
 import { Parser } from '../src/compiler/parser.js';
 import { Tokenizer } from '../src/compiler/tokenizer.js';
