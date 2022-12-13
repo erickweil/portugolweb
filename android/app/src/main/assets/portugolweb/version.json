@@ -1,0 +1,48 @@
+{
+"version":"1.6",
+"web_app_version":2,
+"web_app_files":[
+	 "index.html"
+	,"avaliar.html"
+	,"portugol.css"
+	
+	,"icons/FontMinus.png"
+	,"icons/FontPlus.png"
+	,"icons/arrowD.png"
+	,"icons/arrowL.png"
+	,"icons/arrowR.png"
+	,"icons/arrowU.png"
+	,"icons/autocomplete.png"
+	,"icons/full.png"
+	,"icons/open.png"
+	,"icons/redo.png"
+	,"icons/save.png"
+	,"icons/step.png"
+	,"icons/undo.png"
+
+	,"exemplos/aleatorio0.por"
+	,"exemplos/aleatorio1.por"
+	,"exemplos/aleatorio2.por"
+	,"exemplos/aleatorio3.por"
+	,"exemplos/aleatorio4.por"
+	,"exemplos/aleatorio5.por"
+	,"exemplos/bibliotecas.por"
+	,"exemplos/branco.por"
+	,"exemplos/condicoes.por"
+	,"exemplos/entrada.por"
+	,"exemplos/funcoes.por"
+	,"exemplos/graficos.por"
+	,"exemplos/internet.por"
+	,"exemplos/jogodavida.por"
+	,"exemplos/notas.por"
+	,"exemplos/olamundo.por"
+	,"exemplos/repeticao.por"
+	,"exemplos/slide_puzzle.por"
+	,"exemplos/variaveis.por"
+	,"exemplos/vetores.por"
+	
+	,"dist/main.js"
+	,"dist/ace.js"
+
+]
+}

@@ -1,3 +1,162 @@
 {
-"version":"1.5"
+  "version": "1.6",
+  "web_app_version": 2,
+  "web_app_files": [
+    {
+      "file": "icons/a",
+      "md5": "dadafe066983ab646e8550013fb7da13"
+    },
+    {
+      "file": "icons/arrowD.png",
+      "md5": "e6ab69f8029da09d12c6ae2c36ba404f"
+    },
+    {
+      "file": "icons/arrowL.png",
+      "md5": "ca5ebb5b96605fd6bdce766ff8beb1f5"
+    },
+    {
+      "file": "icons/arrowR.png",
+      "md5": "350e7f5616519e1466c46a2aefd65b4d"
+    },
+    {
+      "file": "icons/arrowU.png",
+      "md5": "91799fa2a5ea49cb09cb7762b46097e4"
+    },
+    {
+      "file": "icons/autocomplete.png",
+      "md5": "95da7225521c5052420d8336224232e2"
+    },
+    {
+      "file": "icons/FontMinus.png",
+      "md5": "300298942798f1013a3d49ca3d6dc00e"
+    },
+    {
+      "file": "icons/FontPlus.png",
+      "md5": "8725d1bd77c9d0ae496c8610c18c84fa"
+    },
+    {
+      "file": "icons/full.png",
+      "md5": "046304b5793ed2f79728e8635c60c2b0"
+    },
+    {
+      "file": "icons/open.png",
+      "md5": "a09c813b0dd395b68b1c4cc10e2e065e"
+    },
+    {
+      "file": "icons/redo.png",
+      "md5": "175a61749d0727cde8af88f9943c101a"
+    },
+    {
+      "file": "icons/save.png",
+      "md5": "1806f2205df5a52a1610ded5ff434b31"
+    },
+    {
+      "file": "icons/step.png",
+      "md5": "13b45b846911394e249c3a30adb136e7"
+    },
+    {
+      "file": "icons/undo.png",
+      "md5": "24ebf3d3dd1f4bb9b7a2e72af2a110da"
+    },
+    {
+      "file": "exemplos/aleatorio0.por",
+      "md5": "6cf0ac24c99e84f7ebe447cdd2de5bd2"
+    },
+    {
+      "file": "exemplos/aleatorio1.por",
+      "md5": "1beefa874fd293eedd24d82742fb65da"
+    },
+    {
+      "file": "exemplos/aleatorio2.por",
+      "md5": "f4d0d7a04b3e53646acca3413616f8b3"
+    },
+    {
+      "file": "exemplos/aleatorio3.por",
+      "md5": "4c144694aec8979373328ef5998714dd"
+    },
+    {
+      "file": "exemplos/aleatorio4.por",
+      "md5": "7fd27d0c0a25dad0b9528c3a59c1fa51"
+    },
+    {
+      "file": "exemplos/aleatorio5.por",
+      "md5": "1a8d6c9c5310f846438fe41d840873eb"
+    },
+    {
+      "file": "exemplos/bibliotecas.por",
+      "md5": "f061dc9b1ec762ff119d8371121ad4db"
+    },
+    {
+      "file": "exemplos/branco.por",
+      "md5": "a22f631de4b5c451d93ae9e6df7784af"
+    },
+    {
+      "file": "exemplos/condicoes.por",
+      "md5": "44e88abeae726b9dffbe4346446a8e2b"
+    },
+    {
+      "file": "exemplos/entrada.por",
+      "md5": "e7441bad0456121353a1db0364098776"
+    },
+    {
+      "file": "exemplos/funcoes.por",
+      "md5": "faf14d3d0a02e29759cd272fdf3fa91c"
+    },
+    {
+      "file": "exemplos/graficos.por",
+      "md5": "e2d3eff2533c73d7e5282ca4938765f0"
+    },
+    {
+      "file": "exemplos/internet.por",
+      "md5": "950234458782ff9a4b59697888d9a69c"
+    },
+    {
+      "file": "exemplos/jogodavida.por",
+      "md5": "57b4a22dbdfecc914b67e4ef39ec9840"
+    },
+    {
+      "file": "exemplos/notas.por",
+      "md5": "a516b746313ba54da8cfa8923acd853e"
+    },
+    {
+      "file": "exemplos/olamundo.por",
+      "md5": "2859e66bef1a9075244914fcb458697b"
+    },
+    {
+      "file": "exemplos/repeticao.por",
+      "md5": "5651e575db74be07c64f6a79b11dcddc"
+    },
+    {
+      "file": "exemplos/slide_puzzle.por",
+      "md5": "c4ace64c148575eef1f5dc5c91df3e2a"
+    },
+    {
+      "file": "exemplos/variaveis.por",
+      "md5": "8fd092bf772d8d0a2f9587a015dac11e"
+    },
+    {
+      "file": "exemplos/vetores.por",
+      "md5": "c4f2e81d53591d9b7cf9648b5804421e"
+    },
+    {
+      "file": "avaliar.html",
+      "md5": "8efbe78ff55294b590a80f7c8ef4b16b"
+    },
+    {
+      "file": "portugol.css",
+      "md5": "e04acff0004e51cc3a26b80e121f2838"
+    },
+    {
+      "file": "dist/ace.js",
+      "md5": "e2d078c91c91015bb4b2bc0b993277f0"
+    },
+    {
+      "file": "dist/main.js",
+      "md5": "4faab429768bf2b90609c7f6eb415699"
+    },
+    {
+      "file": "index.html",
+      "md5": "cc3a327b560c061d6bfd1962007c5764"
+    }
+  ]
 }
