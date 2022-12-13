@@ -1,4 +1,4 @@
-import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico } from "../../compiler/tokenizer.js";
+import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico } from "../../tokenizer.js";
 
 export default class Calendario {
 	constructor() {

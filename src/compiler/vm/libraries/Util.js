@@ -1,4 +1,4 @@
-import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro, T_Vetor, T_Matriz } from "../../compiler/tokenizer.js";
+import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro, T_Vetor, T_Matriz } from "../../tokenizer.js";
 import { STATE_DELAY, VM_setDelay } from "../vm.js";
 
 export default class Util {

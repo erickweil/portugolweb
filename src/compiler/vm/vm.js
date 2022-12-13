@@ -1,4 +1,4 @@
-import { numberOfLinesUntil } from "../extras/extras.js";
+import { numberOfLinesUntil } from "../../extras/extras.js";
 
 export const B_TRUE = 0;
 export const B_FALSE = 1;

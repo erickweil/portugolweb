@@ -16,11 +16,14 @@ const stylesHandler = isProduction
   : "style-loader";
 
 const config = {
-  entry: "./src/index.js",
+  entry: 
+  //"./src/index.js"
+  "./src/ace_editor/ace_webpack.js" // para juntar os arquivos
+  ,
   output: {
     path: path.resolve(__dirname, "dist"),
     publicPath: '/dist/',
-    filename:"main.js"
+    filename: "ace.js"
   },
   module: {
     rules: [
@@ -41,7 +44,7 @@ const config = {
       // Learn more about loaders from https://webpack.js.org/loaders/
     ],
   },
-
+  
   optimization: {
 
     minimize: true,
@@ -66,7 +69,7 @@ const config = {
       }
     })],
   },
-  
+
   resolve: {
       extensions: ['.js']
   },

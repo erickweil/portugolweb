@@ -1,9 +1,9 @@
-import JsGenerator from "../compiler/jsgenerator.js";
-import { Parser } from "../compiler/parser.js";
-import { Tokenizer } from "../compiler/tokenizer.js";
-import { Compiler } from "../compiler/vmcompiler.js";
-import { cursorToEnd, numberOfLinesUntil } from "../extras/extras.js";
-import { myClearTimeout, mySetTimeout } from "../extras/timeout.js";
+import JsGenerator from "../jsgenerator.js";
+import { Parser } from "../parser.js";
+import { Tokenizer } from "../tokenizer.js";
+import { Compiler } from "../vmcompiler.js";
+import { cursorToEnd, numberOfLinesUntil } from "../../extras/extras.js";
+import { myClearTimeout, mySetTimeout } from "../../extras/timeout.js";
 import Calendario from "./libraries/Calendario.js";
 import Graficos from "./libraries/Graficos.js";
 import Internet from "./libraries/Internet.js";

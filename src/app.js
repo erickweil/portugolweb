@@ -1,12 +1,12 @@
 import { checkIsMobile } from "./extras/mobile.js";
 
 import { STATE_ASYNC_RETURN, STATE_ENDED, STATE_WAITINGINPUT, VM_getExecJS, VM_getSaida, VM_setExecJS 
-} from "./vm/vm.js";
+} from "./compiler/vm/vm.js";
 import { httpGetAsync, numberOfLinesUntil, cursorToEnd as _cursorToEnd } from "./extras/extras.js";
 import { htmlEntities } from "./compiler/tokenizer.js";
 import { myClearTimeout } from "./extras/timeout.js";
 import { persistentGetValue, persistentStoreValue } from "./extras/persistent.js";
-import PortugolRuntime from "./vm/portugolrun.js";
+import PortugolRuntime from "./compiler/vm/portugolrun.js";
 import EditorManager from "./pages/index/editor.js";
 import Hotbar from "./pages/index/hotbar.js";
 

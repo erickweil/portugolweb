@@ -1,7 +1,7 @@
 /* eslint-env node, jest */
 
 import { T_vazio } from '../src/compiler/tokenizer.js';
-import * as vm from '../src/vm/vm.js';
+import * as vm from '../src/compiler/vm/vm.js';
 
 //import { assert, assertEquals, test, testAll } from './test.js';
 import {jest,describe,expect,test} from '@jest/globals';

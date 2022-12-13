@@ -1,5 +1,5 @@
-import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../compiler/tokenizer.js";
-import { closeFullscreen, getScreenDimensions, openFullscreen } from "../../extras/extras.js";
+import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../tokenizer.js";
+import { closeFullscreen, getScreenDimensions, openFullscreen } from "../../../extras/extras.js";
 import { STATE_BREATHING, STATE_DELAY_REPEAT, STATE_ENDED, VM_setCodeMax, VM_setDelay } from "../vm.js";
 
 export default class Graficos {

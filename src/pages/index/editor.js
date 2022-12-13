@@ -1,5 +1,4 @@
-import portugolCompleter from "../../ace-editor/ace_portugol_completer.js";
-import { htmlEntities } from "../../compiler/tokenizer.js";
+import portugolCompleter from "../../ace_editor/ace_portugol_completer.js";
 
 // Unico jeito que achei de fazer a biblioteca funcionar
 // É NÃO IMPORTANDO ELA

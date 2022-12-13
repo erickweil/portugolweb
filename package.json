@@ -2,12 +2,13 @@
   "name": "portugolweb",
   "version": "1.0.0",
   "description": "Portugol Web",
-  "main": "index.js",
+  "main": "src/index.js",
   "type": "module",
   "scripts": {
     "lint": "npx eslint ./",
     "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "build": "webpack --config ./webpack.config.cjs"
+    "build": "webpack --config ./webpack.config.cjs",
+    "buildace": "webpack --config ./ace-webpack.config.cjs"
   },
   "repository": {
     "type": "git",
@@ -36,9 +37,10 @@
     "style-loader": "^3.3.1",
     "webpack": "^5.75.0",
     "webpack-bundle-analyzer": "^4.7.0",
-    "webpack-cli": "^5.0.1"
+    "webpack-cli": "^5.0.1",
+    "ace-builds": "^1.14.0"
   },
   "dependencies": {
-    "ace-builds": "^1.14.0"
+    
   }
 }

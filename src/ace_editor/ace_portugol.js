@@ -1,5 +1,6 @@
-import * as ace from '../../lib/ace-src-min-noconflict/ace.js';
+//import * as ace from '../../lib/ace-src-min-noconflict/ace.js';
 
+const ace = window.ace;
 ace.define('ace/mode/portugol',function(require, exports, module) {
 "use strict";
 
