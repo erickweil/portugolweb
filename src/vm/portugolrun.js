@@ -44,7 +44,7 @@ function _doExec(that,resolve)
 		// Vai continuar depois
 		if(typeof that.div_saida.focus === 'function')
 			that.div_saida.focus();
-			
+
 		cursorToEnd(that.div_saida);
 		return;
 	}
@@ -90,6 +90,7 @@ export default class PortugolRuntime {
 				console.log(myStackTrace);
 			}
 			
+			// manter no formato de erro esperado pelo Ace Editor
 			let erroInfo = {
 				row: lineNumber-1,
 				column: colNumber,
@@ -354,7 +355,7 @@ export default class PortugolRuntime {
 
 		this.promisefn = false;
 		this.lastvmState = STATE_ENDED;
-		if(this.libraries["Graficos"] && this.libraries["Graficos"].telaCheia)
+		if(this.libraries["Graficos"])
 		{
 			this.libraries["Graficos"].encerrar_modo_grafico();
 		}

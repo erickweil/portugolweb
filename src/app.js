@@ -3,7 +3,7 @@ import { checkIsMobile } from "./extras/mobile.js";
 import portugolCompleter from "./ace-editor/ace_portugol_completer.js";
 import { escreva, getCurrentTokenIndex, getTokenIndex, limpa, STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMrun, VMsetup, VMtoString, VM_async_return, VM_getCodeMax, VM_getDelay, VM_getExecJS, VM_getSaida, VM_getTextInput, VM_setExecJS 
 } from "./vm/vm.js";
-import { elementIsAllScrolled, getScreenDimensions, httpGetAsync, numberOfLinesUntil } from "./extras/extras.js";
+import { elementIsAllScrolled, getScreenDimensions, httpGetAsync, numberOfLinesUntil, cursorToEnd as _cursorToEnd } from "./extras/extras.js";
 import { htmlEntities, Tokenizer } from "./compiler/tokenizer.js";
 import { Parser } from "./compiler/parser.js";
 import { Compiler } from "./compiler/vmcompiler.js";
@@ -11,20 +11,11 @@ import JsGenerator from "./compiler/jsgenerator.js";
 import { myClearTimeout, mySetTimeout } from "./extras/timeout.js";
 import { persistentGetValue, persistentStoreValue } from "./extras/persistent.js";
 import PortugolRuntime from "./vm/portugolrun.js";
-
-
-// Unico jeito que achei de fazer a biblioteca funcionar
-// É NÃO IMPORTANDO ELA
-//import * as __ace from '../lib/ace-src-min-noconflict/ace.js';
-//import * as __langtools from '../lib/ace-src-min-noconflict/ext-language_tools.js';
-//import * as __emmet from '../lib/ace-src-min-noconflict/ext-emmet.js';
-const ace = window.ace;
-ace.config.set('basePath','/lib/ace-src-min-noconflict/');
+import EditorManager from "./pages/index/editor.js";
 
 	const div_saida = document.getElementById("textAreaSaida");
 	const errosSaida =document.getElementById("errorArea");
 
-	
 	const myCanvasModal = document.getElementById("myCanvasModal");
 	const myCanvasWindow = document.getElementById("myCanvasWindow");
 	const myCanvasWindowTitle = document.getElementById("myCanvasWindowTitle");
@@ -59,44 +50,32 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 	let portugolRun = new PortugolRuntime(div_saida);
 	portugolRun.iniciarBibliotecas(myCanvas,myCanvasModal,myCanvasWindow,myCanvasWindowTitle,myCanvasKeys);
 
-	export const editor = ace.edit("myEditor",{
-		minLines: 10,
-		fontSize: fontSize+"pt",
-		useSoftTabs: false,
-		navigateWithinSoftTabs: false
+	export const editorManager = new EditorManager();
+
+
+	function editorFocus()
+	{
+		if(isMobile)
+		{
+			if(hotbar_yOffset > hotbar_middleyOffset)
+			{
+				setHotbarPosition(hotbar_middleyOffset,true);
+			}
+		}
+		else
+		{
+			if(hotbar_yOffset > hotbar_extendedyOffset)
+			{
+				setHotbarPosition(hotbar_extendedyOffset,true);
+			}
+		}
 	}
-	);
-	//console.log(ace);
-    editor.setTheme("ace/theme/portugol_dark");
-    editor.session.setMode("ace/mode/portugol");
-	
-	editor.setOptions({
-		enableBasicAutocompletion: true,
-		enableSnippets: false, // negócio chato demais, tenho que fazer ficar mais intuitivo antes de ativar
-		enableEmmet: false, // oq é Emmet? nem eu sei
-		enableLiveAutocompletion: true,
-		scrollPastEnd: 0.5
-	});
-	
-	let myPortugolCompleter = new portugolCompleter(portugolRun.libraries);
-	let langTools = ace.require('ace/ext/language_tools');
-	langTools.setCompleters();		
-	langTools.addCompleter(myPortugolCompleter);
-	
-	editor.commands.on("afterExec", function(e){
-     if (e.command.name == "insertstring" && /^[\.]$/.test(e.args)) {
-         editor.execCommand("startAutocomplete");
-     }
-	});
+
+	editorManager.initEditor("myEditor",fontSize,portugolRun.libraries,isMobile,editorFocus);
 
 	div_saida.style.fontSize = fontSize+"pt";
 	errosSaida.style.fontSize = fontSize+"pt";
-		
-	let errosAnnot = [];
-	let errosMarkers = [];
 	
-	let Range = ace.require("ace/range").Range;
-
 	//####################################################
 	//################# UI ###############################
 	//####################################################
@@ -116,10 +95,10 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 				setHotbarPosition(hotbar_extendedyOffset,true);
 			//}
 			
-			let string_cod = editor.getValue();
+			let string_cod = editorManager.getValue();
 			try{
 				let compilado = portugolRun.compilar(string_cod,enviarErro,VM_getExecJS());
-				myPortugolCompleter.setCompiler(compilado);
+				editorManager.updateAutoComplete(compilado);
 				if(!compilado.success) return;
 				
 				btn.value = "Parar";
@@ -176,7 +155,7 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 		httpGetAsync("exemplos/"+nome+".por",
 		function(code)
 		{
-			editor.setValue(code, -1); // moves cursor to the start
+			editorManager.setValue(code); // moves cursor to the start
 			limparErros();
 		}
 		);
@@ -212,7 +191,7 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 
 	export function setAutoCompleterState(checked)
 	{
-		editor.setOptions({ enableBasicAutocompletion: checked, enableLiveAutocompletion: checked });
+		editorManager.setAutoCompleterState(checked);
 	}
 
 	export function executarStepStart(btn)
@@ -249,15 +228,13 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 			// No previous focus target, blur instead
 			event.currentTarget.blur();
 		}*/
-		editor.focus();
+		editorManager.focus();
 	}
 
 	export function fonteAumentar()
 	{
 		fontSize++;
-		editor.setOptions({
-			fontSize: fontSize+"pt"
-		});
+		editorManager.setFontSize(fontSize);
 		
 		div_saida.style.fontSize = fontSize+"pt";
 		errosSaida.style.fontSize = fontSize+"pt";
@@ -266,16 +243,14 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 	export function fonteDiminuir()
 	{
 		fontSize--;
-		editor.setOptions({
-			fontSize: fontSize+"pt"
-		});
+		editorManager.setFontSize(fontSize);
 		
 		div_saida.style.fontSize = fontSize+"pt";
 		errosSaida.style.fontSize = fontSize+"pt";
 	}
 
 	export function save() {
-		let string_cod = editor.getValue();
+		let string_cod = editorManager.getValue();
 		string_cod = string_cod.replace(/\r\n/g,"\n");
 		if(typeof Android !== 'undefined')
 		{
@@ -320,7 +295,7 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 				let reader = new FileReader();
 				reader.onload = function(progressEvent)
 				{
-					editor.setValue(this.result, -1); // moves cursor to the start
+					editorManager.setValue(this.result); // moves cursor to the start
 					
 					limparErros();
 				};
@@ -333,76 +308,12 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 	
 	export function editorCommand(keycode)
 	{
-		//var KEY_MODS= {
-        //    "ctrl": 1, "alt": 2, "option" : 2, "shift": 4,
-        //    "super": 8, "meta": 8, "command": 8, "cmd": 8
-        //};
-		/*
-		        FUNCTION_KEYS : {
-            8  : "Backspace",
-            9  : "Tab",
-            13 : "Return",
-            19 : "Pause",
-            27 : "Esc",
-            32 : "Space",
-            33 : "PageUp",
-            34 : "PageDown",
-            35 : "End",
-            36 : "Home",
-            37 : "Left",
-            38 : "Up",
-            39 : "Right",
-            40 : "Down",
-            44 : "Print",
-            45 : "Insert",
-            46 : "Delete",
-            96 : "Numpad0",
-            97 : "Numpad1",
-            98 : "Numpad2",
-            99 : "Numpad3",
-            100: "Numpad4",
-            101: "Numpad5",
-            102: "Numpad6",
-            103: "Numpad7",
-            104: "Numpad8",
-            105: "Numpad9",
-            '-13': "NumpadEnter",
-            112: "F1",
-            113: "F2",
-            114: "F3",
-            115: "F4",
-            116: "F5",
-            117: "F6",
-            118: "F7",
-            119: "F8",
-            120: "F9",
-            121: "F10",
-            122: "F11",
-            123: "F12",
-            144: "Numlock",
-            145: "Scrolllock"
-        },
-
-		*/
-		
-		editor.onCommandKey({}, 0, keycode);
+		editorManager.editorCommand(keycode);
 	}
 
 	export function editorType(c)
 	{
-		editor.onTextInput(c);
-		
-
-		//isTyping = true;
-		//editor.getSession().insert(editor.getCursorPosition(), c);
-		//editor.focus();
-		
-		//if(shift)
-		//{
-		//	editor.onCommandKey({}, KEY_MODS.shift, keycode);
-		//}//
-		//else
-		//editor.onCommandKey({}, -1, keycode);
+		editorManager.editorType(c);
 	}
 
 	export function GraficosBtnTypeDown(t)
@@ -435,12 +346,16 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 		}
 	}
 
+	export function cursorToEnd(textarea) {
+		_cursorToEnd(textarea);
+	}
+
 	/**
 	 * PARA FUNCIONAR COM O ANDROID PRECISA DESSAS FUNÇÕES NO OBJETO WINDOW.
 	 * É O JEITO DE INTEGRAR
 	 */
 	export function android_loaded(code){
-		editor.setValue(code, -1); // moves cursor to the start
+		editorManager.setValue(code);
 		limparErros();
 	}
 	
@@ -468,17 +383,16 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 
 	
 	if(isMobile) {
-		editor.renderer.setShowGutter(false);	
 		if(typeof Android === 'undefined')
 		{
-			editor.setValue("programa\n{\n\tfuncao inicio()\n\t{\n\t\t\n\t\tescreva(\"Baixe o aplicativo na play store:\\n\")\n\t\tescreva(\"https://play.google.com/store/apps/details?id=br.erickweil.portugolweb \\n\")\n\t\t\n\t}\n}\n", -1); // moves cursor to the start
+			editorManager.setValue("programa\n{\n\tfuncao inicio()\n\t{\n\t\t\n\t\tescreva(\"Baixe o aplicativo na play store:\\n\")\n\t\tescreva(\"https://play.google.com/store/apps/details?id=br.erickweil.portugolweb \\n\")\n\t\t\n\t}\n}\n");
 		}
 	}
 
 	function setEditorFromAutoSave() {
 		let last_code = getAutoSave();
 		if(last_code)
-			editor.setValue(last_code,-1);
+			editorManager.setValue(last_code);
 	}
 	setEditorFromAutoSave();
 
@@ -495,33 +409,20 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 	
 	function limparErros(tipoErros)
 	{
+		editorManager.removeMarkers();
 		errosSaida.innerHTML = "";
-
-		
-		for(let i=0;i<errosMarkers.length;i++)
-		{
-			editor.getSession().removeMarker(errosMarkers[i]);
-		}
-		errosMarkers = [];
-		
 		if(tipoErros)
 		{
-			// apaga os erros e re-envia os que nao é para apagar
-			let _errosAnnot = errosAnnot;
-			errosAnnot = [];
-			editor.getSession().setAnnotations(errosAnnot);
-			for(let i=0;i<_errosAnnot.length;i++)
-			{
-				if(!tipoErros.includes(_errosAnnot[i].myErrorType) && _errosAnnot[i].type == "error")
-				{
-					enviarErro(_errosAnnot[i]);
-				}
+			// apaga os erros e re-envia os que nao é para apagar?
+			let annots = editorManager.getAnnotations(tipoErros);
+			editorManager.removeAnnotations();
+			for(let annot of annots) {
+				enviarErro(annot);
 			}
 		}
 		else
 		{
-			errosAnnot = [];
-			editor.getSession().setAnnotations(errosAnnot);
+			editorManager.removeAnnotations();
 		}
 	}
 	
@@ -533,20 +434,7 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 		let coluna = prev_line.length;
 		let colunaFim = coluna+next_line.length;
 		
-		errosAnnot.push({
-			row: linha-1,
-			column: coluna,
-			text: "", // Or the Json reply from the parser 
-			type: "information" // also warning and information
-		});
-		editor.getSession().setAnnotations(errosAnnot);
-		
-		errosMarkers.push(editor.getSession().addMarker(new Range(linha-1, 0, linha-1, colunaFim), 'ace_realceportugol-marker', 'screenLine'));
-		
-		if(scrollTo)
-		{
-			editor.scrollToLine(linha, true, true, function () {});
-		}
+		editorManager.highlight(linha,coluna,colunaFim,scrollTo);
 	}
 	
 	function enviarErro(annot)
@@ -560,12 +448,10 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 			errosSaida.innerHTML += htmlEntities(annot.textprev+annot.textnext)+"\n";
 			errosSaida.innerHTML += " ".repeat(annot.textprev.length)+"^\n\n";
 		}
-		errosAnnot.push(annot);
-		editor.getSession().setAnnotations(errosAnnot);
-		
-		errosMarkers.push(editor.getSession().addMarker(new Range(annot.row, 0, annot.row, annot.columnFim), 'ace_erroportugol-marker', 'screenLine'));
+	
+		editorManager.errMarker(annot);
 	}
-		
+
 	function mostrarHotbar()
 	{
 		// se mexer nesses numeros tudo para de funcionar deixa assim.
@@ -623,30 +509,8 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 		else
 			btn.value = "Parar em Erros";
 	}
-
-	function editorFocus()
-	{
-		//if(isMobile)
-		//{
-			//document.getElementById("hotbar").style.display = "block";
-			if(isMobile)
-			{
-				if(hotbar_yOffset > hotbar_middleyOffset)
-				{
-					setHotbarPosition(hotbar_middleyOffset,true);
-				}
-			}
-			else
-			{
-				if(hotbar_yOffset > hotbar_extendedyOffset)
-				{
-					setHotbarPosition(hotbar_extendedyOffset,true);
-				}
-			}
-		//}
-	}
 		
-	function editorMove(column,row)
+	/*function editorMove(column,row)
 	{
 		editor.gotoLine((editor.getCursorPosition().row+1) + row, editor.getCursorPosition().column + column); 
 	}
@@ -655,7 +519,7 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 	{
 		let p = editor.getCursorPosition();
 		editor.getSession().replace(new Range(p.row, p.column, p.row, p.column+1), "");
-	}
+	}*/
 
 	// HOTBAR	
 	function hotbar_dragStart(e) {
@@ -809,7 +673,7 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 
 	function resizeEditorToFitHotbar(e)
 	{
-		if(!editor) return;
+		if(!editorManager) return;
 
 		let h = window.innerHeight
 		|| document.documentElement.clientHeight
@@ -818,8 +682,7 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 		//if(!isMobile)
 		//document.getElementById("myEditor").style.height = (h-hotbar_yOffset+15)+"px";
 		//else
-		document.getElementById("myEditor").style.height = (h-hotbar_yOffset)+"px";
-		editor.resize();
+		editorManager.resizeEditor(h-hotbar_yOffset);
 		
 		
 		let isHotbarVisible = document.getElementById("hotbar_commands").style.display != "none";
@@ -835,13 +698,11 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 	
 	function resizeEditorMax()
 	{
-		if(!editor) return;
+		if(!editorManager) return;
 
 		let screenDimension = getScreenDimensions();
 		
-		document.getElementById("myEditor").style.height = (screenDimension.height)+"px";
-		editor.resize();
-		
+		editorManager.resizeEditor(screenDimension.height);
 		
 		div_saida.style.height = (screenDimension.height)+"px";
 	}
@@ -849,7 +710,7 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 	function autoSave()
 	{
 		try {
-			persistentStoreValue("code",editor.getValue());
+			persistentStoreValue("code",editorManager.getValue());
 			let autoComplete = document.getElementById("check-auto-completar").checked;
 			persistentStoreValue("autoComplete",autoComplete);
 			
@@ -928,7 +789,7 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 			// Apenas se não estiver executando
 			if(portugolRun.lastvmState == STATE_ENDED)
 			{
-				let string_cod = editor.getValue();
+				let string_cod = editorManager.getValue();
 				
 				// Vai Detectar se escreveu algo ou nao usando hash mesmo??
 				//var codigoHash = stringHashCode(string_cod);
@@ -956,7 +817,8 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 				
 				
 				let compilado = portugolRun.compilar(string_cod,false);
-				myPortugolCompleter.setCompiler(compilado);
+				editorManager.updateAutoComplete(compilado);
+
 				//console.log("Compilou:"+compilado.success+" Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
 			}
 		} catch (e) {
@@ -972,9 +834,6 @@ ace.config.set('basePath','/lib/ace-src-min-noconflict/');
 	window.onbeforeunload = function() {
 		return "";
 	};
-	
-	editor.on("focus", editorFocus);
-	editor.focus();
 
 	function exitHandler()
 	{
