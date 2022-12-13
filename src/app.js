@@ -1,17 +1,14 @@
 import { checkIsMobile } from "./extras/mobile.js";
 
-import portugolCompleter from "./ace-editor/ace_portugol_completer.js";
-import { escreva, getCurrentTokenIndex, getTokenIndex, limpa, STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMrun, VMsetup, VMtoString, VM_async_return, VM_getCodeMax, VM_getDelay, VM_getExecJS, VM_getSaida, VM_getTextInput, VM_setExecJS 
+import { STATE_ASYNC_RETURN, STATE_ENDED, STATE_WAITINGINPUT, VM_getExecJS, VM_getSaida, VM_setExecJS 
 } from "./vm/vm.js";
 import { elementIsAllScrolled, getScreenDimensions, httpGetAsync, numberOfLinesUntil, cursorToEnd as _cursorToEnd } from "./extras/extras.js";
-import { htmlEntities, Tokenizer } from "./compiler/tokenizer.js";
-import { Parser } from "./compiler/parser.js";
-import { Compiler } from "./compiler/vmcompiler.js";
-import JsGenerator from "./compiler/jsgenerator.js";
-import { myClearTimeout, mySetTimeout } from "./extras/timeout.js";
+import { htmlEntities } from "./compiler/tokenizer.js";
+import { myClearTimeout } from "./extras/timeout.js";
 import { persistentGetValue, persistentStoreValue } from "./extras/persistent.js";
 import PortugolRuntime from "./vm/portugolrun.js";
 import EditorManager from "./pages/index/editor.js";
+import Hotbar from "./pages/index/hotbar.js";
 
 	const div_saida = document.getElementById("textAreaSaida");
 	const errosSaida =document.getElementById("errorArea");
@@ -29,22 +26,6 @@ import EditorManager from "./pages/index/editor.js";
 		fontSize = 9;
 	}
 
-	const hotbar = document.getElementById("hotbar");
-    let hotbar_currentY;
-    let hotbar_initialY;
-	let hotbar_clickY;
-	// se mexer nesses numeros tudo para de funcionar deixa assim.
-	let hotbar_initialHeight = 200;
-	
-	let hotbar_minyOffset = 40;
-	let hotbar_collapsedyOffset = 80;
-	let hotbar_middleyOffset = 120;
-	let hotbar_extendedyOffset = 295;
-	//var hotbar_maxyOffset = 300;
-    let hotbar_yOffset = hotbar_collapsedyOffset;
-	let hotbar_active = false;
-	let hotbar_textarea = false;
-	let hotbar_isDragging = false;
 	let mostrar_bytecode = false;
 
 	let portugolRun = new PortugolRuntime(div_saida);
@@ -53,25 +34,21 @@ import EditorManager from "./pages/index/editor.js";
 	export const editorManager = new EditorManager();
 
 
-	function editorFocus()
-	{
+	const hotbar = document.getElementById("hotbar");
+	let hotbarManager = new Hotbar(hotbar,div_saida,errosSaida,isMobile,(sz) => {
+		editorManager.resizeEditor(sz);
+	});
+
+	editorManager.initEditor("myEditor",fontSize,portugolRun.libraries,isMobile,() => {
 		if(isMobile)
 		{
-			if(hotbar_yOffset > hotbar_middleyOffset)
-			{
-				setHotbarPosition(hotbar_middleyOffset,true);
-			}
+			hotbarManager.collapseUntil("MIDDLE");
 		}
 		else
 		{
-			if(hotbar_yOffset > hotbar_extendedyOffset)
-			{
-				setHotbarPosition(hotbar_extendedyOffset,true);
-			}
+			hotbarManager.collapseUntil("EXTENDED");
 		}
-	}
-
-	editorManager.initEditor("myEditor",fontSize,portugolRun.libraries,isMobile,editorFocus);
+	});
 
 	div_saida.style.fontSize = fontSize+"pt";
 	errosSaida.style.fontSize = fontSize+"pt";
@@ -83,17 +60,17 @@ import EditorManager from "./pages/index/editor.js";
 	{
 		if(portugolRun.lastvmState == STATE_ENDED)
 		{
-			btn.value == "Executar";
+			if(btn.value != "Executar")
+			{
+				console.error("Botão em estado inconsistente(Deveria ser Executar):"+btn.value);
+				btn.value == "Executar";
+			}
 
 			autoSave();
 			limparErros();
 			
 			// abrir hotbar e animar
-			//if(isMobile)
-			//{
-				if(hotbar_yOffset < hotbar_extendedyOffset)
-				setHotbarPosition(hotbar_extendedyOffset,true);
-			//}
+			hotbarManager.extendUntil("EXTENDED");
 			
 			let string_cod = editorManager.getValue();
 			try{
@@ -137,6 +114,10 @@ import EditorManager from "./pages/index/editor.js";
 		}
 		else
 		{
+			if(btn.value != "Parar" && btn.value != "Parando...")
+			{
+				console.error("Botão em estado inconsistente(Deveria ser 'Parar' ou 'Parando...'):"+btn.value);
+			}
 			btn.value == "Parando...";
 
 			if(portugolRun.parar())
@@ -164,22 +145,7 @@ import EditorManager from "./pages/index/editor.js";
 
 	export function toggleHotbar(show)
 	{
-		///if(document.getElementById("hotbar_commands").style.display == "block")
-		if(!show)
-		{
-			ocultarHotbar();
-			if(isMobile)
-			{
-				if(hotbar_yOffset > hotbar_middleyOffset)
-				{
-					setHotbarPosition(hotbar_middleyOffset,true);
-				}
-			}
-		}
-		else
-		{
-			mostrarHotbar();
-		}
+		hotbarManager.toggleHotbar(show);
 	}
 
 	export function setModoTurbo(checkbox)
@@ -370,18 +336,6 @@ import EditorManager from "./pages/index/editor.js";
 	window.android_loaded = android_loaded;
 	window.android_async_return = android_async_return;
 	
-	hotbar.addEventListener("touchstart", hotbar_dragStart, false);
-	hotbar.addEventListener("touchend", hotbar_dragEnd, false);
-	hotbar.addEventListener("touchmove", hotbar_drag, false);
-	
-	hotbar.addEventListener("mousedown",hotbar_dragStart, false);
-	window.addEventListener("mouseup", hotbar_dragEnd, false);
-	//hotbar.addEventListener("mouseleave",hotbar_dragEnd, false);
-	window.addEventListener("mousemove",hotbar_drag, false);
-	
-	window.addEventListener("resize", resizeEditorToFitHotbar);
-
-	
 	if(isMobile) {
 		if(typeof Android === 'undefined')
 		{
@@ -396,15 +350,15 @@ import EditorManager from "./pages/index/editor.js";
 	}
 	setEditorFromAutoSave();
 
-	resizeEditorToFitHotbar();
+	hotbarManager.resizeEditorToFitHotbar();
 	if(isMobile)
 	{
 		document.body.classList.add('mobile');
-		mostrarHotbar();
+		hotbarManager.mostrarHotbar();
 	}
 	else
 	{
-		ocultarHotbar();
+		hotbarManager.ocultarHotbar();
 	}
 	
 	function limparErros(tipoErros)
@@ -451,51 +405,6 @@ import EditorManager from "./pages/index/editor.js";
 	
 		editorManager.errMarker(annot);
 	}
-
-	function mostrarHotbar()
-	{
-		// se mexer nesses numeros tudo para de funcionar deixa assim.
-		hotbar_initialHeight = 200;
-		
-		
-		hotbar_minyOffset = 40;
-		hotbar_collapsedyOffset = 80;
-		hotbar_middleyOffset = 120;
-		hotbar_extendedyOffset = 295;
-		hotbar_yOffset = hotbar_collapsedyOffset;
-		
-		document.getElementById("hotbar_commands").style.display = "block";
-		
-		document.getElementById("hotbar_keys").style.display = "block";
-		
-		//document.getElementById("btn-mostrar-hotbar").value = "Ocultar";
-		document.getElementById("check-mostrar-hotbar").checked = true;
-		
-		setHotbarPosition(hotbar_middleyOffset);
-	}
-	
-	function ocultarHotbar()
-	{
-		// se mexer nesses numeros tudo para de funcionar deixa assim.
-		hotbar_initialHeight = 200 - 80;
-		
-		hotbar_minyOffset = 40;
-		hotbar_collapsedyOffset = 80 - 80;
-		hotbar_middleyOffset = 120 - 80;
-		hotbar_extendedyOffset = 295 - 80;
-		//hotbar_maxyOffset = hotbar_maxyOffset + 600;
-		hotbar_yOffset = 0;
-		//hotbar.style.display = "none";
-		
-		document.getElementById("hotbar_commands").style.display = "none";
-		
-		document.getElementById("hotbar_keys").style.display = "none";
-		
-		//document.getElementById("btn-mostrar-hotbar").value = "Mostrar";
-		document.getElementById("check-mostrar-hotbar").checked = false;
-		
-		setHotbarPosition(hotbar_extendedyOffset);
-	}
 	
 	function check_execErros()
 	{
@@ -520,192 +429,6 @@ import EditorManager from "./pages/index/editor.js";
 		let p = editor.getCursorPosition();
 		editor.getSession().replace(new Range(p.row, p.column, p.row, p.column+1), "");
 	}*/
-
-	// HOTBAR	
-	function hotbar_dragStart(e) {
-		let yValue = 0;
-		if (e.type === "touchstart") {
-			yValue = -e.touches[0].clientY;
-		} else {
-			yValue = -e.clientY;
-		}
-		
-		hotbar_clickY = yValue;
-		hotbar_initialY = yValue - hotbar_yOffset;
-
-		//console.log("click:"+hotbar_clickY);
-		if(e.target === errosSaida)
-		{
-			// nada. deixa quieto
-		}
-		else if(e.target === div_saida)
-		{
-			hotbar_textarea = true;
-		}
-		else if (e.target === hotbar || e.type !== "touchstart") {
-			hotbar_active = true;
-		}
-		
-		
-    }
-
-    function hotbar_dragEnd(e) {
-		if(e.type !== "touchend")
-		{
-			if(!hotbar_active) return; // só passou o mouse
-			
-			hotbar.style.cursor = "grab";
-		}
-		//initialX = currentX;
-		hotbar_initialY = hotbar_currentY;
-
-		
-		
-		/*if(hotbar_yOffset > (hotbar_extendedyOffset + 30))
-		{
-			setHotbarPosition(hotbar_maxyOffset,true);
-		}
-		else */
-		if(hotbar_yOffset > (hotbar_middleyOffset + 30) && hotbar_yOffset < hotbar_extendedyOffset)
-		{
-			setHotbarPosition(hotbar_extendedyOffset,true);
-		}
-		else if(Math.abs(hotbar_yOffset - hotbar_middleyOffset) < 30)
-		{
-			setHotbarPosition(hotbar_middleyOffset,true);
-		}
-		else if(Math.abs(hotbar_yOffset - hotbar_collapsedyOffset) < 30)
-		{
-			setHotbarPosition(hotbar_collapsedyOffset,true);
-		}
-		else if(Math.abs(hotbar_yOffset - hotbar_minyOffset) < 30)
-		{
-			setHotbarPosition(hotbar_minyOffset,true);
-		}
-		else
-		{
-			resizeEditorToFitHotbar();
-		}
-
-
-		hotbar_active = false;
-		hotbar_textarea = false;
-		hotbar_isDragging = false;
-    }
-
-    function hotbar_drag(e) {
-		let yValue = 0;
-		if (e.type === "touchmove") {
-			yValue = -e.touches[0].clientY;
-		} else {
-			if(!hotbar_active) return; // só passou o mouse
-			yValue = -e.clientY;
-			
-			hotbar.style.cursor = "grabbing";
-		}
-		
-		let hotbar_lastY = hotbar_currentY;
-		hotbar_currentY = yValue - hotbar_initialY;
-		let yOff = Math.abs(hotbar_clickY - yValue);
-		//console.log("drag:"+hotbar_initialY);
-		
-		
-	
-		if (!hotbar_active) {
-		
-			if(hotbar_textarea && !elementIsAllScrolled(div_saida))
-			{
-				hotbar_clickY = yValue;
-				hotbar_initialY = yValue - hotbar_yOffset;
-				return;
-			}
-		
-			if(yOff < 20)
-			{
-				return;
-			}
-			else
-			{
-				hotbar_active = true;
-			}
-		}
-		else
-		{
-			if(e.cancelable)
-			{
-				e.preventDefault();
-			}
-		}
-
-		//xOffset = currentX;
-		
-
-		//setTranslate(hotbar_currentY, hotbar);
-		setHotbarPosition(hotbar_currentY,false,true);
-		
-		if(!hotbar_isDragging)
-		resizeEditorMax();
-		
-		hotbar_isDragging = true;
-    }
-
-    function setHotbarPosition(yPos,animate,fastUpdates) {
-		if(animate)
-		{
-			hotbar.classList.add('animate');
-		}
-		else
-		{
-			hotbar.classList.remove('animate');
-		}
-		
-		
-		//el.style.transform = "translate3d(0px,	  " + yPos + "px, 0)";
-		let screenDimension = getScreenDimensions();
-		hotbar_yOffset = Math.max(hotbar_minyOffset,yPos);
-		hotbar_yOffset = Math.min(hotbar_yOffset,screenDimension.height-5);
-		//hotbar_yOffset = Math.min(hotbar_maxyOffset,yPos);
-		hotbar.style.bottom = (hotbar_yOffset - hotbar_initialHeight)+"px";
-		
-		if(!fastUpdates)
-		resizeEditorToFitHotbar(false);
-    }
-
-	function resizeEditorToFitHotbar(e)
-	{
-		if(!editorManager) return;
-
-		let h = window.innerHeight
-		|| document.documentElement.clientHeight
-		|| document.body.clientHeight;
-		
-		//if(!isMobile)
-		//document.getElementById("myEditor").style.height = (h-hotbar_yOffset+15)+"px";
-		//else
-		editorManager.resizeEditor(h-hotbar_yOffset);
-		
-		
-		let isHotbarVisible = document.getElementById("hotbar_commands").style.display != "none";
-		
-		
-		
-		if(!isHotbarVisible)
-		div_saida.style.height = (hotbar_yOffset-50)+"px";
-		else
-		div_saida.style.height = (hotbar_yOffset-130)+"px";
-		
-	}
-	
-	function resizeEditorMax()
-	{
-		if(!editorManager) return;
-
-		let screenDimension = getScreenDimensions();
-		
-		editorManager.resizeEditor(screenDimension.height);
-		
-		div_saida.style.height = (screenDimension.height)+"px";
-	}
 	
 	function autoSave()
 	{
