@@ -3,10 +3,6 @@
   "web_app_version": 2,
   "web_app_files": [
     {
-      "file": "icons/a",
-      "md5": "dadafe066983ab646e8550013fb7da13"
-    },
-    {
       "file": "icons/arrowD.png",
       "md5": "e6ab69f8029da09d12c6ae2c36ba404f"
     },
@@ -60,91 +56,91 @@
     },
     {
       "file": "exemplos/aleatorio0.por",
-      "md5": "6cf0ac24c99e84f7ebe447cdd2de5bd2"
+      "md5": "ebe083c1ca06e6d7f2e9a7cf17115030"
     },
     {
       "file": "exemplos/aleatorio1.por",
-      "md5": "1beefa874fd293eedd24d82742fb65da"
+      "md5": "e68f63216338e278a98070e5315afd01"
     },
     {
       "file": "exemplos/aleatorio2.por",
-      "md5": "f4d0d7a04b3e53646acca3413616f8b3"
+      "md5": "2caa1059197fd44b413755bd728c9d91"
     },
     {
       "file": "exemplos/aleatorio3.por",
-      "md5": "4c144694aec8979373328ef5998714dd"
+      "md5": "6d570bf75c7503bd60d09ef33d2f38f7"
     },
     {
       "file": "exemplos/aleatorio4.por",
-      "md5": "7fd27d0c0a25dad0b9528c3a59c1fa51"
+      "md5": "df900b78db334ca4c55471e0916d08c5"
     },
     {
       "file": "exemplos/aleatorio5.por",
-      "md5": "1a8d6c9c5310f846438fe41d840873eb"
+      "md5": "35a549af4420b4ae9fc5b56f2e0c1003"
     },
     {
       "file": "exemplos/bibliotecas.por",
-      "md5": "f061dc9b1ec762ff119d8371121ad4db"
+      "md5": "7548db4ffa12936282e76bf2e3d7256a"
     },
     {
       "file": "exemplos/branco.por",
-      "md5": "a22f631de4b5c451d93ae9e6df7784af"
+      "md5": "488c5f1095a2fa22d59c7121a35c099f"
     },
     {
       "file": "exemplos/condicoes.por",
-      "md5": "44e88abeae726b9dffbe4346446a8e2b"
+      "md5": "60fcb72958f728987e8d8effa609c7df"
     },
     {
       "file": "exemplos/entrada.por",
-      "md5": "e7441bad0456121353a1db0364098776"
+      "md5": "69acbc27192f86ed063b597eecd88320"
     },
     {
       "file": "exemplos/funcoes.por",
-      "md5": "faf14d3d0a02e29759cd272fdf3fa91c"
+      "md5": "983eba762a745f5f72f6fb5ba321da5b"
     },
     {
       "file": "exemplos/graficos.por",
-      "md5": "e2d3eff2533c73d7e5282ca4938765f0"
+      "md5": "5444af50fe1e08cc85d622735584bd3e"
     },
     {
       "file": "exemplos/internet.por",
-      "md5": "950234458782ff9a4b59697888d9a69c"
+      "md5": "a2761a025714a5412efcd7add226e360"
     },
     {
       "file": "exemplos/jogodavida.por",
-      "md5": "57b4a22dbdfecc914b67e4ef39ec9840"
+      "md5": "98a8ecb8578e5b8508a2376a6843fc70"
     },
     {
       "file": "exemplos/notas.por",
-      "md5": "a516b746313ba54da8cfa8923acd853e"
+      "md5": "31d935854501e9c2e773e7d252737003"
     },
     {
       "file": "exemplos/olamundo.por",
-      "md5": "2859e66bef1a9075244914fcb458697b"
+      "md5": "8b2caf7b88e152e9d6fc9c0db266df3e"
     },
     {
       "file": "exemplos/repeticao.por",
-      "md5": "5651e575db74be07c64f6a79b11dcddc"
+      "md5": "dc2d35ac960518c74ec7df3f2594d40c"
     },
     {
       "file": "exemplos/slide_puzzle.por",
-      "md5": "c4ace64c148575eef1f5dc5c91df3e2a"
+      "md5": "cb2baf3dbc9a3c60d662ab4422c6e267"
     },
     {
       "file": "exemplos/variaveis.por",
-      "md5": "8fd092bf772d8d0a2f9587a015dac11e"
+      "md5": "28a5a296156713b30f63ce8cc72ae35f"
     },
     {
       "file": "exemplos/vetores.por",
-      "md5": "c4f2e81d53591d9b7cf9648b5804421e"
+      "md5": "838e9a39d1867e56e9ba39e140bc6b4f"
     },
     {
       "file": "avaliar.html",
-      "md5": "8efbe78ff55294b590a80f7c8ef4b16b"
+      "md5": "53d608858ef71d14cca989bc0b066510"
     },
     {
       "file": "portugol.css",
-      "md5": "e04acff0004e51cc3a26b80e121f2838"
+      "md5": "f95813ed8baecc281204787c68986694"
     },
     {
       "file": "dist/ace.js",
@@ -156,7 +152,7 @@
     },
     {
       "file": "index.html",
-      "md5": "cc3a327b560c061d6bfd1962007c5764"
+      "md5": "7d970fa7046c4e597db03f3879689016"
     }
   ]
 }

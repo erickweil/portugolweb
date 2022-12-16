@@ -1,37 +1,16 @@
 package br.erickweil.portugolweb;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.util.Log;
 
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.SocketException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.net.UnknownHostException;
-import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.net.ssl.HttpsURLConnection;
 
 public class VersionChecker {
     public static final int READ_TIMEOUT = 30000;
-    public static final int VERSAO_ASSETS_WEBAPP = 2; // Versão do webapp incluso no apk nos assets
+    public static final int VERSAO_ASSETS_WEBAPP = 1; // Versão do webapp incluso no apk nos assets
 
     public String endereco;
     public String versaoApp;

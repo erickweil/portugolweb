@@ -9,34 +9,23 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.net.ConnectivityManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.util.Log;
-import android.view.View;
-import android.webkit.DownloadListener;
-import android.webkit.ServiceWorkerClient;
-import android.webkit.ServiceWorkerController;
 import android.webkit.WebChromeClient;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 
@@ -52,7 +41,6 @@ public class Inicio extends Activity {
     private WebView webview;
     private WebSettings webviewSettings;
     private WebJSInterface JSinterface;
-    private String firebaseToken;
     private String identifier;
 
     public static SharedPreferences getPrefs(Context c){
@@ -65,7 +53,8 @@ public class Inicio extends Activity {
     }
 
     public static final String getVersionCheck() {
-        return getIndex() + SITE_VERSIONCHECK_FILE;
+        return "https://raw.githubusercontent.com/erickweil/portugolweb/develop/"+SITE_VERSIONCHECK_FILE;
+        //return getIndex() + SITE_VERSIONCHECK_FILE;
     }
 
     @Override
@@ -89,8 +78,6 @@ public class Inicio extends Activity {
 
         try {
             SharedPreferences preferences = getPrefs(this);
-            firebaseToken = FireService.getCurrentToken(this, preferences);
-
 
             int startCount = preferences.getInt("start_count",0);
             int deuNota = preferences.getInt("deu_nota",0);

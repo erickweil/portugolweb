@@ -36,7 +36,7 @@ body {
 	resize: auto;
 }
 #myEditor{
-	/*height: 80%;*/
+	/*height: 80%; */
 	max-height: 100vh;
 	min-height: 200px;
 	

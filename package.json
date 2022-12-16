@@ -28,7 +28,6 @@
     "@webpack-cli/generators": "^3.0.1",
     "ace-builds": "^1.14.0",
     "babel-loader": "^9.1.0",
-    "crypto": "^1.0.1",
     "css-loader": "^6.7.2",
     "eslint": "^8.29.0",
     "eslint-plugin-import": "^2.26.0",
