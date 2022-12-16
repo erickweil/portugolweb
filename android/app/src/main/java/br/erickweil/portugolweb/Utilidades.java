@@ -5,8 +5,10 @@ import android.util.Log;
 
 import org.json.JSONArray;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -87,6 +89,50 @@ public class Utilidades {
         return content.toString();
     }
 
+    /** Lê o texto de uma input stream (codificado como utf-8)<BR/>
+     *  A input stream NÃO É FECHADA! <BR/>
+     *  ATENÇÃO ESTE MÉTODO CONVERTE AS QUEBRAS DE LINHA PARA '\n' <BR/>
+     */
+    public static String readAllText(InputStream stream) throws IOException {
+        BufferedReader input = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+
+        StringBuilder content = new StringBuilder();
+        for (String s = input.readLine(); s != null; s = input.readLine()) {
+            //Log.i("Utilidades.httpPost", "READING -> '" + s + "'");
+            content.append(s);
+            content.append("\n");
+        }
+        String contentText = content.toString();
+
+        return contentText;
+    }
+
+    /** Lê bytes de uma input stream, indique -1 no tamanho para ler até achar o fim <BR/>
+     *  A input stream NÃO É FECHADA! <BR/>
+     *  Utilize file.length() para determinar o tamanho que deverá ler
+     *
+     *  Exemplo de chamada: readAllBytes(new FileInputStream(file),(int)file.size())
+     */
+    public static byte[] readAllBytes(InputStream stream,int size) throws IOException {
+        if(size > 0) {
+            byte[] bytes = new byte[size];
+
+            BufferedInputStream buf = new BufferedInputStream(stream);
+            buf.read(bytes, 0, bytes.length);
+            return bytes;
+        } else {
+            ByteArrayOutputStream output = new ByteArrayOutputStream(8192);
+            byte[] buffer = new byte[8192];
+            int read;
+
+            while ((read = stream.read(buffer)) > 0) {
+                output.write(buffer, 0, read);
+            }
+
+            return output.toByteArray();
+        }
+    }
+
     public static class GetResp {
         int status;
         InputStream stream;
@@ -99,15 +145,7 @@ public class Utilidades {
         }
 
         public String getText() throws IOException {
-            BufferedReader input = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
-
-            StringBuilder content = new StringBuilder();
-            for (String s = input.readLine(); s != null; s = input.readLine()) {
-                //Log.i("Utilidades.httpPost", "READING -> '" + s + "'");
-                content.append(s);
-                content.append("\n");
-            }
-            String contentText = content.toString();
+            String contentText = readAllText(stream);
 
             closeStream();
 

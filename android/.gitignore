@@ -16,3 +16,4 @@
 *.pepk
 *.apk
 *.aab
+*services.json

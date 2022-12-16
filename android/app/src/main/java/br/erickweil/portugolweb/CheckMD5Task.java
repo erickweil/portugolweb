@@ -88,19 +88,23 @@ public class CheckMD5Task extends AsyncTask<CheckMD5Task.FileHashEntry,Integer, 
     }
 
     public static String calculateMD5(File updateFile) {
-        MessageDigest digest;
-        try {
-            digest = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            Log.e(TAG, "Exception while getting digest", e);
-            return null;
-        }
-
         InputStream is;
         try {
             is = new FileInputStream(updateFile);
         } catch (FileNotFoundException e) {
             Log.e(TAG, "Exception while getting FileInputStream", e);
+            return null;
+        }
+
+        return calculateMD5(is);
+    }
+
+    public static String calculateMD5(InputStream is) {
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            Log.e(TAG, "Exception while getting digest", e);
             return null;
         }
 

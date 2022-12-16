@@ -1,5 +1,7 @@
 package br.erickweil.portugolweb;
 
+import static br.erickweil.portugolweb.Utilidades.readAllBytes;
+
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -14,8 +16,11 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import org.json.JSONObject;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -111,8 +116,8 @@ public class InterceptorWebViewClient extends WebViewClient {
 
         SharedPreferences.Editor prefsEdit = preferences.edit();
 
-        prefsEdit.putInt("web_app_version",0);
-        prefsEdit.putString("web_app_cache",null);
+        prefsEdit.remove("web_app_version");
+        prefsEdit.remove("web_app_cache");
 
         prefsEdit.apply();// commit??
     }
@@ -141,16 +146,45 @@ public class InterceptorWebViewClient extends WebViewClient {
 
                     Uri resultUri = Uri.parse(novoUrl);
                     InputStream fileToRead = null;
+                    //boolean isAsset = false;
                     if (resultUri.getScheme().equals("file") && resultUri.getPath().startsWith("/android_asset/")) {
                         String path = resultUri.getPath().replace("/android_asset/", ""); // TODO: should be at start only
                         fileToRead = context.getAssets().open(path);
+                        //isAsset = true;
                     }
                     else {
                         // E se for /../../../com.whatsapp/ ?
                         fileToRead = context.getContentResolver().openInputStream(resultUri);
+                        //isAsset = false;
                     }
 
                     if (fileToRead == null) throw new IOException("Erro ao ler arquivo do cache, InputStream null");
+
+                    // A ideia é que quando não é um arquivo dos Assets, será realizada uma verificação
+                    // de integridade, baseado no arquivo version.json que é baixado a cada vez que abre o app.
+                    // SO QUE NÃO SERÁ FEITO PORQUE CONFIAMOS QUE AO BAIXAR JÁ FEZ ESSA VERIFICAÇÃO
+                    /*
+                    if(!isAsset) {
+                        JSONObject versionJson = VersionChecker.getVersionJson(context);
+                        if (versionJson != null) {
+                            byte[] fileBytes;
+                            try {
+                                fileBytes = readAllBytes(fileToRead, -1);
+                            }
+                            finally {
+                                fileToRead.close();
+                            }
+
+                            if(!VersionChecker.doFileIntegrityCheck(fileBytes,novoUrl,versionJson))
+                            {
+                                throw new IOException("Não está correto o arquivo do cache. Erro na verificação de integridade");
+                            }
+
+                            fileToRead = new ByteArrayInputStream(fileBytes);
+                        } else {
+                            Log.e("INICIO","Version Json null, não é possível verificar a versão");
+                        }
+                    }*/
 
                     Log.w("INICIO", "INTERCEPTAR:" + request.getUrl() + " --> " + resultUri + " " + mimeType);
 
@@ -161,12 +195,19 @@ public class InterceptorWebViewClient extends WebViewClient {
             else return null;
         } catch (Exception e) {
             e.printStackTrace();
+
+            // Precisa invalidar o cache pq falhou na abertura de um arquivo
+            // Irá no próximo reinício abrir dos Assets que não tem como falhar
             invalidarPrefsCache();
 
-            Log.e("INICIO", "INTERCEPTAR:" + request.getUrl() + " FALHOU! REINICIANDO A ACTIVITY");
+            // Não atualizar agora. só quando fechar e abrir o app denovo.
+            // PREVINE POSSÍVEIS LOOPS DE CRASH QUE PODEM ACONTECER COM O SISTEMA DE ATUALIZAÇÃO AUTOMÁTICA
+            Inicio.falhouCache = true;
+
+            Log.e("INICIO", "INTERCEPTAR:" + request.getUrl() + " FALHOU!! REINICIANDO A ACTIVITY");
 
             // Recomeça a Activity para recarregar o webview com o url correto
-            context.recreate();
+            context.runOnUiThread(() -> context.recreate());
 
             return null;
         }

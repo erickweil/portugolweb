@@ -75,7 +75,7 @@ public class JanelaHelper {
     public static void abrirJanelaAtualizaoComSucesso(final Activity context, int versaoAntiga, int versaoAtual) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.app_name);
-        builder.setMessage("O Site do aplicativo atualizou para a versão "+versaoAtual+" (Você estava na "+versaoAtual+"). Download da versão nova concluído. Reinicie o aplicativo para ter efeito.");
+        builder.setMessage("O Site do aplicativo atualizou para a versão "+versaoAtual+" (Você estava na "+versaoAntiga+"). Download da versão nova concluído. Reinicie o aplicativo para ter efeito.");
         builder.setIcon(R.drawable.ic_launcher_foreground);
         builder.setPositiveButton("Reiniciar", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {

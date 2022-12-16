@@ -6,6 +6,7 @@ import android.util.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.SocketException;
@@ -18,27 +19,36 @@ public class HttpGetTask<T extends HttpGetTask.TaskStatus> extends AsyncTask<T,I
     public int CONNECT_TIMEOUT;
     public int READ_TIMEOUT;
 
-
-    public static final int ACAO_NADA = 0;
-    public static final int ACAO_DOWNLOAD_TEXTO = 1;
-    public static final int ACAO_DOWNLOAD_BYTES = 2;
-    public static final int ACAO_DOWNLOAD_ARQUIVO = 3;
-
+    /**
+     * Task base. falha se houver erro, como timeouts e conexão interrompida.
+     * NÃO FALHA EM CÓDIGOS HTTP, DÁ SUCESSO MESMO EM HTTP 3XX, 4XX, 5XX ETC...
+     *
+     * Só pode ser a primeira Task
+     */
     public static class TaskStatus {
         String endereco;
-        int acao;
+        TaskStatus next;
 
-        private TaskStatus(String endereco,int acao){
-            this.acao = acao;
+        private TaskStatus(){
+            this.acao_sucesso = false;
+        }
+
+        public TaskStatus(String endereco){
             this.endereco = endereco;
             this.acao_sucesso = false;
         }
 
-        public TaskStatus(String endereco)
-        {
-            this.acao = ACAO_NADA;
-            this.endereco = endereco;
-            this.acao_sucesso = false;
+        /**
+         * Agenda a próxima tarefa a ser executada ainda em background
+         * Após esta tarefa ter sido completada e com sucesso.
+         */
+        public TaskStatus then(TaskStatus nextTask) {
+            if(this.next == null)
+                this.next = nextTask;
+            else
+                this.next.then(nextTask);
+
+            return this;
         }
 
         int status;
@@ -47,17 +57,22 @@ public class HttpGetTask<T extends HttpGetTask.TaskStatus> extends AsyncTask<T,I
             ret.closeStream();
             acao_sucesso = true;
         }
+
+        public void execute(TaskStatus prevTask) throws IOException {
+            acao_sucesso = true;
+        }
     }
 
+    /**
+     * Faz o download do arquivo
+     *
+     * Só pode ser a primeira Task
+     */
     public static class TaskDownloadFile extends TaskStatus {
         File arquivo;
-        String md5_original;
-        String md5_calculated;
-        public TaskDownloadFile(String endereco, File arquivo, String md5)
-        {
-            super(endereco,ACAO_DOWNLOAD_ARQUIVO);
+        public TaskDownloadFile(String endereco, File arquivo) {
+            super(endereco);
             this.arquivo = arquivo;
-            this.md5_original = md5;
         }
 
         public void execute(Utilidades.GetResp ret) throws IOException {
@@ -74,6 +89,27 @@ public class HttpGetTask<T extends HttpGetTask.TaskStatus> extends AsyncTask<T,I
                 Log.e("GETTASK", "Erro ao criar arquivo.");
                 return;
             }
+        }
+    }
+
+    /**
+     * Verifica o hash md5 do arquivo
+     *
+     * Pode ser chamado após uma TaskDownloadFile
+     */
+    public static class TaskCheckMD5 extends TaskStatus {
+        String md5_original;
+        String md5_calculated;
+        public TaskCheckMD5(String md5) {
+            this.md5_original = md5;
+        }
+
+        @Override
+        public void execute(TaskStatus prev) throws IOException {
+            if(!(prev instanceof TaskDownloadFile))
+                throw new IOException("Só pode executar TaskCheckMD5 após uma task DownloadFile");
+            TaskDownloadFile tprev = (TaskDownloadFile) prev;
+            File arquivo = tprev.arquivo;
 
             if(md5_original != null && !TextUtils.isEmpty(md5_original))
             {
@@ -90,20 +126,42 @@ public class HttpGetTask<T extends HttpGetTask.TaskStatus> extends AsyncTask<T,I
                 else
                     Log.e("GETTASK", md5_original+" != " + md5_calculated+" <-- HASH DIFERENTE");
             }
-
-
         }
     }
 
+    /**
+     * Retorna como texto.
+     *
+     * Pode ser a primeira Task
+     * Pode ser chamado após uma TaskDownloadFile
+     */
     public static class TaskText extends TaskStatus {
         String texto;
         public TaskText(String endereco)
         {
-            super(endereco,ACAO_DOWNLOAD_TEXTO);
+            super(endereco);
         }
 
         public void execute(Utilidades.GetResp ret) throws IOException {
             texto = ret.getText();
+            acao_sucesso = texto != null;
+            if(!acao_sucesso) {
+                Log.e("GETTASK", "Texto nulo.");
+                return;
+            }
+        }
+
+        public void execute(TaskStatus prev) throws IOException {
+            if(!(prev instanceof TaskDownloadFile))
+                throw new IOException("Só pode executar TaskText após uma task DownloadFile");
+
+            TaskDownloadFile tprev = (TaskDownloadFile) prev;
+            File arquivo = tprev.arquivo;
+            FileInputStream fin = new FileInputStream(arquivo);
+
+            texto = Utilidades.readAllText(fin);
+            fin.close();
+
             acao_sucesso = texto != null;
             if(!acao_sucesso) {
                 Log.e("GETTASK", "Texto nulo.");
@@ -149,6 +207,14 @@ public class HttpGetTask<T extends HttpGetTask.TaskStatus> extends AsyncTask<T,I
             try {
                 t.status = ret.status;
                 t.execute(ret);
+                TaskStatus taskNow = t;
+                TaskStatus taskNext = t.next;
+                while(taskNow.acao_sucesso && taskNext != null){
+                    taskNext.execute(taskNow);
+
+                    taskNow = taskNext;
+                    taskNext = taskNow.next;
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 ret.closeStream();

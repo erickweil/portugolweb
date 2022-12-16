@@ -11,6 +11,7 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.webkit.WebChromeClient;
@@ -42,6 +43,11 @@ public class Inicio extends Activity {
     private WebSettings webviewSettings;
     private WebJSInterface JSinterface;
     private String identifier;
+    private String fileToOpen;
+    private int webAppVersion;
+
+    // Se for true não irá tentar atualizar. previne um loop de erros ao abrir o app
+    public static boolean falhouCache;
 
     public static SharedPreferences getPrefs(Context c){
         //https://www.journaldev.com/9412/android-shared-preferences-example-tutorial#targetText=Shared%20Preferences%20allows%20activities%20and,data%2F%7Bapplication%20package%7D%20directory.
@@ -53,8 +59,8 @@ public class Inicio extends Activity {
     }
 
     public static final String getVersionCheck() {
-        return "https://raw.githubusercontent.com/erickweil/portugolweb/develop/"+SITE_VERSIONCHECK_FILE;
-        //return getIndex() + SITE_VERSIONCHECK_FILE;
+        //return "https://raw.githubusercontent.com/erickweil/portugolweb/develop/"+SITE_VERSIONCHECK_FILE;
+        return getIndex() + SITE_VERSIONCHECK_FILE;
     }
 
     @Override
@@ -64,7 +70,7 @@ public class Inicio extends Activity {
 
         // Get the intent that started this activity
         Intent intent = getIntent();
-        final String fileToOpen;
+
         if(intent != null) {
             fileToOpen = verifyOpenFile(intent);
         }
@@ -73,7 +79,6 @@ public class Inicio extends Activity {
             fileToOpen = null;
         }
 
-        int webAppVersion = -1;
         String cachePathToOpen = ANDROID_ASSETS_CACHE_URL;
 
         try {
@@ -101,9 +106,6 @@ public class Inicio extends Activity {
             {
                 JanelaHelper.AbrirJanelaDarNota(this);
             }
-
-
-            checkLatestVersion(webAppVersion);
         }
         catch (Exception e)
         {
@@ -111,7 +113,7 @@ public class Inicio extends Activity {
         }
 
 
-
+        loaded = 0;
         webview = findViewById(R.id.inicio_webview);
 
         webviewSettings = webview.getSettings();
@@ -128,21 +130,10 @@ public class Inicio extends Activity {
         webview.setWebChromeClient(new WebChromeClient());
         final WebViewClient client = new InterceptorWebViewClient(this,SITE_DOMINIO,SITE_INDEX_PATH,cachePathToOpen)
         {
-            int loaded = 0;
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                if(loaded == 0)
-                {
-                    if(fileToOpen != null)
-                    {
-                        // fileToOpen is escaped for double quotes already.
-                        String code = "android_loaded(\""+fileToOpen+"\")";
-                        //Log.d("INICIO",script);
-                        execJavascriptCode(code);
-                    }
-                }
-                loaded++;
+                onWebViewPageFinished(view,url);
             }
         };
 
@@ -153,12 +144,32 @@ public class Inicio extends Activity {
 
 
 
-        Log.d("INICIO","Iniciando App, WebApp Versão:"+webAppVersion+", Página salva no cache:"+cachePathToOpen);
+        Log.d("INICIO","Iniciando App, Página salva no cache:"+cachePathToOpen);
 
         webview.loadUrl(getIndex());
 
         JSinterface = new WebJSInterface(this);
         webview.addJavascriptInterface(JSinterface,"Android");
+    }
+
+    public int loaded = 0;
+    public void onWebViewPageFinished(WebView webview, String url) {
+        if(loaded == 0)
+        {
+            if(fileToOpen != null)
+            {
+                // fileToOpen is escaped for double quotes already.
+                String code = "android_loaded(\""+fileToOpen+"\")";
+                //Log.d("INICIO",script);
+                execJavascriptCode(code);
+            }
+
+            if(!falhouCache) {
+                // É para que não atrapalhe o carregamento da página.
+                new Handler().postDelayed(() -> checkLatestVersion(webAppVersion), 750);
+            }
+        }
+        loaded++;
     }
 
     @Override

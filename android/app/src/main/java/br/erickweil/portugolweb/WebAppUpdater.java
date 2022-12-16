@@ -48,22 +48,11 @@ public class WebAppUpdater {
         prefsEdit.apply();// commit??
     }
 
-
-    public void invalidarPrefsCache(){
-        Log.e("INICIO","INVALIDANDO O CACHE DAS PREFS");
-        SharedPreferences preferences = Inicio.getPrefs(context);
-
-        SharedPreferences.Editor prefsEdit = preferences.edit();
-
-        prefsEdit.putInt("web_app_version",0);
-        prefsEdit.putString("web_app_cache",null);
-
-        prefsEdit.apply();// commit??
-    }
-
     public void executar() {
         // https://stackoverflow.com/questions/54996665/how-to-save-downloaded-file-in-internal-storage-in-android-studio
-        final File filesDir = new File(context.getFilesDir(),"portugolweb");
+        // Utiliza a versao no nome do arquivo para não sobrescrever e estragar o que estiver sendo utilizado agora.
+        // Deveria apagar a versão antiga após o download da nova. mas só não será feito e é isso .-.
+        final File filesDir = new File(context.getFilesDir(),"portugolweb"+web_app_version);
         if(!filesDir.exists()){
             filesDir.mkdir();
         }
@@ -90,8 +79,8 @@ public class WebAppUpdater {
                 if(parent != null)
                     parent.mkdirs();
 
-                tasks[i] = new HttpGetTask.TaskDownloadFile(
-                    endereco, dest, md5
+                tasks[i] = (HttpGetTask.TaskDownloadFile) new HttpGetTask.TaskDownloadFile(endereco, dest)
+                        .then(new HttpGetTask.TaskCheckMD5(md5)
                 );
             }
         } catch (JSONException e) {
@@ -117,8 +106,11 @@ public class WebAppUpdater {
         int falhas = 0;
         for(int i=0;i<resposta.length;i++) {
             HttpGetTask.TaskDownloadFile t = resposta[i];
-            // Se QUALQUER UM tiver falhado, não foi um sucesso.
+            // Se QUALQUER UM tiver falhado o download ou a checagem md5, não foi um sucesso.
             if(!t.acao_sucesso) {
+                falhas++;
+            }
+            if(t.next != null && !t.next.acao_sucesso){
                 falhas++;
             }
         }
@@ -128,13 +120,16 @@ public class WebAppUpdater {
             onSucessoAtualizacao(filesDir);
         }
         else {
-            Log.e("UPDATER","FALHOU NO DOWNLOAD DE "+falhas+" ARQUIVOS! VAI TENTAR NOVAMENTE QUANDO ABRIR O APP");
-            invalidarPrefsCache();
+            Log.e("UPDATER","FALHOU NO DOWNLOAD DE "+falhas+" ARQUIVOS!!! VAI TENTAR NOVAMENTE QUANDO ABRIR O APP");
+            // Não precisa invalidar o cache pq não sobrescreveu ele.
+            // cada versão é escrita em uma pasta portugolweb1, portugolweb2, etc...
+            //invalidarPrefsCache();
         }
     }
 
     public void onSucessoAtualizacao(File filesDir)
     {
+        // Atualiza o caminho que deve abrir o site e qual a versão atual
         registrarAppCacheNasPrefs(filesDir);
         Log.i("UPDATER","ATUALIZADO CACHE DAS PREFS COM SUCESSO!");
         JanelaHelper.abrirJanelaAtualizaoComSucesso(context,old_version,web_app_version);
@@ -209,7 +204,7 @@ public class WebAppUpdater {
         }
         else {
             Log.e("UPDATER","FALHOU NA CHECAGEM DA INTEGRIDADE DE "+falhas+" ARQUIVOS! VAI TENTAR NOVAMENTE QUANDO ABRIR O APP");
-            invalidarPrefsCache();
+            //invalidarPrefsCache();
         }
     }
 }
