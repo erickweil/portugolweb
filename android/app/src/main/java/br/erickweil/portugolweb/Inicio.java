@@ -32,12 +32,18 @@ import java.nio.charset.Charset;
 
 public class Inicio extends Activity {
 
-    public static final String SITE_PROTOCOLO = "https://";
+    /*public static final String SITE_PROTOCOLO = "https://";
     //public static final String SITE_DOMINIO = "erickweil.github.io";
     public static final String SITE_DOMINIO = "app.passapassa.com.br";
-    public static final String SITE_INDEX_PATH = "/portugolweb/";
+    public static final String SITE_INDEX_PATH = "/portugolweb/";*/
     public static final String SITE_VERSIONCHECK_FILE = "version.json";
     public static final String ANDROID_ASSETS_CACHE_URL = "file:///android_asset/portugolweb/";
+
+    public static final String SITE_PROTOCOLO = "http://";
+    public static final String SITE_DOMINIO = "192.168.1.5";
+    public static final String SITE_INDEX_PATH = "/indexdev.html";
+    public static final boolean SITE_FAZER_CACHE = false; // teste local
+
     public static final long MAX_FILESIZE = 2000000;
     private WebView webview;
     private WebSettings webviewSettings;
@@ -122,13 +128,18 @@ public class Inicio extends Activity {
         //webviewSettings.setAppCachePath(getApplicationContext().getCacheDir().getAbsolutePath());
         webviewSettings.setAllowFileAccess(true);
         //webviewSettings.setAppCacheEnabled(true);
-        webviewSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        webviewSettings.setCacheMode(SITE_FAZER_CACHE ? WebSettings.LOAD_DEFAULT : WebSettings.LOAD_NO_CACHE);
 
         webviewSettings.setDatabaseEnabled(true);
         webviewSettings.setDomStorageEnabled(true);
 
         webview.setWebChromeClient(new WebChromeClient());
-        final WebViewClient client = new InterceptorWebViewClient(this,SITE_DOMINIO,SITE_INDEX_PATH,cachePathToOpen)
+        final WebViewClient client = new InterceptorWebViewClient(
+                this,
+                SITE_FAZER_CACHE ? SITE_DOMINIO : null,
+                SITE_FAZER_CACHE ? SITE_INDEX_PATH : null,
+                SITE_FAZER_CACHE ? cachePathToOpen : null
+        )
         {
             @Override
             public void onPageFinished(WebView view, String url) {
@@ -164,7 +175,7 @@ public class Inicio extends Activity {
                 execJavascriptCode(code);
             }
 
-            if(!falhouCache) {
+            if(!falhouCache && SITE_FAZER_CACHE) {
                 // É para que não atrapalhe o carregamento da página.
                 new Handler().postDelayed(() -> checkLatestVersion(webAppVersion), 750);
             }

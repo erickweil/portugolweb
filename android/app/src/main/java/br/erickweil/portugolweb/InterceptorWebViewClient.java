@@ -29,7 +29,7 @@ public class InterceptorWebViewClient extends WebViewClient {
 
     private final String dominio;
     private final String path;
-    private final String cache_url;
+    private String cache_url;
     private final Activity context;
 
     public InterceptorWebViewClient(Activity context,String dominio, String path, String cache_url)
@@ -102,8 +102,11 @@ public class InterceptorWebViewClient extends WebViewClient {
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view,
                                                       WebResourceRequest request) {
-        WebResourceResponse r =tentarInterceptar(request);
-        if(r != null) return r;
+        if(dominio != null && cache_url != null && path != null) {
+            WebResourceResponse r = tentarInterceptar(request);
+
+            if (r != null) return r;
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Log.w("INICIO", "NÃO INTERCEPTAR:" + request.getUrl());
         }
@@ -118,6 +121,9 @@ public class InterceptorWebViewClient extends WebViewClient {
 
         prefsEdit.remove("web_app_version");
         prefsEdit.remove("web_app_cache");
+
+        // Para que não dê o crash 10x devido a requisições pendentes em paralelo
+        this.cache_url = Inicio.ANDROID_ASSETS_CACHE_URL;
 
         prefsEdit.apply();// commit??
     }

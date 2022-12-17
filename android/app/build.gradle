@@ -7,7 +7,6 @@ plugins {
 
 android {
     compileSdkVersion 33
-    buildToolsVersion "30.0.2"
     defaultConfig {
         applicationId "br.erickweil.portugolweb"
         minSdkVersion 19
@@ -39,7 +38,6 @@ dependencies {
     // Add the dependencies for any other desired Firebase products
     // https://firebase.google.com/docs/android/setup#available-libraries
     implementation 'com.google.firebase:firebase-messaging'
-
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test:runner:1.5.1'
