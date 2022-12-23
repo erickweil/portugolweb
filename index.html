@@ -128,9 +128,9 @@ title="Executa o código mostando linha a linha a cada clique"
 <input tabindex="-1" type="button" style="background-image: url(icons/arrowU.png);" value=" " onclick="index.editorCommand(38)" onfocus="index.preventFocus(event)"/>
 <input tabindex="-1" type="button" style="background-image: url(icons/arrowD.png);" value=" " onclick="index.editorCommand(40)" onfocus="index.preventFocus(event)"/>
 <input tabindex="-1" type="button" value="DEL" onclick="index.editorCommand(46)" onfocus="index.preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/undo.png);" value=" " onclick="index.editor.undo()" onfocus="index.preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/redo.png);" value=" " onclick="index.editor.redo()" onfocus="index.preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/autocomplete.png);" value=" " onclick="index.editor.execCommand('startAutocomplete');" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/undo.png);" value=" " onclick="index.editorManager.undo()" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/redo.png);" value=" " onclick="index.editorManager.redo()" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/autocomplete.png);" value=" " onclick="index.editorManager.autoComplete()" onfocus="index.preventFocus(event)"/>
 </div>
 <div id="hotbar_keys" style="overflow-x:auto;white-space:nowrap;width: auto;">
 

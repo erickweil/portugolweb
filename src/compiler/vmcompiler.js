@@ -375,13 +375,14 @@ export class Compiler {
 		let variaveisGlobais = this.codeTree.variaveis;
 		
 		this.incluas = this.codeTree.incluas;
-		
+
 		this.functions = [
 		{
 			name:"$undefined",bytecode:[B_PUSH,"<Função desconhecida>",B_WRITE,B_RET],varCount:0,parameters:[],type:T_vazio,jsSafe:false // para ignorar chamadas a funcoes que nao existem
 		},
 		{
 			name:"escreva",
+			comment:"Escreve na saída de dados.<br>Pule linha com \"\\n\" ",
 			bytecode:[
 			B_LOAD,0,
 			B_WRITE,
@@ -423,7 +424,9 @@ export class Compiler {
 		//9:	ret
 		,
 		{
-			name:"sorteia",bytecode:[
+			name:"sorteia",
+			comment:"Sorteia um número dentro do intervalo <br/><br/>Exemplo: sorteia(0,10) sorteia números entre 1 e 10",
+			bytecode:[
 			B_LOAD,0,
 			B_LOAD,1,
 			B_LIBINVOKE,"Util","sorteia",2,
@@ -449,7 +452,7 @@ export class Compiler {
 		
 		for(let i=0;i<funcoes.length;i++)
 		{
-			this.functions.push({name:funcoes[i].name,parameters:funcoes[i].parameters,type:funcoes[i].type,bytecode:[],bytecodeIndexes:{},varCount:0,jsSafe:true });
+			this.functions.push({name:funcoes[i].name,parameters:funcoes[i].parameters,type:funcoes[i].type,bytecode:[],bytecodeIndexes:{},comment:funcoes[i].comment,varCount:0,jsSafe:true });
 		}
 		for(let i=0;i<funcoes.length;i++)
 		{
@@ -500,7 +503,7 @@ export class Compiler {
 		}
 	}
 	
-	createVar(varName,type,isConst,isArray,arrayDim)
+	createVar(varName,comment,type,isConst,isArray,arrayDim)
 	{
 		let v = this.scope.getVar(varName);
 		if(v)
@@ -524,6 +527,7 @@ export class Compiler {
 			v = {
 				type:vType,
 				name:varName,
+				comment:comment,
 				index:this.scope.globalScope ? this.scope.globalCount : this.scope.varCount,
 				global:this.scope.globalScope,
 				isConst:isConst,
@@ -547,7 +551,7 @@ export class Compiler {
 		else
 		{
 			this.erro("não encontrou a variável '"+varName+"', esqueceu de declará-la?");
-			return this.createVar(varName,T_cadeia,false,false);
+			return this.createVar(varName,false,T_cadeia,false,false);
 		}
 	}
 	
@@ -668,7 +672,7 @@ export class Compiler {
 				case STATEMENT_declArr:
 				{
 					let arrayDim = stat.size_expr.length;
-					let v = this.createVar(stat.name,stat.type,stat.isConst,true,arrayDim);
+					let v = this.createVar(stat.name,stat.comment,stat.type,stat.isConst,true,arrayDim);
 					
 					let declared = 0;
 					for(let k =0;k<arrayDim;k++)
@@ -730,7 +734,7 @@ export class Compiler {
 				break;
 				case STATEMENT_declVar:
 				{
-					let v = this.createVar(stat.name,stat.type,stat.isConst,false);
+					let v = this.createVar(stat.name,stat.comment,stat.type,stat.isConst,false);
 					if(stat.expr)
 					{
 						let tExpr = this.compileExpr(stat.expr,bc,stat.type);

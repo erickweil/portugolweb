@@ -25,11 +25,11 @@ describe("Testando VmCompiler", () => {
 
         let input = "programa{ funcao inicio(){escreva(\"Olá Mundo\")} funcao teste() { } }";
         let tokenizer = new Tokenizer(input,erroCounterFn(erroCounter));
-        tokenizer.tokenize();
+        let allTokens = tokenizer.tokenize();
 
         let tokens = tokenizer.getRelevantTokens();
 
-        let parser = new Parser(tokens,input,erroCounterFn(erroCounter));
+        let parser = new Parser(tokens,allTokens,input,erroCounterFn(erroCounter));
         let tree = parser.parse();
 
         let compiler = new Compiler(tree,[],tokens,input,null,erroCounterFn(erroCounter));

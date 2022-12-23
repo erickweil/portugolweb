@@ -242,7 +242,7 @@ export default class PortugolRuntime {
 		try	{
 			last_Time = performance.now();
 			let tokenizer = new Tokenizer(string_cod,erroCounterCallback);
-			tokenizer.tokenize();
+			let allTokens = tokenizer.tokenize();
 
 			token_Time = Math.trunc(performance.now() - last_Time);
 			last_Time = performance.now();
@@ -253,7 +253,7 @@ export default class PortugolRuntime {
 			}
 			
 			let relevantTokens = tokenizer.getRelevantTokens();
-			let tree = new Parser(relevantTokens,string_cod,erroCounterCallback).parse();
+			let tree = new Parser(relevantTokens,allTokens,string_cod,erroCounterCallback).parse();
 
 			tree_Time = Math.trunc(performance.now() - last_Time);
 			last_Time = performance.now();

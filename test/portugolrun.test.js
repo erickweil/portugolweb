@@ -66,4 +66,5 @@ describe("PortugolRuntime",() => {
     testExemplo("autoincremento.por");
     testExemplo("vetorescape.por");
     testExemplo("operadores.por");
+    testExemplo("divisao.por");
 });

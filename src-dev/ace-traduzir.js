@@ -39,7 +39,7 @@ acejs_txt = special_replace(acejs_txt, {
 "\"Cut\"":"\"Recortar\"",
 "\"Undo\"":"\"Desfazer\"",
 "\"Find\"":"\"Pesquisar\"",
-"\"Pallete\"":"\"Opções\"",
+"\"Palette\"":"\"Opções\"",
 "\"Select All\"":"\"Selec Tudo\"",
 });
 

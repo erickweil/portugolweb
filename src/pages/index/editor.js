@@ -33,7 +33,7 @@ export default class EditorManager {
 
         this.editor.setOptions({
             enableBasicAutocompletion: true,
-            enableSnippets: false, // negócio chato demais, tenho que fazer ficar mais intuitivo antes de ativar
+            enableSnippets: true, // negócio chato demais, tenho que fazer ficar mais intuitivo antes de ativar
             enableEmmet: false, // oq é Emmet? nem eu sei
             enableLiveAutocompletion: true,
             scrollPastEnd: 0.5
@@ -146,6 +146,18 @@ export default class EditorManager {
     */
     editorCommand(keycode) {
         this.editor.onCommandKey({}, 0, keycode);
+    }
+
+    undo() {
+        this.editor.undo();
+    }
+
+    redo() {
+        this.editor.redo();
+    }
+
+    autoComplete() {
+        this.editor.execCommand('startAutocomplete');
     }
 
     editorType(c) {

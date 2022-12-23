@@ -24,7 +24,7 @@ describe("parser",() => {
         let tokenizer = new Tokenizer(input,erroCounterFn(erroCounter));
         let tokens = tokenizer.tokenize();
 
-        let parser = new Parser(tokenizer.getRelevantTokens(),input,erroCounterFn(erroCounter));
+        let parser = new Parser(tokenizer.getRelevantTokens(),tokens,input,erroCounterFn(erroCounter));
         let tree = parser.parse();
 
         expect(erroCounter.value).toBe(0);

@@ -488,6 +488,53 @@ export function stringEscapeSpecials(str)
 	return str;
 }
 
+export function getTokenPosition(token,allTokens) {
+	for(let i =0; i< allTokens.length;i++)
+	{
+		let t = allTokens[i];
+		if(t === token)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+/**
+ * Returns the previous comment
+ * 
+ * To call this function, the token must have been
+ * returned by getRelevantTokens, that sets the _i
+ * accordingly
+ * 
+ * Why is this comment in english you may ask, but I don't know either
+ */
+export function findPreviousComment(token,allTokens) {
+	
+	//let ti = getTokenPosition(token,allTokens);
+	let ti = token._i;
+	if(!ti || ti == -1) return false;
+
+	// Search backwards for a comment, stopping on EOF or 30 tokens search limit
+	for(let i = ti-1, k=0; i >= 0 && k < 30;(i--) + (k++))
+	{
+		switch(allTokens[i].id)
+		{
+			case T_ln:
+			case T_space:
+			case T_tab: // ignorar
+			break;
+			case T_linecomment:
+			case T_blockcomment:
+				return allTokens[i].txt;
+			default:
+				return false;
+		}
+	}
+
+	return false;
+}
+
 export class Tokenizer {
     constructor(input,erroCallback) {
 		// NÃO PRECISA MAIS
@@ -520,6 +567,8 @@ export class Tokenizer {
 				case T_blockcomment:
 				break;
 				default:
+					// Para pesquisar em tempo O(1) no findPreviousComment depois.
+					this.tokens[i]._i = i; 
 					ret.push(this.tokens[i]);
 				break;
 			}

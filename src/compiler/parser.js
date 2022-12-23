@@ -1,4 +1,4 @@
-import { canBePreUnary, getOpPrecedence, isDualOperator, isLiteral, isOperator, isPostUnary, isTypeWord, T_arrow, T_attrib, T_autodec, T_autoinc, T_biblioteca, T_bitand, T_bracesC, T_bracesO, T_caso, T_colon, T_comma, T_const, T_contrario, T_dot, T_enquanto, T_escolha, T_faca, T_funcao, T_inclua, T_inteiroLiteral, T_minus, T_para, T_parC, T_pare, T_parO, T_plus, T_pre_autodec, T_pre_autoinc, T_programa, T_retorne, T_se, T_semi, T_senao, T_squareC, T_squareO, T_unary_minus, T_unary_plus, T_vazio, T_word 
+import { canBePreUnary, findPreviousComment, getOpPrecedence, isDualOperator, isLiteral, isOperator, isPostUnary, isTypeWord, T_arrow, T_attrib, T_autodec, T_autoinc, T_biblioteca, T_bitand, T_blockcomment, T_bracesC, T_bracesO, T_caso, T_colon, T_comma, T_const, T_contrario, T_dot, T_enquanto, T_escolha, T_faca, T_funcao, T_inclua, T_inteiroLiteral, T_linecomment, T_minus, T_para, T_parC, T_pare, T_parO, T_plus, T_pre_autodec, T_pre_autoinc, T_programa, T_retorne, T_se, T_semi, T_senao, T_squareC, T_squareO, T_unary_minus, T_unary_plus, T_vazio, T_word 
 } from "./tokenizer.js";
 
 export const STATEMENT_declVar = 1;
@@ -73,8 +73,9 @@ export function getAllVariableParserDecl(stats,ret)
 }
 
 export class Parser {
-    constructor(tokens,textInput,erroCallback) {
+    constructor(tokens,allTokens,textInput,erroCallback) {
 		this.tokens = tokens;
+		this.allTokens = allTokens;
 		this.textInput = textInput;
 		this.tree = [];
 		this.enviarErro = erroCallback;
@@ -127,6 +128,8 @@ export class Parser {
 			//else if(pmatch(i,tokens,T_funcao))
 			else if(t == T_funcao)
 			{
+				let comment = findPreviousComment(tokens[i],this.allTokens);
+
 				let funcType = T_vazio;
 				let funcArrType = false;
 				let funcArrDim = false;
@@ -181,7 +184,7 @@ export class Parser {
 				i = this.parseStatementOrBlock(i,tokens,funcStats);
 				
 				
-				programaTree.funcoes.push({name:funcName,type:funcType,arrayType:funcArrType,arrayDim:funcArrDim,parameters:funcPars,statements:funcStats});
+				programaTree.funcoes.push({name:funcName,type:funcType,arrayType:funcArrType,arrayDim:funcArrDim,parameters:funcPars,statements:funcStats,comment:comment});
 				
 			}
 			else
@@ -654,6 +657,8 @@ export class Parser {
 	
 	parseDeclVariavel(i,tokens,tree)
 	{	
+		let comment = findPreviousComment(tokens[i],this.allTokens);
+
 		let isConst = false;
 		if(tokens[i].id == T_const)
 		{
@@ -734,7 +739,7 @@ export class Parser {
 					}
 				}
 				
-				tree.push({id:STATEMENT_declArr,index:tIndex,type:varType,isConst:isConst,name:varName,size_expr:arrayDimExpr,expr:declExpr});
+				tree.push({id:STATEMENT_declArr,index:tIndex,type:varType,isConst:isConst,name:varName,size_expr:arrayDimExpr,expr:declExpr,comment:comment});
 			}
 			else if(tokens[i+1].id == T_word && tokens[i+2].id == T_attrib)
 			{
@@ -743,7 +748,7 @@ export class Parser {
 				let exprTree = [];
 				i = this.parseExpressao(i+3,tokens,exprTree,0); // NAO ESQUECER!
 				
-				tree.push({id:STATEMENT_declVar,index:tIndex,type:varType,isConst:isConst,name:varName,expr:exprTree[0]});
+				tree.push({id:STATEMENT_declVar,index:tIndex,type:varType,isConst:isConst,name:varName,expr:exprTree[0],comment:comment});
 			}
 			else if(tokens[i+1].id == T_word)
 			{
@@ -755,7 +760,7 @@ export class Parser {
 					this.erro(tokens[i],"não pode declarar uma variável constante e não definir o valor imediatamente.");
 				}
 				
-				tree.push({id:STATEMENT_declVar,index:tIndex,type:varType,isConst:isConst,name:varName,expr:exprTree});
+				tree.push({id:STATEMENT_declVar,index:tIndex,type:varType,isConst:isConst,name:varName,expr:exprTree,comment:comment});
 				i++; // NAO ESQUECER!
 			}
 			else

@@ -56,8 +56,16 @@ export default class portugolCompleter
 			
 		}*/
 	}
+
+	getFunctionHTMLDoc(member,id) {
+		console.log(member);
+		return [
+			"<b>", this.getFunctionDefinition(member.name,member,true,false,id) , "</b>", "<hr></hr>",
+			member.comment || ""
+		].join("");
+	}
 	
-	getFunctionDefinition(name,member,caption,id)
+	getFunctionDefinition(name,member,caption,snippet,id)
 	{
 		//"largura_texto":{id:T_parO,parameters:[T_cadeia],type:T_inteiro,jsSafe:true},
 		
@@ -80,15 +88,22 @@ export default class portugolCompleter
 			
 			if(member.parameters)
 			{
-				for(let i=0;i<member.parameters.length;i++)
+				if(snippet)
 				{
-					if(i > 0) ret += ",";
+					ret += "$0";
+				} 
+				else for(let i=0;i<member.parameters.length;i++)
+				{
+					if(i > 0) ret += ", ";
 					
 					let p = member.parameters[i];
 					if(typeof p === 'object')
 					{
+						if(caption)
+						{
 						ret += getTypeWord(p.type);
 						ret += " ";
+						}
 						ret += p.name;
 					}
 				}
@@ -180,9 +195,11 @@ export default class portugolCompleter
 				if(entry.name.includes("$") || entry.name.includes("#")) continue; // pula os leia$inteiro, leia$cadeia, etc...
 				
 				sugestoes.push({
-							caption: this.getFunctionDefinition(entry.name,entry,true,T_parO),
+							caption: entry.name,
+							snippet: this.getFunctionDefinition(entry.name,entry,false,true,T_parO),
+							docHTML: this.getFunctionHTMLDoc(entry,T_parO),
 							meta: "Função",
-							value: this.getFunctionDefinition(entry.name,entry,false,T_parO),
+							value: entry.name,
 							tooltip:"Função criada neste programa.",
 							score:0
 				});
@@ -202,9 +219,9 @@ export default class portugolCompleter
 				let entry = this.variaveisGlobais[i];
 				
 				sugestoes.push({
-							caption: this.getFunctionDefinition(entry.name,entry,true,T_word),
+							caption: this.getFunctionDefinition(entry.name,entry,true,false,T_word),
 							meta: "Variável Global",
-							value: this.getFunctionDefinition(entry.name,entry,false,T_word),
+							value: this.getFunctionDefinition(entry.name,entry,false,false,T_word),
 							tooltip:"Variável Global neste programa.",
 							score:0
 				});
@@ -222,9 +239,9 @@ export default class portugolCompleter
 				let entry = this.todasvariaveis[i];
 				
 				sugestoes.push({
-							caption: this.getFunctionDefinition(entry.name,entry,true,T_word),
+							caption: this.getFunctionDefinition(entry.name,entry,true,false,T_word),
 							meta: "Variável Local",
-							value: this.getFunctionDefinition(entry.name,entry,false,T_word),
+							value: this.getFunctionDefinition(entry.name,entry,false,false,T_word),
 							tooltip:"Variável Local neste programa.",
 							score:0
 				});
@@ -271,9 +288,9 @@ export default class portugolCompleter
 				
 					sugestoes = sugestoes.concat( Object.keys(lib.members).map(entry=>{
 						return {
-							caption: this.getFunctionDefinition(entry,lib.members[entry],true,lib.members[entry].id),
+							caption: this.getFunctionDefinition(entry,lib.members[entry],true,false,lib.members[entry].id),
 							meta: this.librariesNames[i],
-							value: this.getFunctionDefinition(entry,lib.members[entry],false,lib.members[entry].id),
+							value: this.getFunctionDefinition(entry,lib.members[entry],false,false,lib.members[entry].id),
 							tooltip:"Membro da Biblioteca "+this.librariesNames[i],
 							score:100000
 						};
@@ -301,9 +318,9 @@ export default class portugolCompleter
 					
 						sugestoes = sugestoes.concat( Object.keys(lib.members).map(entry=>{
 						return {
-							caption: this.getFunctionDefinition(entry,lib.members[entry],true,lib.members[entry].id),
+							caption: this.getFunctionDefinition(entry,lib.members[entry],true,false,lib.members[entry].id),
 							meta: inclua.name,
-							value: this.getFunctionDefinition(entry,lib.members[entry],false,lib.members[entry].id),
+							value: this.getFunctionDefinition(entry,lib.members[entry],false,false,lib.members[entry].id),
 							tooltip:"Membro da Biblioteca "+inclua.name,
 							score:100000
 						};
