@@ -16,6 +16,7 @@ import Tipos from "./libraries/Tipos.js";
 import Util from "./libraries/Util.js";
 import { escreva, STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMrun, VMsetup, VMtoString, VM_async_return, VM_getCodeMax, VM_getDelay, VM_getExecJS 
 } from "./vm.js";
+import { checkIsMobile } from "../../extras/mobile.js";
 
 function debug_exibe_bytecode() {
 	try{
@@ -132,8 +133,10 @@ export default class PortugolRuntime {
 		// Dependem de graficos
 		if(myCanvas && myCanvasModal && myCanvasWindow && myCanvasWindowTitle && myCanvasKeys)
 		{
+			let isMobile = checkIsMobile(); // || true
+
 			this.libraries["Teclado"] = new Teclado(myCanvas);
-			this.libraries["Graficos"] = new Graficos(myCanvas,myCanvasModal,myCanvasWindow,myCanvasWindowTitle,myCanvasKeys,this.libraries["Teclado"]);
+			this.libraries["Graficos"] = new Graficos(myCanvas,myCanvasModal,myCanvasWindow,myCanvasWindowTitle,myCanvasKeys,this.libraries["Teclado"], isMobile);
 			this.libraries["Mouse"] = new Mouse(myCanvas);
 		}
 	}
@@ -298,6 +301,8 @@ export default class PortugolRuntime {
 		finally{
 			first_Time = Math.trunc(performance.now()-first_Time);
 			other_Time = first_Time - (token_Time + tree_Time + compiler_Time);
+
+			if(this.escrever_tempo)
 			console.log("Compilou: Tempo de execução:"+first_Time+" milissegundos \n[token:"+token_Time+" ms,tree:"+tree_Time+" ms,compiler:"+compiler_Time+" ms, other:"+other_Time+"]");
 		}
 	}

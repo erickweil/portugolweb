@@ -55,6 +55,7 @@ import Hotbar from "./pages/index/hotbar.js";
 			
 			let string_cod = editorManager.getValue();
 			try{
+				portugolRun.mostrar_bytecode = mostrar_bytecode;
 				let compilado = portugolRun.compilar(string_cod,enviarErro,VM_getExecJS());
 				editorManager.updateAutoComplete(compilado);
 				if(!compilado.success) {

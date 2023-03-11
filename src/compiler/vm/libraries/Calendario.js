@@ -4,7 +4,7 @@ export default class Calendario {
 	constructor() {
 		this.DIA_DOMINGO = 1;
 		this.DIA_SEGUNDA_FEIRA = 2;
-		this.DIA_TERÇA_FEIRA = 3;
+		this.DIA_TERCA_FEIRA = 3;
 		this.DIA_QUARTA_FEIRA = 4;
 		this.DIA_QUINTA_FEIRA = 5;
 		this.DIA_SEXTA_FEIRA = 6;
@@ -27,7 +27,7 @@ export default class Calendario {
 		this.members = {
 		"DIA_DOMINGO":{id:T_word,type:T_inteiro},
 		"DIA_SEGUNDA_FEIRA":{id:T_word,type:T_inteiro},
-		"DIA_TERÇA_FEIRA":{id:T_word,type:T_inteiro},
+		"DIA_TERCA_FEIRA":{id:T_word,type:T_inteiro},
 		"DIA_QUARTA_FEIRA":{id:T_word,type:T_inteiro},
 		"DIA_QUINTA_FEIRA":{id:T_word,type:T_inteiro},
 		"DIA_SEXTA_FEIRA":{id:T_word,type:T_inteiro},
@@ -48,10 +48,10 @@ export default class Calendario {
 		"ano_atual":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true},
 		"mes_atual":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true},
 		"dia_mes_atual":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true},
-		"dia_semana_abreviado":{id:T_parO,parameters:[{name:"dia",type:T_inteiro},{name:"maiusculas",type:T_logico},{name:"minusculas",type:T_logico}],type:T_inteiro,jsSafe:true},
+		"dia_semana_abreviado":{id:T_parO,parameters:[{name:"dia",type:T_inteiro},{name:"maiusculas",type:T_logico},{name:"minusculas",type:T_logico}],type:T_cadeia,jsSafe:true},
 		"dia_semana_atual":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true},
-		"dia_semana_completo":{id:T_parO,parameters:[{name:"dia",type:T_inteiro},{name:"maiusculas",type:T_logico},{name:"minusculas",type:T_logico}],type:T_inteiro,jsSafe:true},
-		"dia_semana_curto":{id:T_parO,parameters:[{name:"dia",type:T_inteiro},{name:"maiusculas",type:T_logico},{name:"minusculas",type:T_logico}],type:T_inteiro,jsSafe:true},
+		"dia_semana_completo":{id:T_parO,parameters:[{name:"dia",type:T_inteiro},{name:"maiusculas",type:T_logico},{name:"minusculas",type:T_logico}],type:T_cadeia,jsSafe:true},
+		"dia_semana_curto":{id:T_parO,parameters:[{name:"dia",type:T_inteiro},{name:"maiusculas",type:T_logico},{name:"minusculas",type:T_logico}],type:T_cadeia,jsSafe:true},
 		"hora_atual":{id:T_parO,parameters:[{name:"formato24",type:T_logico}],type:T_inteiro,jsSafe:true},		
 		"minuto_atual":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true},
 		"segundo_atual":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true},
@@ -65,7 +65,7 @@ export default class Calendario {
 		"Quarta-Feira",
 		"Quinta-Feira",
 		"Sexta-Feira",
-		"Sábado",
+		"Sabado",
 		];
 		
 		this.diasCurto = [
@@ -75,7 +75,7 @@ export default class Calendario {
 		"Quarta",
 		"Quinta",
 		"Sexta",
-		"Sábado",
+		"Sabado",
 		];
 		
 		this.diasAbr = [
@@ -85,7 +85,7 @@ export default class Calendario {
 		"Qua",
 		"Qui",
 		"Sex",
-		"Sáb",
+		"Sab",
 		];
 	}
 	
@@ -95,6 +95,10 @@ export default class Calendario {
 	
 	dia_semana_completo(dia,maiusculas,minusculas)
 	{
+		if(dia <= 0 || dia > this.diasCompleto.length) {
+			throw "Deve estar entre 1 e 7 para ser um dia válido, recebeu:"+dia;
+		}
+
 		return {value:maiusculas == 0 ? this.diasCompleto[dia-1].toUpperCase() : ( 
 		minusculas == 0 ? this.diasCompleto[dia-1].toLowerCase() : this.diasCompleto[dia-1]
 		)};
@@ -102,6 +106,10 @@ export default class Calendario {
 	
 	dia_semana_curto(dia,maiusculas,minusculas)
 	{
+		if(dia <= 0 || dia > this.diasCurto.length) {
+			throw "Deve estar entre 1 e 7 para ser um dia válido, recebeu:"+dia;
+		}
+
 		return {value:maiusculas == 0 ? this.diasCurto[dia-1].toUpperCase() : ( 
 		minusculas == 0 ? this.diasCurto[dia-1].toLowerCase() : this.diasCurto[dia-1]
 		)};
@@ -109,6 +117,10 @@ export default class Calendario {
 	
 	dia_semana_abreviado(dia,maiusculas,minusculas)
 	{
+		if(dia <= 0 || dia > this.diasAbr.length) {
+			throw "Deve estar entre 1 e 7 para ser um dia válido, recebeu:"+dia;
+		}
+
 		return {value:maiusculas == 0 ? this.diasAbr[dia-1].toUpperCase() : ( 
 		minusculas == 0 ? this.diasAbr[dia-1].toLowerCase() : this.diasAbr[dia-1]
 		)};

@@ -2,9 +2,23 @@ import { STATEMENT_block, STATEMENT_caso, STATEMENT_declArr, STATEMENT_declArrVa
 } from "./parser.js";
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro, T_Vetor, T_Matriz, T_Vinteiro, T_Vcaracter, T_Vcadeia, T_Vreal, T_Vlogico, T_Mcaracter, T_Mcadeia, T_Mreal, T_Mlogico, convertArrayDimsType, convertArrayType, convertMatrixType, T_attrib, isOperator, getOpPrecedence, T_and, T_or, T_ge, T_gt, T_le, T_lt, T_equals, T_notequals, isAttribOp, getSeparator, T_div, T_attrib_div, T_not, T_unary_plus, T_unary_minus, T_autoinc, T_pre_autoinc, T_autodec, T_pre_autodec, T_bitnot, T_inteiroLiteral, T_realLiteral, T_cadeiaLiteral, T_caracterLiteral, stringEscapeSpecials, T_logicoLiteral, T_squareO, T_dot 
 } from "./tokenizer.js";
-import { checarCompatibilidadeTipo, getDefaultValue, getTipoRetorno, Scope 
+import { escreva, leia, limpa, recursiveDeclareArray, sorteia, VM_f2s, VM_i2s, VM_realbool2s, VM_getGlobals
+} from "./vm/vm.js";
+import { checarCompatibilidadeTipo, getTipoRetorno, Scope 
 } from "./vmcompiler.js";
 
+export function getDefaultTxtValue(code,global)
+{
+	switch(code)
+	{
+		case T_inteiro: return "0";
+		case T_caracter: return "\"\\0\"";
+		case T_cadeia: return "\"\"";
+		case T_real: return "0.0";
+		case T_logico: return (global ? "1" : "false");
+		case T_squareO: return "[]";
+	}
+}
 // Entenda que sempre que for gerar o js da árvore, assume que está sem erros nenhum,
 // Pois o vmcompiler já verificou todos os erros possíveis.
 function getTypeChar(code)
@@ -215,6 +229,19 @@ export default class JsGenerator {
 		}
 		];
 		
+		// ISSO É RIDÍCULO! TEM QUE RE-FAZER TUDO OU JOGAR FORA LOGO ESSE ARQUIVO 
+		// Por essas e outras o 'modo Turbo' vai ser sempre desabilitado por padrão
+		// Atribuir os valores para as variáveis globais que ele espera
+		window["escreva"] = escreva;
+		window["limpa"] = limpa;
+		window["leia"] = leia;
+		window["sorteia"] = sorteia;
+		window["recursiveDeclareArray"] = recursiveDeclareArray;
+		window["VM_i2s"] = VM_i2s;
+		window["VM_f2s"] = VM_f2s;
+		window["VM_realbool2s"] = VM_realbool2s;
+		window["VM_libraries"] = this.libraries;
+		window["VM_globals"] = VM_getGlobals;
 		
 		// Gerar as variáveis globais?
 		let funcInit = {name:"#globalInit",overloaded:true,overloadedName:"globalInit" };
@@ -456,7 +483,7 @@ export default class JsGenerator {
 					let v = this.createVar(stat.name,stat.type,stat.isConst,true,arrayDim);
 			
 					if(v.global)
-						this.gen("VM_globals["+v.index+"] =");
+						this.gen("VM_globals()["+v.index+"] =");
 					else
 						this.gen("var",stat.name,"=");
 					let declExpr = stat.expr;
@@ -469,11 +496,12 @@ export default class JsGenerator {
 							this.gen(",");
 							this.compileExpr(stat.size_expr[k],T_inteiro);
 						}
-						this.genln("],"+getDefaultValue(stat.type,v.global)+",0);");
+						this.genln("],"+getDefaultTxtValue(stat.type,v.global)+",0);");
 						
 						// Eu sei.
 						// Update 07/06/2022: Sabe oq????????/
 						// Update 12/12/2022: ???????????????????????
+						// Update 11/03/2023: A moral da história é: Nunca faça comentários apenas 'Eu sei'.
 					}
 					else
 					{				
@@ -497,7 +525,7 @@ export default class JsGenerator {
 					let v = this.createVar(stat.name,stat.type,stat.isConst,false);
 					
 					if(v.global)
-						this.gen("VM_globals["+v.index+"]");
+						this.gen("VM_globals()["+v.index+"]");
 					else
 						this.gen("var",stat.name);
 					
@@ -511,7 +539,7 @@ export default class JsGenerator {
 					}
 					else
 					{
-						this.genln("= false;");
+						this.genln("= "+getDefaultTxtValue(v.type,v.global)+";");
 					}
 				}
 				break;
@@ -864,9 +892,9 @@ export default class JsGenerator {
 					if(v.global)
 					{
 						if(!isAssign && v.type == T_logico)
-							this.gen("(VM_globals["+v.index+"] == 0)");
+							this.gen("(VM_globals()["+v.index+"] == 0)");
 						else
-							this.gen("VM_globals["+v.index+"]");
+							this.gen("VM_globals()["+v.index+"]");
 					}
 					else
 					{
@@ -891,9 +919,9 @@ export default class JsGenerator {
 					if(v.global)
 					{
 						if(!isAssign && v.arrayType == T_logico)
-							this.gen("(VM_globals["+v.index+"]");
+							this.gen("(VM_globals()["+v.index+"]");
 						else
-							this.gen("VM_globals["+v.index+"]");
+							this.gen("VM_globals()["+v.index+"]");
 					}
 					else
 					{

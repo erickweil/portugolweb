@@ -30,6 +30,7 @@ function doExecCheck(input) {
 
     const run = new PortugolRuntime({value:""});
     run.escrever_tempo = false;
+    run.iniciarBibliotecas(false,false,false,false,false);
 
     const compilado = run.compilar(input,false,false);
     //assert(compilado.success);
@@ -64,7 +65,12 @@ describe("PortugolRuntime",() => {
     testExemplo("fibonacci.por");
     testExemplo("primos.por");
     testExemplo("autoincremento.por");
+    testExemplo("tabuada.por");
     testExemplo("vetorescape.por");
     testExemplo("operadores.por");
     testExemplo("divisao.por");
+    testExemplo("fatorialrecursivo.por");
+    testExemplo("bibli_calendario.por");
+    testExemplo("bibli_matematica.por");
+    testExemplo("bibli_texto.por");
 });

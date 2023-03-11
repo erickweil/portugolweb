@@ -262,6 +262,9 @@ let VM_funcIndex = 0;
 // frame globals
 let VM_frame = false;
 let VM_globals = false;
+export function VM_getGlobals() {
+	return VM_globals;
+}
 let VM_functions = false;
 let VM_jsfunctions = false;
 let VM_libraries = false;

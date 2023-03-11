@@ -88,24 +88,30 @@ export function checarCompatibilidadeTipo(tA,tB,op)
 		case T_bitor:
 		case T_attrib_xor:
 		case T_xor:
+			
+			//console.log("OK1 comparando "+getTypeWord(tA)+" e "+getTypeWord(tB));
 			switch(tA)
 			{				
 				//case T_squareO: return op == T_attrib && tB == T_squareO;
+				// Se ta é inteiro, aceita operações se tb for inteiro, real, ou então somar com cadeia
 				case T_inteiro: return (tB == T_inteiro || tB == T_real || ((op == T_plus || op == T_attrib_plus) && tB == T_cadeia));
+				// Se ta é real, aceita operações se tb for inteiro, real, ou então somar com cadeia
 				case T_real: return (tB == T_inteiro || tB == T_real || ((op == T_plus || op == T_attrib_plus) && tB == T_cadeia));
-				case T_cadeia: return (op == T_attrib || op == T_plus || op == T_attrib_plus);
-				case T_caracter: return (op == T_attrib || op == T_plus || op == T_attrib_plus) && (tB == T_cadeia || tB == T_caracter);
+				// se ta é cadeia, aceita somar com qualquer coisa, e se for atribuição só aceita outro cadeia
+				case T_cadeia: return ((op == T_attrib && tB == T_cadeia) || op == T_plus || op == T_attrib_plus);
+				// se ta é caracter, se for atribuição só aceita outro caracter e aceita somar apenas com cadeia
+				case T_caracter: return (op == T_attrib && tB == T_caracter) || ((op == T_plus || op == T_attrib_plus) && tB == T_cadeia);
+				// se ta é logico, se for atribuição só aceita outro logico, aceita somar com cadeia, ou operações bit a bit com outros lógicos
 				case T_logico: 
-				return (
+				return (op == T_attrib && tB == T_logico) ||
 				((op == T_plus || op == T_attrib_plus) && tB == T_cadeia) ||
-				op == T_attrib || 
-				op == T_bitor || op == T_bitand || op == T_xor || 
-				op == T_attrib_bitand || op == T_attrib_bitor || op == T_attrib_xor);
+				((op == T_bitor || op == T_bitand || op == T_xor || 
+				op == T_attrib_bitand || op == T_attrib_bitor || op == T_attrib_xor) && tB == T_logico);
 			}
 		break;
 		case T_attrib_bitnot:
 		case T_bitnot:
-			return true;
+			return true; // ?????????
 		case T_unary_minus:
 		case T_unary_plus:
 		case T_autoinc:
