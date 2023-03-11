@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Portugol Web</string>
+
+    <string name="default_channel_id">portugolchannel</string>
+</resources>

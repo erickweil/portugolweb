@@ -1,0 +1,45 @@
+{
+  "name": "portugolweb",
+  "version": "1.0.0",
+  "description": "Portugol Web",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "lint": "npx eslint ./",
+    "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "build": "webpack --config ./webpack.config.cjs",
+    "buildace": "webpack --config ./ace-webpack.config.cjs",
+    "buildversion": "node src-dev/version.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erickweil/portugolweb.git"
+  },
+  "author": "Erick Leonardo Weil",
+  "license": "GPL-3",
+  "bugs": {
+    "url": "https://github.com/erickweil/portugolweb/issues"
+  },
+  "homepage": "https://github.com/erickweil/portugolweb#readme",
+  "devDependencies": {
+    "@babel/core": "^7.20.5",
+    "@babel/preset-env": "^7.20.2",
+    "@types/ace": "^0.0.48",
+    "@webpack-cli/generators": "^3.0.1",
+    "ace-builds": "^1.14.0",
+    "babel-loader": "^9.1.0",
+    "css-loader": "^6.7.2",
+    "eslint": "^8.29.0",
+    "eslint-plugin-import": "^2.26.0",
+    "glob": "^8.0.3",
+    "jest": "^29.3.1",
+    "jest-environment-jsdom": "^29.3.1",
+    "mini-css-extract-plugin": "^2.7.2",
+    "node-fetch": "^3.3.0",
+    "prettier": "^2.8.1",
+    "style-loader": "^3.3.1",
+    "webpack": "^5.75.0",
+    "webpack-bundle-analyzer": "^4.7.0",
+    "webpack-cli": "^5.0.1"
+  }
+}

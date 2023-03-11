@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head> 
+
+  <title>Portugol Web</title>
+	
+  <!-- HTML Meta Tags -->
+  <meta charset="utf-8">
+  <meta lang="pt-br">
+  <meta name="author" content="Erick L. Weil">
+  <meta name="theme-color" content="#08ecbc">
+  <meta name="description" content="Utilize o portugol diretamente do seu navegador!">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+
+  <!-- Facebook Meta Tags -->
+  <meta property="og:url" content="https://erickweil.github.io/portugolweb/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Portugol Web">
+  <meta property="og:site_name" content="Portugol Web">
+  <meta property="og:description" content="Utilize o portugol diretamente do seu navegador!">
+  <meta property="og:locale" content="pt-br">
+
+  <!-- Twitter Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="twitter:domain" content="erickweil.github.io">
+  <meta property="twitter:url" content="https://erickweil.github.io/portugolweb/">
+  <meta name="twitter:title" content="Portugol Web">
+  <meta name="twitter:description" content="Utilize o portugol diretamente do seu navegador!">
+  
+	<link rel="stylesheet" type="text/css" href="portugol.css">
+</head>
+<body style="margin:0">
+<div id="myEditor">programa 
+{
+	funcao inicio()
+	{
+		escreva("Olá mundo \n")
+	}
+}
+</div>
+<!-- Canvas modo Gráfico -->
+<div id="myCanvasModal">
+<div id="myCanvasMiddle">
+<div id="myCanvasWindow">
+<div style="white-space: nowrap;">
+<input type="button" value="Janela Sem Titulo" style="float:left;background: #1E2324;" id="myCanvasWindowTitle"/>
+<input type="button" value="X" style="float:right;background: #1E2324;" onclick="index.executar(document.getElementById('btn-run'));"/>
+</div>
+<canvas tabindex="1" id="myCanvas" width="100" height="100"></canvas>
+<div id="myCanvasKeys">
+<!--<input type="button" value="A" style="background: #1E2324;">-->
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- Modal Exemplos -->
+<div class="ModalFull" id="modalExemplos">
+<div class="ModalInside">
+<div class="ModalContent">
+<div>
+<input type="button" value="Exemplos" style="float:left;background: #1E2324;" class="ModalTitle"/>
+<input type="button" value="X" style="float:right;background: #1E2324;" onclick="document.getElementById('modalExemplos').style.display = 'none';"/>
+</div>
+<br/>
+<div class="listaExemplos">
+<h2 onclick="index.exemplo('branco');">Novo Programa em Branco</h2>
+<hr style="border: 1px solid #01EABC;"/>
+<details><summary><h2>Básico</h2></summary>
+  <h2 onclick="index.exemplo('variaveis');">Variáveis</h2>
+  <h2 onclick="index.exemplo('entrada');">Entrada de dados</h2>
+  <h2 onclick="index.exemplo('velocidade');">Tempo gasto</h2>
+  </details><details><summary><h2>Desvios Condicionais</h2></summary>
+  <h2 onclick="index.exemplo('condicoes');">Condições</h2>
+  <h2 onclick="index.exemplo('repeticao');">Repetição</h2>
+  <h2 onclick="index.exemplo('bolachaoumaca');">Bolacha Ou Maçã</h2>
+  </details><details><summary><h2>Outros</h2></summary>
+  <h2 onclick="index.exemplo('vetores');">Vetores</h2>
+  <h2 onclick="index.exemplo('funcoes');">Funções</h2>
+  <h2 onclick="index.exemplo('bibliotecas');">Bibliotecas</h2>
+  <h2 onclick="index.exemplo('internet');">Internet</h2>
+  </details><details><summary><h2>Gráficos</h2></summary>
+  <h2 onclick="index.exemplo('graficos');">Graficos</h2>
+  <h2 onclick="index.exemplo('jogodavida');">Jogo da Vida</h2>
+  <h2 onclick="index.exemplo('slide_puzzle');">Slide Puzzle</h2>
+  <h2 onclick="index.exemplo('aleatorio0');">O Cubo Verde</h2>
+  <h2 onclick="index.exemplo('aleatorio1');">Coelho 3D</h2>
+  <h2 onclick="index.exemplo('aleatorio2');">Paramétrico</h2>
+  <h2 onclick="index.exemplo('aleatorio3');">Seno e Cosseno</h2>
+  <h2 onclick="index.exemplo('aleatorio5');">A*</h2>
+</details>
+
+<hr style="border: 1px solid #01EABC;"/>
+<span style="white-space:nowrap"><input id="check-mostrar-hotbar" style="height: 20px;" name="mostrar-hotbar" type="checkbox" onchange="index.toggleHotbar(this.checked);"/><label for="mostrar-hotbar">Mostrar Hotbar</label></span> 
+<span style="white-space:nowrap"><input id="check-modo-turbo" style="height: 20px;" name="modo-turbo" type="checkbox" onchange="index.setModoTurbo(this);" title="Compila o código para Javascript, executa muito mais rápido. Só vai acelerar se não utilizar nenhuma função que pausa o código, como o leia ou o aguarde da biblioteca Util"/><label for="modo-turbo">Modo Turbo</label></span> 
+<span style="white-space:nowrap"><input id="check-auto-completar" style="height: 20px;" name="auto-completar" type="checkbox" checked="true" onchange="index.setAutoCompleterState(this.checked);"/><label for="auto-completar">Auto-Completar</label></span> 
+<!--
+<hr class="mobileHidden" style="border: 1px solid #01EABC;"/>
+<button class="mobileHidden" title="A TogetherJS possibilita a utilização em grupo de um site. Permitindo editar em conjunto, chat e muito mais" onclick="TogetherJS(this);return false;">Ativar TogetherJS</button>
+-->
+</div>
+</div>
+</div>
+</div>
+
+<div id="hotbar" class="portugol-buttons" style="width:100%">
+<div id="myOutput_buttons" class="portugol-buttons" style="overflow-x:auto;white-space:nowrap;width: auto;">
+<input type="button" id="btn-run" value="Executar" onclick="index.executar(this,false)" title="Executa o seu código"/>
+
+<input tabindex="-1" id="btn-step" type="button" style="background-image: url(icons/step.png);" value=" " 
+onmousedown="index.executarStepStart(this)" onmouseup="index.executarStepPause(this);" onmouseleave="index.executarStepPause(this);" 
+title="Executa o código mostando linha a linha a cada clique"
+/>
+
+<input tabindex="-1" type="button" style="background-image: url(icons/FontPlus.png); cursor: zoom-in;" id="btn-fonteMaior" value=" " onclick="index.fonteAumentar()" onfocus="index.preventFocus(event)" title="Aumenta o tamanho da fonte"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/FontMinus.png); cursor: zoom-out;" id="btn-fonteMenor" value=" " onclick="index.fonteDiminuir()" onfocus="index.preventFocus(event)" title="Diminui o tamanho da fonte"/>
+<input type="button" style="background-image: url(icons/save.png);" id="btn-salvar" value=" " onclick="index.save()" title="Baixa o código"/>
+<input type="button" style="background-image: url(icons/open.png);"  id="btn-abrir" value=" " onclick="index.load()" title="Carrega um código"/>
+<!--<input type="button" tabindex="-1" id="btn-mostrar-hotbar" value="Ocultar" onclick='toggleHotbar();' onfocus="preventFocus(event)"/>-->
+<input type="button" id="btn-exemplos" value="Exemplos" onclick="document.getElementById('modalExemplos').style.display = 'table';"  title="Abre o menu inicial"/>
+
+<!--<input type="button" id="btn-run" value="Modo Normal" onclick=""/>-->
+
+<!--<input type="button" style="background-image: url(icons/full.png);" id="btn-abrir" value=" " onclick="openFullscreen(document.documentElement);"/> Isso não funcionava direito e no pc tem o F11-->
+<!--<input type="button" id="btn-execErros" value="Ignorar Erros" onclick="check_execErros()"/>-->
+</div>
+
+<div id="hotbar_commands" style="overflow-x:auto;white-space:nowrap;width: auto;">
+<input tabindex="-1" type="button" value="TAB" onclick="index.editorCommand(9)" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/arrowL.png);" value=" " onclick="index.editorCommand(37)" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/arrowR.png);" value=" " onclick="index.editorCommand(39)" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/arrowU.png);" value=" " onclick="index.editorCommand(38)" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/arrowD.png);" value=" " onclick="index.editorCommand(40)" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="DEL" onclick="index.editorCommand(46)" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/undo.png);" value=" " onclick="index.editorManager.undo()" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/redo.png);" value=" " onclick="index.editorManager.redo()" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/autocomplete.png);" value=" " onclick="index.editorManager.autoComplete()" onfocus="index.preventFocus(event)"/>
+</div>
+<div id="hotbar_keys" style="overflow-x:auto;white-space:nowrap;width: auto;">
+
+
+<input tabindex="-1" type="button" value="+" onclick='index.editorType("+")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="-" onclick='index.editorType("-")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="*" onclick='index.editorType("*")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="/" onclick='index.editorType("/")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="\" onclick="index.editorType('\\')" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="=" onclick='index.editorType("=")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value='"' onclick="index.editorType('&quot;')" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="(" onclick="index.editorType('(')" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value=")" onclick="index.editorType(')')" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="{" onclick="index.editorType('{')" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="}" onclick="index.editorType('}')" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="[" onclick="index.editorType('[')" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="]" onclick="index.editorType(']')" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="%" onclick='index.editorType("%")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="'" onclick='index.editorType("&#39;")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value=":" onclick='index.editorType(":")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value=";" onclick='index.editorType(";")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value=">" onclick='index.editorType(">")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value=">=" onclick='index.editorType(">=")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="<" onclick='index.editorType("<")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="<=" onclick='index.editorType("<=")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="==" onclick='index.editorType("==")' onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" value="!=" onclick='index.editorType("!=")' onfocus="index.preventFocus(event)"/>
+
+</div>
+<div id="myOutput" style="position:relative;">
+<div class="saida" id="saida"><div id="errorArea"></div><div class="saida" id="hidden"></div><textarea id="textAreaSaida" onclick="index.cursorToEnd(this)" onkeyup="index.cursorToEnd(this)" oninput="index.receiveInput(this)">??</textarea>
+
+</div>
+
+<!--<input type="button" value="mostrar bytecode" style="position:absolute;top:0px;right:0px;background:transparent;z-index: 5;border:none" onclick="document.getElementById('hidden').style.display = 'block';"/>-->
+</div>
+</div>
+
+<script>
+	function checkECMA6() {
+		"use strict";
+
+		if (typeof Symbol == "undefined") return false;
+		try {
+			eval("class Foo {}");
+		} catch (e) { return false; }
+
+		return true;
+	}
+
+	if (!checkECMA6()) {
+		document.getElementsByTagName('body')[0].innerHTML = "<h1 style='color:#FFFFFF;'>Ops!</h1> <p style='padding:20px;color:#FFFFFF;'>Esta página depende de funcionalidades JavaScript ES6, porém seu navegador não é capaz de executar. <br/> Se você está usando o Aplicativo, experimente usar um navegador mais recente para abrir este link: <h2 style='padding:20px;'><a href='https://erickweil.github.io/portugolweb'>https://erickweil.github.io/portugolweb</a></h2> </p>";
+		throw new Error("Esta página depende de funcionalidades JavaScript ES6, porém seu navegador não é capaz de executar.");
+	}
+
+</script>
+
+<script src="lib/ace-src-noconflict/ace.js"></script>
+<script src="lib/ace-src-noconflict/ext-emmet.js"></script>
+<script src="lib/ace-src-noconflict/ext-language_tools.js"></script>
+<script src="lib/ace-src-noconflict/theme-portugol_dark.js"></script>
+<script src="lib/ace-src-noconflict/mode-portugol.js"></script>
+<script type="module" src="src/index.js"></script>
+</body>
+</html>

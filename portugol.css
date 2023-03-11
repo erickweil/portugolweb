@@ -36,7 +36,7 @@ body {
 	resize: auto;
 }
 #myEditor{
-	/*height: 80%;*/
+	/*height: 80%; */
 	max-height: 100vh;
 	min-height: 200px;
 	
@@ -88,20 +88,24 @@ body.mobile .mobileHidden{
 	margin-left: auto;
 	margin-right: auto;
 	/*display: table; Parece que n precisava ser table*/
+	display: flex;
+	flex-direction: column;
 	position: relative;
 	background: #1E2324;
 	min-width:220px;
 	max-width:420px;
 	pointer-events:auto;
-	overflow-y:auto;
-	max-height:75%;
+	
+	max-height:95vh;
 }
 
 .listaExemplos{
 	color:#01EABC;
 	font-weight: 800;
-	padding:20px;
-	margin-top:20px;
+	padding-left:20px;
+	padding-right:20px;
+	padding-bottom:20px;
+	overflow-y:auto;
 }
 
 .listaExemplos h2{

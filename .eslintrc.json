@@ -1,0 +1,33 @@
+{
+    "env": {
+        "browser": true,
+        "es6": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:import/recommended"
+    ],
+    "overrides": [
+    ],
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module"
+    },
+    "rules": {
+        "no-unused-vars": "off",
+        "no-useless-escape":"off",
+        "no-constant-condition":"off",
+        "no-var": "error",
+        "semi":["error","always"],
+        "no-implicit-globals":"error",
+        "no-use-before-define":["error",{
+            "functions":false
+        }],
+        "no-duplicate-imports":"error",
+        "no-invalid-this": "error",
+        "no-shadow":"error",
+        "import/no-absolute-path":"error",
+        "import/no-self-import":"error",
+        "import/extensions":["error", "always", { "js": "always" }]
+    }
+}

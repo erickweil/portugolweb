@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head> 
+
+  <title>Portugol Web</title>
+	
+  <!-- HTML Meta Tags -->
+  <meta charset="utf-8">
+  <meta lang="pt-br">
+  <meta name="author" content="Erick L. Weil">
+  <meta name="theme-color" content="#08ecbc">
+  <meta name="description" content="Utilize o portugol diretamente do seu navegador!">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+</head>
+<body style="margin:0">
+
+<div id="output" style="white-space: pre;"></div>
+
+<script>
+const output_div = document.getElementById("output");
+let output_txt = "";
+(function(){
+    var oldLog = console.log;
+    console.log = function (message) {
+
+        output_txt += message+"\n";
+        output_div.innerHTML = output_txt;
+
+        // DO MESSAGE HERE.
+        oldLog.apply(console, arguments);
+    };
+
+    var oldError = console.error;
+    console.error = function (message) {
+
+        output_txt += message+"\n";
+        output_div.innerHTML = output_txt;
+
+        // DO MESSAGE HERE.
+        oldError.apply(console, arguments);
+    };
+})();
+</script>
+
+<script type="module" src="/test/runalltests.js"></script>
+
+</body>
+</html>
