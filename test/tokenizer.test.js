@@ -35,30 +35,34 @@ function testExemplo(exemplo) {
     });
 }
 
-describe("Tokenizer", () => {
+//describe("Tokenizer", () => {
 
-    test("Tokenizer programa simples:", () => {
-        tokenizerContarErros("programa{funcao inicio(){inteiro a = 4 escreva(\"Valor é\"+a)}");
+    describe("Programa Simples",() => {
+        test("Tokenizer programa simples:", () => {
+            tokenizerContarErros("programa{funcao inicio(){inteiro a = 4 escreva(\"Valor é\"+a)}");
+        });
     });
-    testExemplo("aleatorio0.por");
-    testExemplo("aleatorio1.por");
-    testExemplo("aleatorio2.por");
-    testExemplo("aleatorio3.por");
-    testExemplo("aleatorio5.por");
-    testExemplo("bibliotecas.por");
-    testExemplo("bolachaoumaca.por");
-    testExemplo("branco.por");
-    testExemplo("condicoes.por");
-    testExemplo("entrada.por");
-    testExemplo("funcoes.por");
-    testExemplo("graficos.por");
-    testExemplo("internet.por");
-    testExemplo("jogodavida.por");
-    testExemplo("notas.por");
-    testExemplo("olamundo.por");
-    testExemplo("repeticao.por");
-    testExemplo("slide_puzzle.por");
-    testExemplo("variaveis.por");
-    testExemplo("velocidade.por");
-    testExemplo("vetores.por");
-});
+    describe("Exemploss",() => {
+        testExemplo("aleatorio0.por");
+        testExemplo("aleatorio1.por");
+        testExemplo("aleatorio2.por");
+        testExemplo("aleatorio3.por");
+        testExemplo("aleatorio5.por");
+        testExemplo("bibliotecas.por");
+        testExemplo("bolachaoumaca.por");
+        testExemplo("branco.por");
+        testExemplo("condicoes.por");
+        testExemplo("entrada.por");
+        testExemplo("funcoes.por");
+        testExemplo("graficos.por");
+        testExemplo("internet.por");
+        testExemplo("jogodavida.por");
+        testExemplo("notas.por");
+        testExemplo("olamundo.por");
+        testExemplo("repeticao.por");
+        testExemplo("slide_puzzle.por");
+        testExemplo("variaveis.por");
+        testExemplo("velocidade.por");
+        testExemplo("vetores.por");
+    });
+//});

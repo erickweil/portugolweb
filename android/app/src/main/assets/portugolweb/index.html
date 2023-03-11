@@ -11,6 +11,7 @@
   <meta name="theme-color" content="#08ecbc">
   <meta name="description" content="Utilize o portugol diretamente do seu navegador!">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
 
   <!-- Facebook Meta Tags -->
   <meta property="og:url" content="https://erickweil.github.io/portugolweb/">
@@ -68,21 +69,27 @@
 <h2 onclick="index.exemplo('branco');">Novo Programa em Branco</h2>
 <hr style="border: 1px solid #01EABC;"/>
 <details><summary><h2>Básico</h2></summary>
-<h2 onclick="index.exemplo('variaveis');">Variáveis</h2>
-<h2 onclick="index.exemplo('entrada');">Entrada de dados</h2>
-</details><details><summary><h2>Operações Matemáticas</h2></summary>
-</details><details><summary><h2>Desvios Condicionais</h2></summary>
-<h2 onclick="index.exemplo('condicoes');">Condições</h2>
-<h2 onclick="index.exemplo('repeticao');">Repetição</h2>
-</details><details><summary><h2>Outros</h2></summary>
-<h2 onclick="index.exemplo('vetores');">Vetores</h2>
-<h2 onclick="index.exemplo('funcoes');">Funções</h2>
-<h2 onclick="index.exemplo('bibliotecas');">Bibliotecas</h2>
-<h2 onclick="index.exemplo('graficos');">Graficos</h2>
-<h2 onclick="index.exemplo('slide_puzzle');">Slide Puzzle</h2>
-<h2 onclick="index.exemplo('jogodavida');">Jogo da Vida</h2>
-<h2 onclick="index.exemplo('internet');">Internet</h2>
-<h2 onclick="index.exemplo('aleatorio');">Aleatorio</h2>
+  <h2 onclick="index.exemplo('variaveis');">Variáveis</h2>
+  <h2 onclick="index.exemplo('entrada');">Entrada de dados</h2>
+  <h2 onclick="index.exemplo('velocidade');">Tempo gasto</h2>
+  </details><details><summary><h2>Desvios Condicionais</h2></summary>
+  <h2 onclick="index.exemplo('condicoes');">Condições</h2>
+  <h2 onclick="index.exemplo('repeticao');">Repetição</h2>
+  <h2 onclick="index.exemplo('bolachaoumaca');">Bolacha Ou Maçã</h2>
+  </details><details><summary><h2>Outros</h2></summary>
+  <h2 onclick="index.exemplo('vetores');">Vetores</h2>
+  <h2 onclick="index.exemplo('funcoes');">Funções</h2>
+  <h2 onclick="index.exemplo('bibliotecas');">Bibliotecas</h2>
+  <h2 onclick="index.exemplo('internet');">Internet</h2>
+  </details><details><summary><h2>Gráficos</h2></summary>
+  <h2 onclick="index.exemplo('graficos');">Graficos</h2>
+  <h2 onclick="index.exemplo('jogodavida');">Jogo da Vida</h2>
+  <h2 onclick="index.exemplo('slide_puzzle');">Slide Puzzle</h2>
+  <h2 onclick="index.exemplo('aleatorio0');">O Cubo Verde</h2>
+  <h2 onclick="index.exemplo('aleatorio1');">Coelho 3D</h2>
+  <h2 onclick="index.exemplo('aleatorio2');">Paramétrico</h2>
+  <h2 onclick="index.exemplo('aleatorio3');">Seno e Cosseno</h2>
+  <h2 onclick="index.exemplo('aleatorio5');">A*</h2>
 </details>
 
 <hr style="border: 1px solid #01EABC;"/>
@@ -127,9 +134,9 @@ title="Executa o código mostando linha a linha a cada clique"
 <input tabindex="-1" type="button" style="background-image: url(icons/arrowU.png);" value=" " onclick="index.editorCommand(38)" onfocus="index.preventFocus(event)"/>
 <input tabindex="-1" type="button" style="background-image: url(icons/arrowD.png);" value=" " onclick="index.editorCommand(40)" onfocus="index.preventFocus(event)"/>
 <input tabindex="-1" type="button" value="DEL" onclick="index.editorCommand(46)" onfocus="index.preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/undo.png);" value=" " onclick="index.editor.undo()" onfocus="index.preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/redo.png);" value=" " onclick="index.editor.redo()" onfocus="index.preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/autocomplete.png);" value=" " onclick="index.editor.execCommand('startAutocomplete');" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/undo.png);" value=" " onclick="index.editorManager.undo()" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/redo.png);" value=" " onclick="index.editorManager.redo()" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/autocomplete.png);" value=" " onclick="index.editorManager.autoComplete()" onfocus="index.preventFocus(event)"/>
 </div>
 <div id="hotbar_keys" style="overflow-x:auto;white-space:nowrap;width: auto;">
 
@@ -186,7 +193,6 @@ title="Executa o código mostando linha a linha a cada clique"
 	}
 
 </script>
-
 
 <script src="dist/ace.js"></script>
 <script src="dist/main.js"></script>

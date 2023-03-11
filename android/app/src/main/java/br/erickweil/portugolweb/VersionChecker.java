@@ -17,7 +17,7 @@ import java.io.IOException;
 
 public class VersionChecker {
     public static final int READ_TIMEOUT = 30000;
-    public static final int VERSAO_ASSETS_WEBAPP = 2; // Versão do webapp incluso no apk nos assets
+    public static final int VERSAO_ASSETS_WEBAPP = 3; // Versão do webapp incluso no apk nos assets
 
     public String endereco;
     public String versaoApp;

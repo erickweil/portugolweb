@@ -25,6 +25,7 @@ const files = [
     ,"dist/ace.js"
     ,"dist/main.js"
     ,"index.html"
+    ,"favicon.ico"
 ];
 
 const web_app_files = [];

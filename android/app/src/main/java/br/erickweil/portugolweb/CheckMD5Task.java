@@ -10,7 +10,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.nio.ByteOrder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -33,8 +32,8 @@ public class CheckMD5Task extends AsyncTask<CheckMD5Task.FileHashEntry,Integer, 
         boolean sucess;
     }
 
-    public static interface CheckMd5Callback{
-        public void resposta(CheckMD5Task.FileHashEntry[] resposta);
+    public interface CheckMd5Callback{
+        void resposta(CheckMD5Task.FileHashEntry[] resposta);
     }
 
     private CheckMd5Callback onResponse;
@@ -119,8 +118,7 @@ public class CheckMD5Task extends AsyncTask<CheckMD5Task.FileHashEntry,Integer, 
             //String output = bigInt.toString(16);
             // Fill to 32 chars
             //output = String.format("%32s", output).replace(' ', '0');
-            String output = encodeHex(md5sum);
-            return output;
+            return encodeHex(md5sum);
         } catch (IOException e) {
             throw new RuntimeException("Unable to process file for MD5", e);
         } finally {

@@ -152,11 +152,15 @@
     },
     {
       "file": "dist/main.js",
-      "md5": "26e73ba40af4349805fbaf8851d19455"
+      "md5": "9bed18ca9de2554cca15687e1256b61c"
     },
     {
       "file": "index.html",
       "md5": "3f223e790f588ee814500f02164f6960"
+    },
+    {
+      "file": "favicon.ico",
+      "md5": "d84518c832299e023f5beb30853fc373"
     }
   ]
 }

@@ -1,9 +1,7 @@
 package br.erickweil.portugolweb;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -26,29 +24,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class Inicio extends Activity {
 
-    /*public static final String SITE_PROTOCOLO = "https://";
-    //public static final String SITE_DOMINIO = "erickweil.github.io";
-    public static final String SITE_DOMINIO = "app.passapassa.com.br";
-    public static final String SITE_INDEX_PATH = "/portugolweb/";*/
+    public static final String SITE_PROTOCOLO = "https://";
+    public static final String SITE_DOMINIO = "erickweil.github.io";
+    public static final String SITE_INDEX_PATH = "/portugolweb/";
+    // Configs teste local
+    /*public static final String SITE_PROTOCOLO = "http://";
+    public static final String SITE_DOMINIO = "192.168.1.2";
+    public static final String SITE_INDEX_PATH = "/";*/
+
     public static final String SITE_VERSIONCHECK_FILE = "version.json";
     public static final String ANDROID_ASSETS_CACHE_URL = "file:///android_asset/portugolweb/";
 
-    public static final String SITE_PROTOCOLO = "http://";
-    public static final String SITE_DOMINIO = "192.168.1.5";
-    public static final String SITE_INDEX_PATH = "/indexdev.html";
-    public static final boolean SITE_FAZER_CACHE = false; // teste local
+    public static final boolean SITE_FAZER_CACHE = true;
 
     public static final long MAX_FILESIZE = 2000000;
     private WebView webview;
-    private WebSettings webviewSettings;
     private WebJSInterface JSinterface;
-    private String identifier;
     private String fileToOpen;
     private int webAppVersion;
 
@@ -60,11 +55,11 @@ public class Inicio extends Activity {
         return c.getApplicationContext().getSharedPreferences("SessionData", MODE_PRIVATE); // 0 - for private mode
     }
 
-    public static final String getIndex() {
+    public static String getIndex() {
         return SITE_PROTOCOLO+SITE_DOMINIO+SITE_INDEX_PATH;
     }
 
-    public static final String getVersionCheck() {
+    public static String getVersionCheck() {
         //return "https://raw.githubusercontent.com/erickweil/portugolweb/develop/"+SITE_VERSIONCHECK_FILE;
         return getIndex() + SITE_VERSIONCHECK_FILE;
     }
@@ -92,7 +87,7 @@ public class Inicio extends Activity {
 
             int startCount = preferences.getInt("start_count",0);
             int deuNota = preferences.getInt("deu_nota",0);
-            identifier = preferences.getString("identifier",null);
+            String identifier = preferences.getString("identifier", null);
 
             webAppVersion = preferences.getInt("web_app_version",VersionChecker.VERSAO_ASSETS_WEBAPP);
             cachePathToOpen = preferences.getString("web_app_cache",cachePathToOpen);
@@ -103,7 +98,7 @@ public class Inicio extends Activity {
             {
                 identifier = Utilidades.randomString("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",32);
 
-                prefsEdit.putString("identifier",identifier);
+                prefsEdit.putString("identifier", identifier);
             }
             prefsEdit.apply();// commit??
 
@@ -122,7 +117,7 @@ public class Inicio extends Activity {
         loaded = 0;
         webview = findViewById(R.id.inicio_webview);
 
-        webviewSettings = webview.getSettings();
+        WebSettings webviewSettings = webview.getSettings();
         webviewSettings.setJavaScriptEnabled(true);
         webviewSettings.setDomStorageEnabled(true);
         //webviewSettings.setAppCachePath(getApplicationContext().getCacheDir().getAbsolutePath());
@@ -216,26 +211,16 @@ public class Inicio extends Activity {
         checker.executar();
     }
 
-    public boolean isInternetAvailable() {
-        try {
-            InetAddress address = InetAddress.getByName("www.google.com");
-            return !address.equals("");
-        } catch (UnknownHostException e) {
-            // Log error
-        }
-        return false;
-    }
-
     public String readEscapedTextFromURI(Uri uri)
     {
         try {
             if(uri != null) {
                 InputStream in = getContentResolver().openInputStream(uri);
 
-                BufferedReader input = new BufferedReader(new InputStreamReader(in,Charset.forName("UTF-8")));
+                BufferedReader input = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
 
                 StringBuilder result = new StringBuilder();
-                String line = "";
+                String line;
                 while((line = input.readLine()) != null)
                 {
                     line = line.replace("\\","\\\\");
@@ -265,8 +250,7 @@ public class Inicio extends Activity {
         if(uri != null) {
             long fileSize = getURISize(uri);
             if (fileSize < MAX_FILESIZE) {
-                String fileText = readEscapedTextFromURI(uri);
-                return fileText;
+                return readEscapedTextFromURI(uri);
             } else {
                 Toast.makeText(this, "O arquivo é grande demais:" + fileSize + " bytes!", Toast.LENGTH_LONG).show();
                 return null;
@@ -276,19 +260,19 @@ public class Inicio extends Activity {
 
     public long getURISize(Uri uri)
     {
-        try {
-            //java.net.URI juri = new java.net.URI(uri.toString());
-            ///File mediaFile = new File(juri.getPath());
-            //if(mediaFile != null && mediaFile.exists())
-            //return mediaFile.length();
-            //else return -1;
-            /*
-             * Get the file's content URI from the incoming Intent,
-             * then query the server app to get the file's display name
-             * and size.
-             */
-            Cursor returnCursor =
-                    getContentResolver().query(uri, null, null, null, null);
+
+        //java.net.URI juri = new java.net.URI(uri.toString());
+        ///File mediaFile = new File(juri.getPath());
+        //if(mediaFile != null && mediaFile.exists())
+        //return mediaFile.length();
+        //else return -1;
+        /*
+         * Get the file's content URI from the incoming Intent,
+         * then query the server app to get the file's display name
+         * and size.
+         */
+        try(Cursor returnCursor =
+                getContentResolver().query(uri, null, null, null, null)) {
             /*
              * Get the column indexes of the data in the Cursor,
              * move to the first row in the Cursor, get the data,
@@ -297,8 +281,7 @@ public class Inicio extends Activity {
             //int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
             int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
             returnCursor.moveToFirst();
-            long size = returnCursor.getLong(sizeIndex);
-            return size;
+            return returnCursor.getLong(sizeIndex);
         } catch (Exception e) {
             e.printStackTrace();
             return -1;
@@ -317,7 +300,7 @@ public class Inicio extends Activity {
                 if(JSinterface.file_to_save != null && uri != null) {
                     OutputStream output = getContentResolver().openOutputStream(uri);
                     if(output != null) {
-                        output.write(JSinterface.file_to_save.getBytes(Charset.forName("UTF-8")));
+                        output.write(JSinterface.file_to_save.getBytes(StandardCharsets.UTF_8));
                         output.flush();
                         output.close();
                     }
@@ -357,7 +340,7 @@ public class Inicio extends Activity {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
             webview.evaluateJavascript(code, null); // this don't reload the page, should worry about?
         } else {
-            webview.loadUrl("javascript:"+code);
+            webview.loadUrl("javascript:"+code); // NUNCA VAI EXECUTAR MAS OK
         }
     }
 }
