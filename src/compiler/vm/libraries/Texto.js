@@ -48,7 +48,7 @@ export default class Texto {
 		if(posicao_inicial > posicao_final) 
 		throw "Posição inicial e final inválidas, a posição final deve ser maior que a inicial";
 
-		if(posicao_inicial >= 0 && posicao_final < cad.length-1) {
+		if(posicao_inicial >= 0 && posicao_final < cad.length) {
 			return {value:cad.substring(posicao_inicial,posicao_final)};
 		} else throw "Posição inicial ou final fora do intervalo. Deve estar entre 0 e o tamanho do texto";
 	}
@@ -60,7 +60,7 @@ export default class Texto {
 	
 	obter_caracter(cad,indice)
 	{
-		if(indice >= 0 && indice < cad.length-1)
+		if(indice >= 0 && indice < cad.length)
 		return {value:cad.charAt(indice)};
 		else throw "Índice fora do intervalo. Deve estar entre 0 e o tamanho do texto";
 	}
