@@ -1,6 +1,6 @@
 {
   "version": "1.6",
-  "web_app_version": 2,
+  "web_app_version": 3,
   "web_app_files": [
     {
       "file": "icons/arrowD.png",
@@ -71,16 +71,16 @@
       "md5": "6d570bf75c7503bd60d09ef33d2f38f7"
     },
     {
-      "file": "exemplos/aleatorio4.por",
-      "md5": "df900b78db334ca4c55471e0916d08c5"
-    },
-    {
       "file": "exemplos/aleatorio5.por",
       "md5": "35a549af4420b4ae9fc5b56f2e0c1003"
     },
     {
       "file": "exemplos/bibliotecas.por",
       "md5": "7548db4ffa12936282e76bf2e3d7256a"
+    },
+    {
+      "file": "exemplos/bolachaoumaca.por",
+      "md5": "989b145af7460152e2c118e7d8ba12b3"
     },
     {
       "file": "exemplos/branco.por",
@@ -100,7 +100,7 @@
     },
     {
       "file": "exemplos/graficos.por",
-      "md5": "5444af50fe1e08cc85d622735584bd3e"
+      "md5": "0bac0709cb5dfaf5ce7fd1a0c3132fec"
     },
     {
       "file": "exemplos/internet.por",
@@ -131,6 +131,10 @@
       "md5": "28a5a296156713b30f63ce8cc72ae35f"
     },
     {
+      "file": "exemplos/velocidade.por",
+      "md5": "dd030c0a7707419a9eb46f0c8cb83bb2"
+    },
+    {
       "file": "exemplos/vetores.por",
       "md5": "838e9a39d1867e56e9ba39e140bc6b4f"
     },
@@ -140,7 +144,7 @@
     },
     {
       "file": "portugol.css",
-      "md5": "f95813ed8baecc281204787c68986694"
+      "md5": "61f40eeee1185217944abcb98ba2ed70"
     },
     {
       "file": "dist/ace.js",
@@ -148,11 +152,11 @@
     },
     {
       "file": "dist/main.js",
-      "md5": "4faab429768bf2b90609c7f6eb415699"
+      "md5": "26e73ba40af4349805fbaf8851d19455"
     },
     {
       "file": "index.html",
-      "md5": "7d970fa7046c4e597db03f3879689016"
+      "md5": "3f223e790f588ee814500f02164f6960"
     }
   ]
 }

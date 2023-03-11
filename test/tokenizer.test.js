@@ -44,9 +44,9 @@ describe("Tokenizer", () => {
     testExemplo("aleatorio1.por");
     testExemplo("aleatorio2.por");
     testExemplo("aleatorio3.por");
-    testExemplo("aleatorio4.por");
     testExemplo("aleatorio5.por");
     testExemplo("bibliotecas.por");
+    testExemplo("bolachaoumaca.por");
     testExemplo("branco.por");
     testExemplo("condicoes.por");
     testExemplo("entrada.por");
@@ -59,5 +59,6 @@ describe("Tokenizer", () => {
     testExemplo("repeticao.por");
     testExemplo("slide_puzzle.por");
     testExemplo("variaveis.por");
+    testExemplo("velocidade.por");
     testExemplo("vetores.por");
 });

@@ -14,7 +14,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 
 // ATUALIZAR AQUI OS VALORES
 const APPVERSION = "1.6";
-const WEBAPPVERSION = 2;
+const WEBAPPVERSION = 3;
 
 // Caminho dos arquivos necessários para o aplicativo funcionar
 const files = [

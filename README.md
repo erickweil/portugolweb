@@ -1,13 +1,14 @@
 # Portugol Mobile
 Simples versão web, compatível com smartphones, para programar na linguagem do portugol studio.
 
-
 ![Site no celular](celular.jpeg)
 
 ## Utilização
 
 acesse: <a>https://erickweil.github.io/portugolweb/</a> para utilizar direto do navegador
 ou baixe o aplicativo Android:<a>https://play.google.com/store/apps/details?id=br.erickweil.portugolweb</a> que permite utilizar offline.
+
+Pode também baixar o inteiro projeto e abrir o arquivo index.html para utilizar offline. (Veja a seção instalação abaixo)
 
 ** obs: Ao utilizar no celular, haverá uma barra especial com caracteres para complementar o teclado **
 
@@ -24,7 +25,7 @@ segue uma lista de funcionalidades que são suportadas
 - Variáveis
 	- todos os tipos ( inteiro, real, cadeia, caracter, logico )
 - Vetores e Matrizes
-	- permite vetores com quantas dimensões quiser ( unidimensionais, bidimensionais, tridimensionais e etc...)
+	- permite vetores (1 dimensão) ou matrizes (2 dimensões)
 - Estrutura Se-Senão
 - Estrutura Enquanto
 - Estrutura Faça-Enquanto
@@ -40,34 +41,40 @@ segue uma lista de funcionalidades que são suportadas
 	- Graficos
 		- Não funciona todos os métodos, principalmente os que trabalham com arquivos e/ou modificam imagens
 		- imagens devem ser carregadas utilizando um url, e não um caminho de arquivo
+    - Internet ( Só funciona no celular, dentro do aplicativo, pois chama realiza a requisição pelo app Android )
 	- Matematica
 	- Mouse ( No celular, um toque é BOTAO_ESQUERDO, dois toques é BOTAO_DIREITO e três toques é BOTAO_MEIO )
 	- Objetos
-	- Teclado ( Não funciona no celular )
+	- Teclado ( No celular, ao usar a biblioteca Teclado aparecerá botões em baixo do canvas do modo gráfico para apertar )
 	- Texto
 	- Tipos
 	- Util
+
+- Execução passo-a-passo:
+  	Ao clicar no botão que são dois Pés ao lado do executar, cada clique consecutivo executa apenas 1 linha de código.
 	
 Testes Apenas:
-	- Avaliador Automático ( acesse https://erickweil.github.io/portugolweb/avaliar.html )
+- Modo Turbo: Se marcado a caixa de modo turbo seu programa será compilado para javascript e terá chances de
+executar mais rápido. Não funciona em funções que chamar o leia, Util.aguarde(), Graficos.renderizar() ou qualquer outra
+função que 'pausa' o código
+- Avaliador Automático ( acesse https://erickweil.github.io/portugolweb/avaliar.html )
 	
 ### O que falta
 	
 - Mensagens de erros que definem melhor o que aconteceu e como corrigir
-- Adicionar suporte às bibliotecas Sons, Arquivos, Internet, ServiçosWeb.
+- Adicionar suporte às bibliotecas Sons, Arquivos, ServiçosWeb.
 	- só que essas bibliotecas só vão funcionar no celular, pois javascript puro não permite acessar arquivos nem a internet
 - Sistema de Inspeção de Variáveis em tempo de execução
-- Permitir executar o código passo-a-passo e inserir pontos de depuração
+- Permitir executar inserir pontos de depuração
 - Hierarquia do código na lateral
 - Mais exemplos de código
 - Sistema de Ajuda
 - Permitir compartilhar o código usando um link compartilhável
 - Adaptar para que possa incluir o editor em um iframe em sites externos ( Moodle )
-- Realizar compilação para javascript e não utilizar máquia virtual, para deixar mais rápido
-- Exportar código para Java ou C++
+- Exportar código para outras linguagens
 
 Aceito ajuda! 
-  inicie uma discussão com uma nova Issue ou mande email para erickweil2@gmail.com caso queira conversar.
+  inicie uma discussão com uma nova Issue ou mande email para erickweil2@gmail.com com a sua sugestão ou problema que encontrou.
 
 ### Como funciona
 
@@ -83,14 +90,19 @@ Quando você clica em "Executar", todo o código que estiver no editor será com
 	Uma vez que o bytecode está gerado, a máquina virtual é iniciada e executa cada instrução uma após a outra.
 	
 Devido ao código ser executado em uma máquina virtual, o mesmo código executado aqui e no programa Portugol Studio, pode ser de 10 a 100 vezes mais lento ( se você usar para aprender a programar isso não será um problema )
+Experimental: Clique no 'modo turbo' e em vez de ir para máquina virtual seu código é compilado para Javascript.
 
   
 ## Bibliotecas e Frameworks
 
 * [Ace editor](https://github.com/ajaxorg/ace) - O editor do código.
 
-é isso! todo o código é escrito em html e javascript, não é utilizado nenhuma outra biblioteca.
-
+Ferramentas apenas importantes durante o desenvolvimento:
+* [NodeJS](https://nodejs.org/en/) - Para permitir todos esses módulos e plugins abaixo. (O site em si não roda em node).
+* [WebPack](https://webpack.js.org/) + [Babel](https://babeljs.io/)- Para tornar o site mais leve, combinar os arquivos em um e escrever javascript moderno enquanto ainda tem suporte a mais navegadores
+* [Jest](https://jestjs.io/) - Para testar o código durante o processo de desenvolvimento
+* [ESLint](https://eslint.org/docs/latest/integrate/nodejs-api) - Para encontrar erros antes de executar o código javascript(Quase como em linguagens compiladas), e garantir certos estilos de escrita do código
+* [Docker](https://www.docker.com/) - Para durante o desenvolvimento executar o site
 ## Instalação
 
 É uma página web estática, não é preciso instalar:
