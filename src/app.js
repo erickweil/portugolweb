@@ -1,6 +1,6 @@
 import { checkIsMobile } from "./extras/mobile.js";
 
-import { STATE_ASYNC_RETURN, STATE_ENDED, STATE_WAITINGINPUT, VM_getExecJS, VM_getSaida, VM_setExecJS 
+import { getCurrentTokenIndex, STATE_ASYNC_RETURN, STATE_ENDED, STATE_STEP, STATE_WAITINGINPUT, VM_getExecJS, VM_getSaida, VM_setExecJS 
 } from "./compiler/vm/vm.js";
 import { httpGetAsync, numberOfLinesUntil, cursorToEnd as _cursorToEnd } from "./extras/extras.js";
 import { htmlEntities } from "./compiler/tokenizer.js";
@@ -39,6 +39,20 @@ import Hotbar from "./pages/index/hotbar.js";
 	//####################################################
 	export function executar(btn,passoapasso)
 	{
+		if(passoapasso && portugolRun.lastvmState == STATE_STEP)
+		{
+			// abrir hotbar e animar
+			hotbarManager.extendUntil("EXTENDED");
+		
+			// realçar linha?
+			limparErros();
+			realcarLinha(editorManager.getValue(),getCurrentTokenIndex(),true);
+
+			portugolRun.executar_step();
+			
+			return;
+		}
+
 		if(portugolRun.lastvmState == STATE_ENDED)
 		{
 			if(btn.value != "Executar")
@@ -64,8 +78,12 @@ import Hotbar from "./pages/index/hotbar.js";
 				}
 				
 				btn.value = "Parar";
-				portugolRun.executar(string_cod,compilado,enviarErro)
+				portugolRun.executar(string_cod,compilado,enviarErro,passoapasso)
 				.then((output) => {
+
+					if(passoapasso)
+					limparErros(["information"]); // Limpa o último realce de linha (por algum motivo não funciona no leia quando é pulado)
+
 					btn.value = "Executar";
 				})
 				.catch((err) => {
@@ -162,6 +180,13 @@ import Hotbar from "./pages/index/hotbar.js";
 		btn.className = '';
 	}
 
+	export function preventFocusSaida(event) {
+		event.preventDefault();
+		event.stopPropagation();
+
+		div_saida.focus();
+	}
+
 	export function preventFocusCanvas(event) {
 		event.preventDefault();
 		event.stopPropagation();
@@ -182,22 +207,23 @@ import Hotbar from "./pages/index/hotbar.js";
 		editorManager.focus();
 	}
 
-	export function fonteAumentar()
+	function fonteTamanho(size) 
 	{
-		fontSize++;
+		fontSize = size;
 		editorManager.setFontSize(fontSize);
 		
 		div_saida.style.fontSize = fontSize+"pt";
 		errosSaida.style.fontSize = fontSize+"pt";
 	}
+
+	export function fonteAumentar()
+	{
+		fonteTamanho(fontSize+1);
+	}
 	
 	export function fonteDiminuir()
 	{
-		fontSize--;
-		editorManager.setFontSize(fontSize);
-		
-		div_saida.style.fontSize = fontSize+"pt";
-		errosSaida.style.fontSize = fontSize+"pt";
+		fonteTamanho(fontSize-1);
 	}
 
 	export function save() {
@@ -392,6 +418,8 @@ import Hotbar from "./pages/index/hotbar.js";
 			let mostrandoHotbar = document.getElementById("check-mostrar-hotbar").checked;
 			persistentStoreValue("mostrarHotbar",mostrandoHotbar);
 			
+			let tamanhoFonte = fontSize;
+			persistentStoreValue("tamanhoFonte",tamanhoFonte);
 			
 		} catch (e) {
 			let myStackTrace = e.stack || e.stacktrace || "";
@@ -407,6 +435,7 @@ import Hotbar from "./pages/index/hotbar.js";
 		let mostrandoHotbar = persistentGetValue("mostrarHotbar");
 		let autoComplete = persistentGetValue("autoComplete");
 		let modoTurbo = persistentGetValue("modoTurbo");
+		let tamanhoFonte = persistentGetValue("tamanhoFonte");
 		
 		if(typeof(autoComplete) == "string")
 		{
@@ -432,11 +461,20 @@ import Hotbar from "./pages/index/hotbar.js";
 		
 		if(typeof(mostrandoHotbar) == "string")
 		{
+			// Lembrando da última escolha do usuário
 			mostrandoHotbar = ""+mostrandoHotbar == "true";
-			
-			
 			document.getElementById("check-mostrar-hotbar").checked = mostrandoHotbar; 
 			toggleHotbar(mostrandoHotbar);
+		} 
+		else 
+		{
+			// Padrão mostrar hotbar no mobile, esconder no pc
+			toggleHotbar(isMobile);
+		}
+
+		if(typeof(tamanhoFonte) == "string")
+		{
+			fonteTamanho(parseInt(""+tamanhoFonte));
 		}
 		
 		return last_code;
@@ -568,9 +606,4 @@ import Hotbar from "./pages/index/hotbar.js";
 	if(isMobile)
 	{
 		document.body.classList.add('mobile');
-		hotbarManager.mostrarHotbar();
-	}
-	else
-	{
-		hotbarManager.ocultarHotbar();
 	}

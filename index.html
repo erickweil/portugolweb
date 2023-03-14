@@ -110,7 +110,7 @@
 <input type="button" id="btn-run" value="Executar" onclick="index.executar(this,false)" title="Executa o seu código"/>
 
 <input tabindex="-1" id="btn-step" type="button" style="background-image: url(icons/step.png);" value=" " 
-onmousedown="index.executarStepStart(this)" onmouseup="index.executarStepPause(this);" onmouseleave="index.executarStepPause(this);" 
+onclick="index.executarStepStart(this)" onmouseup="index.executarStepPause(this);" onmouseleave="index.executarStepPause(this);"  onfocus="index.preventFocusSaida(event)"
 title="Executa o código mostando linha a linha a cada clique"
 />
 
