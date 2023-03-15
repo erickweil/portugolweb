@@ -218,10 +218,12 @@ export class SwitchScope {
 }
 
 export class Scope {
-	constructor(parentScope,globalScope,funcScopeRef) {
+	constructor(parentScope,globalScope,funcScopeRef,startTokenIndex) {
 		this.parentScope = parentScope;
 		this.funcScopeRef = funcScopeRef;
 		this.vars = {};
+		this.startTokenIndex = startTokenIndex;
+		this.endTokenIndex = -1;
 		if(globalScope)
 			this.globalScope = globalScope;
 		else
@@ -236,6 +238,11 @@ export class Scope {
 			this.varCount = 0;
 			this.globalCount = 0;
 		}
+	}
+
+	onPop(endTokenIndex)
+	{
+		this.endTokenIndex = endTokenIndex;
 	}
 	
 	createVar(varName,v)
@@ -259,6 +266,37 @@ export class Scope {
 		
 		return v;
 	}
+
+	getVarByIndex(index,global)
+	{
+		if(!global && this.globalScope) {
+			return false;
+		}
+
+		if(global && !this.globalScope) {
+			if(this.parentScope)
+			return this.parentScope.getVarByIndex(index,global);
+			else return false;
+		}
+
+		let retV = false;
+
+		const keys = Object.keys(this.vars);
+		for (let i = 0; i < keys.length; i++) {
+			const v = this.vars[keys[i]];
+			if(v.index == index) {
+				retV = v;
+				break;
+			}
+		}
+
+		if(!retV && this.parentScope)
+		{
+			retV = this.parentScope.getVarByIndex(index,global);
+		}
+		
+		return retV;
+	}
 	
 }
 // http://blog.jamesdbloom.com/JavaCodeToByteCode_PartOne.html
@@ -275,6 +313,7 @@ export class Compiler {
 		this.functions = [];
 		this.incluas = [];
 		this.scope = false;
+		this.scopeList = []; // para depois conseguir encontrar variáveis durante a execução
 		this.loopScope = false;
 		this.enviarErro = erroCallback;
 	}
@@ -374,6 +413,16 @@ export class Compiler {
 		
 		return true;
 	}
+
+	pushScope(parentScope,globalScope,funcScopeRef) {
+		this.scope = new Scope(parentScope,globalScope,funcScopeRef,this.lastIndex); // cria um scopo para rodar a funcao, se, enquanto e qualquer coisa...	
+		this.scopeList.push(this.scope);
+	}
+
+	popScope() {
+		this.scope.onPop(this.lastIndex);
+		this.scope = this.scope.parentScope;
+	}
 	
 	compile()
 	{
@@ -445,8 +494,8 @@ export class Compiler {
 		}
 		];
 		
-		
-		this.scope = new Scope(this.scope,true,false); // cria um scopo para as variaveis globais
+		this.lastIndex = 0;
+		this.pushScope(this.scope,true,false); // cria um scopo para as variaveis globais
 		
 		let funcInit = {name:"#globalInit",bytecode:[],bytecodeIndexes:{},varCount:0,jsSafe:false };
 		this.funcScopeRef = new FunctionScopeRef();
@@ -463,13 +512,13 @@ export class Compiler {
 		for(let i=0;i<funcoes.length;i++)
 		{
 			this.funcScopeRef = new FunctionScopeRef();
-			this.scope = new Scope(this.scope,false,this.funcScopeRef); // cria um scopo para rodar a funcao, se, enquanto e qualquer coisa...	
+			this.pushScope(this.scope,false,this.funcScopeRef); // cria um scopo para rodar a funcao, se, enquanto e qualquer coisa...	
 				this.compileStatements(funcoes[i].parameters,this.functions[FuncOff+i]); // declara os parametros da funcao, n vai gerar bytecode nenhum, ou vai?
 				this.compileStatements(funcoes[i].statements,this.functions[FuncOff+i]);
 			
 				//this.functions[FuncOff+i].bytecode.push(B_RET); // nao pode esquecer
 				this.compileFunctionRet(this.functions[FuncOff+i],false);
-			this.scope = this.scope.parentScope;
+			this.popScope();
 			this.functions[FuncOff+i].varCount = this.funcScopeRef.maxVarCount;
 			this.functions[FuncOff+i].jsSafe = this.funcScopeRef.jsSafe;
 			this.functions[FuncOff+i].funCalls = this.funcScopeRef.funCalls;
@@ -495,7 +544,7 @@ export class Compiler {
 		
 		this.globalCount = this.scope.varCount;
 		
-		this.scope = this.scope.parentScope; // volta.
+		this.popScope(); // volta.
 		
 		//console.log(this.functions);
 		//if(!funcaoInicio) this.erro(this.tokens[0],"não encontrou a função início");
@@ -773,9 +822,9 @@ export class Compiler {
 				}
 				break;
 				case STATEMENT_block:
-					this.scope = new Scope(this.scope,false,this.funcScopeRef); // cria um scopo para rodar a funcao, se, enquanto e qualquer coisa...
+					this.pushScope(this.scope,false,this.funcScopeRef); // cria um scopo para rodar a funcao, se, enquanto e qualquer coisa...
 						this.compileStatements(stat.statements,func);
-					this.scope = this.scope.parentScope;
+					this.popScope();
 				break;
 				case STATEMENT_se:
 				{
@@ -853,7 +902,7 @@ export class Compiler {
 				{
 					let falseJumps = [];
 					
-					this.scope = new Scope(this.scope,false,this.funcScopeRef); // escopo para as variáveis decl
+					this.pushScope(this.scope,false,this.funcScopeRef); // escopo para as variáveis decl
 					
 					if(stat.decl)
 					{
@@ -882,7 +931,7 @@ export class Compiler {
 					
 					this.replaceAllBy(bc,falseJumps,bc.length); // determina onde ir para sair do loop
 					
-					this.scope = this.scope.parentScope; // fim do escopo
+					this.popScope(); // fim do escopo
 				}
 				break;
 				case STATEMENT_pare:

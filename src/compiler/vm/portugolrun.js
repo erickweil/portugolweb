@@ -14,7 +14,7 @@ import Teclado from "./libraries/Teclado.js";
 import Texto from "./libraries/Texto.js";
 import Tipos from "./libraries/Tipos.js";
 import Util from "./libraries/Util.js";
-import { escreva, getCurrentTokenIndex, STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMrun, VMsetup, VMtoString, VM_async_return, VM_getCodeMax, VM_getDelay, VM_getExecJS 
+import { escreva, getCurrentTokenIndex, getScopeFromTokenIndex, STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMgetGlobalVar, VMgetVar, VMrun, VMsetup, VMtoString, VM_async_return, VM_b2s, VM_f2s, VM_getCodeMax, VM_getDelay, VM_getExecJS, VM_i2s 
 } from "./vm.js";
 import { checkIsMobile } from "../../extras/mobile.js";
 
@@ -194,6 +194,7 @@ export default class PortugolRuntime {
 			compilado.compiler.functions,
 			compilado.jsgenerator.functions,
 			this.libraries,
+			compilado.compiler.scopeList,
 			compilado.compiler.globalCount,
 			string_cod,
 			this.div_saida,
@@ -418,5 +419,36 @@ export default class PortugolRuntime {
 		{
 			this.libraries["Graficos"].encerrar_modo_grafico();
 		}
+	}
+	// Para o Passo a Passo
+	// Retorna uma lista onde que contém os nomes e valores das variáveis
+	getCurrentDeclaredVariables()
+	{
+		let scope = getScopeFromTokenIndex(getCurrentTokenIndex());
+		if(!scope) return [];
+
+		let varTable = [];
+		let v = false;
+		let index = 0;
+		while((v = scope.getVarByIndex(index,false)) != false) {
+			const value = VMgetVar(v.index);
+			varTable.push({
+				...v,
+				value: value
+			});
+			index++;
+		}
+
+		index = 0;
+		while((v = scope.getVarByIndex(index,true)) != false) {
+			const value = VMgetGlobalVar(v.index);
+			varTable.push({
+				...v,
+				value: value
+			});
+			index++;
+		}		
+
+		return varTable;
 	}
 }

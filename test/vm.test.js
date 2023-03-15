@@ -42,7 +42,7 @@ describe("Testando VM", () => {
                 type:T_vazio,
                 jsSafe:true
             },
-        ],false,false,false,"",saida,false);
+        ],false,false,false,10,"",saida,false);
 
         vm.VMrun(10000);
 

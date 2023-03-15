@@ -1,4 +1,5 @@
 import { numberOfLinesUntil } from "../../extras/extras.js";
+import { T_cadeia, T_caracter, T_inteiro, T_logico, T_real, T_Vcadeia, T_Vcaracter, T_Vinteiro, T_Vlogico, T_Vreal } from "../tokenizer.js";
 
 export const B_TRUE = 0;
 export const B_FALSE = 1;
@@ -265,6 +266,7 @@ let VM_globals = false;
 export function VM_getGlobals() {
 	return VM_globals;
 }
+let VM_scopeList = false; // Para encontrar variáveis
 let VM_functions = false;
 let VM_jsfunctions = false;
 let VM_libraries = false;
@@ -386,6 +388,36 @@ export function VM_async_return(retValue)
 	VM_stack[VM_si++] = retValue;
 }
 
+function recursiveStringArray(arr)
+{	
+	let ret = "[";
+	
+	for(let e of arr) {
+		if(Array.isArray(e)) {
+			ret += recursiveStringArray(e);
+		} else {
+			ret += VM_valueToString(e);
+		}
+		ret += ", ";
+	}
+
+	ret += "]";
+	
+	return ret;
+}
+
+export function VM_valueToString(type,value) {
+	switch(type) {
+		case T_inteiro: return VM_i2s(value);
+		case T_caracter: return value;
+		case T_cadeia: return value;
+		case T_real: return VM_f2s(value);
+		case T_logico: return  VM_b2s(value);
+		default:// INCOMPLETO
+		return ""+value;
+	}
+}
+
 export function VM_i2s(value)
 {
 	return value.toLocaleString('fullwide', { useGrouping: false });
@@ -449,6 +481,28 @@ export function getCurrentTokenIndex() {
 	return getTokenIndex(VM_i,VM_funcIndex);
 }
 
+export function getScopeFromTokenIndex(tokenIndex) {
+	if(!VM_scopeList) return false;
+
+	let deepestScope = false;
+	for(const scope of VM_scopeList)
+	{
+		if(tokenIndex >= scope.startTokenIndex && tokenIndex <= scope.endTokenIndex)
+		{
+			deepestScope = scope;
+		}
+	}
+	return deepestScope;
+}
+
+export function VMgetVar(index) {
+	return VM_vars[index];
+}
+
+export function VMgetGlobalVar(index) {
+	return VM_globals[index];
+}
+
 export function VMerro(msg)
 {
 	let fi = getFirstFunctionWithIndexes();
@@ -463,12 +517,13 @@ export function VMerro(msg)
 	console.log("ERRO NA VM:",msg);
 }
 
-export function VMsetup(functions,jsfunctions,libraries,globalCount,textInput,saida_div,erroCallback) 
+export function VMsetup(functions,jsfunctions,libraries,scopeList,globalCount,textInput,saida_div,erroCallback) 
 {
 	VM_functions = functions;
 	VM_jsfunctions = jsfunctions;
 	VM_textInput = textInput;
 	VM_libraries = libraries;
+	VM_scopeList = scopeList;
 	
 	VM_saida = "";
 	VM_saidaDiv = saida_div;

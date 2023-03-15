@@ -1,6 +1,6 @@
 import { checkIsMobile } from "./extras/mobile.js";
 
-import { getCurrentTokenIndex, STATE_ASYNC_RETURN, STATE_ENDED, STATE_STEP, STATE_WAITINGINPUT, VM_getExecJS, VM_getSaida, VM_setExecJS 
+import { getCurrentTokenIndex, STATE_ASYNC_RETURN, STATE_ENDED, STATE_STEP, STATE_WAITINGINPUT, VM_getExecJS, VM_getSaida, VM_setExecJS, VM_valueToString 
 } from "./compiler/vm/vm.js";
 import { httpGetAsync, numberOfLinesUntil, cursorToEnd as _cursorToEnd } from "./extras/extras.js";
 import { htmlEntities } from "./compiler/tokenizer.js";
@@ -12,6 +12,7 @@ import Hotbar from "./pages/index/hotbar.js";
 
 	const div_saida = document.getElementById("textAreaSaida");
 	const errosSaida =document.getElementById("errorArea");
+	const div_tabelavariaveis = document.getElementById("tabelavariaveis");
 
 	const myCanvasModal = document.getElementById("myCanvasModal");
 	const myCanvasWindow = document.getElementById("myCanvasWindow");
@@ -27,7 +28,7 @@ import Hotbar from "./pages/index/hotbar.js";
 
 	let mostrar_bytecode = false;
 
-	let portugolRun = new PortugolRuntime(div_saida);
+	export const portugolRun = new PortugolRuntime(div_saida);
 
 	export const editorManager = new EditorManager();
 	const hotbarManager = new Hotbar(hotbar,div_saida,errosSaida,isMobile,(sz) => {
@@ -37,6 +38,32 @@ import Hotbar from "./pages/index/hotbar.js";
 	//####################################################
 	//################# UI ###############################
 	//####################################################
+	function gerarTabelaVariaveis() {
+		const tabela = portugolRun.getCurrentDeclaredVariables();
+		let txt = "<table><tr><th>Nome</th><th>Valor</th></tr>";
+		for(const v of tabela) {
+			let vtxt = "";
+
+			if (v.value === undefined || v.value === null) 
+			vtxt = "";
+			else vtxt = VM_valueToString(v.type,v.value);
+			
+
+			if(vtxt.length > 100) {
+				vtxt = vtxt.substring(0,64) + "...";
+			}
+			txt += "<tr><td>"+v.name+"</td><td>"+vtxt+"</td></tr>";
+		}
+		txt += "</table>";
+
+		div_tabelavariaveis.style.display = "block";
+		div_tabelavariaveis.innerHTML = txt;
+	}
+
+	function ocultarTabelaVariaveis() {
+		div_tabelavariaveis.style.display = "none";
+	}
+
 	export function executar(btn,passoapasso)
 	{
 		if(passoapasso && portugolRun.lastvmState == STATE_STEP)
@@ -44,6 +71,7 @@ import Hotbar from "./pages/index/hotbar.js";
 			// abrir hotbar e animar
 			hotbarManager.extendUntil("EXTENDED");
 		
+			gerarTabelaVariaveis();
 			// realçar linha?
 			limparErros();
 			realcarLinha(editorManager.getValue(),getCurrentTokenIndex(),true);
@@ -51,6 +79,8 @@ import Hotbar from "./pages/index/hotbar.js";
 			portugolRun.executar_step();
 			
 			return;
+		} else {
+			ocultarTabelaVariaveis();
 		}
 
 		if(portugolRun.lastvmState == STATE_ENDED)

@@ -180,6 +180,28 @@ body.mobile .mobileHidden{
 	transition: bottom 0.3s ease 0s;
 }
 
+.tabelavariaveis {
+	display: none;
+	position: absolute;
+	margin: 10px;
+	top: 0px;
+	right: 0px;
+	text-align: center;
+}
+
+.tabelavariaveis table {
+	border-collapse: collapse;
+}
+
+.tabelavariaveis table,.tabelavariaveis th,.tabelavariaveis caption{
+	border: 1px solid;
+	padding: 10px;
+}
+
+.tabelavariaveis td {
+	text-align: left;
+	padding: 10px;
+}
 
 .paragrafo{
 white-space: pre-wrap;
