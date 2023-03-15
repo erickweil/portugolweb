@@ -424,9 +424,25 @@ export function convertArrayDimsType(c,dims)
 	return c + 10;
 }
 
+export function convertArrayToSimpleType(code)
+{
+	if(code >= T_Vinteiro && code <= T_Vlogico)
+	return code - 5;
+	
+	if(code >= T_Minteiro && code <= T_Mlogico)
+	return code - 10;
+
+	return code;
+}
+
 export function isTypeWord(code)
 {
 	return code >= T_inteiro && code <= T_logico;
+}
+
+export function isArrayOrMatrixType(code)
+{
+	return code >= T_Vinteiro && code <= T_Mlogico;
 }
 
 export function getTypeWord(code)

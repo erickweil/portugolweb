@@ -12,7 +12,7 @@ import Hotbar from "./pages/index/hotbar.js";
 
 	const div_saida = document.getElementById("textAreaSaida");
 	const errosSaida =document.getElementById("errorArea");
-	const div_tabelavariaveis = document.getElementById("tabelavariaveis");
+	const div_tabelavariaveis = document.getElementById("divariaveis");
 
 	const myCanvasModal = document.getElementById("myCanvasModal");
 	const myCanvasWindow = document.getElementById("myCanvasWindow");
@@ -40,7 +40,7 @@ import Hotbar from "./pages/index/hotbar.js";
 	//####################################################
 	function gerarTabelaVariaveis() {
 		const tabela = portugolRun.getCurrentDeclaredVariables();
-		let txt = "<table><tr><th>Nome</th><th>Valor</th></tr>";
+		let txt = "<table class='tabelavariaveis'><thead><tr><th class='tabelanome'>Nome</th><th class='tabelavalor'>Valor</th></tr></thead><tbody>";
 		for(const v of tabela) {
 			let vtxt = "";
 
@@ -54,7 +54,7 @@ import Hotbar from "./pages/index/hotbar.js";
 			}
 			txt += "<tr><td>"+v.name+"</td><td>"+vtxt+"</td></tr>";
 		}
-		txt += "</table>";
+		txt += "</tbody></table>";
 
 		div_tabelavariaveis.style.display = "block";
 		div_tabelavariaveis.innerHTML = txt;
@@ -70,14 +70,16 @@ import Hotbar from "./pages/index/hotbar.js";
 		{
 			// abrir hotbar e animar
 			hotbarManager.extendUntil("EXTENDED");
-		
-			gerarTabelaVariaveis();
+
 			// realçar linha?
 			limparErros();
 			realcarLinha(editorManager.getValue(),getCurrentTokenIndex(),true);
 
 			portugolRun.executar_step();
 			
+
+			gerarTabelaVariaveis();
+
 			return;
 		} else {
 			ocultarTabelaVariaveis();

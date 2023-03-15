@@ -181,19 +181,17 @@ body.mobile .mobileHidden{
 }
 
 .tabelavariaveis {
-	display: none;
-	position: absolute;
-	margin: 10px;
-	top: 0px;
-	right: 0px;
-	text-align: center;
-}
+	border: 1px solid #ddd;
+    width: 100%;
+    table-layout: fixed;
 
-.tabelavariaveis table {
 	border-collapse: collapse;
 }
 
-.tabelavariaveis table,.tabelavariaveis th,.tabelavariaveis caption{
+.tabelavariaveis td,.tabelavariaveis th {
+	text-overflow: ellipsis;
+    overflow: hidden;
+
 	border: 1px solid;
 	padding: 10px;
 }
@@ -201,6 +199,23 @@ body.mobile .mobileHidden{
 .tabelavariaveis td {
 	text-align: left;
 	padding: 10px;
+}
+
+.tabelanome {
+	width: 30%;
+}
+
+.divariaveis {
+	width: 50%;
+    /*display: inline-block;*/
+	display: none;
+	position: absolute;
+	margin: 10px;
+	top: 0px;
+	right: 0px;
+
+	max-height: calc(100vh - 80px);
+	overflow-y: auto;
 }
 
 .paragrafo{

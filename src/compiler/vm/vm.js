@@ -1,5 +1,5 @@
 import { numberOfLinesUntil } from "../../extras/extras.js";
-import { T_cadeia, T_caracter, T_inteiro, T_logico, T_real, T_Vcadeia, T_Vcaracter, T_Vinteiro, T_Vlogico, T_Vreal } from "../tokenizer.js";
+import { convertArrayToSimpleType, isArrayOrMatrixType, T_cadeia, T_caracter, T_inteiro, T_logico, T_real, T_Vcadeia, T_Vcaracter, T_Vinteiro, T_Vlogico, T_Vreal } from "../tokenizer.js";
 
 export const B_TRUE = 0;
 export const B_FALSE = 1;
@@ -388,22 +388,22 @@ export function VM_async_return(retValue)
 	VM_stack[VM_si++] = retValue;
 }
 
-function recursiveStringArray(arr)
+function recursiveStringArray(type,arr)
 {	
-	let ret = "[";
+	let ret = false;
 	
 	for(let e of arr) {
+		if(!ret) ret = "[";
+		else ret += ", ";
+
 		if(Array.isArray(e)) {
-			ret += recursiveStringArray(e);
+			ret += recursiveStringArray(type,e);
 		} else {
-			ret += VM_valueToString(e);
+			ret += VM_valueToString(type,e);
 		}
-		ret += ", ";
 	}
 
-	ret += "]";
-	
-	return ret;
+	return ret + "]";
 }
 
 export function VM_valueToString(type,value) {
@@ -414,7 +414,9 @@ export function VM_valueToString(type,value) {
 		case T_real: return VM_f2s(value);
 		case T_logico: return  VM_b2s(value);
 		default:// INCOMPLETO
-		return ""+value;
+		if(isArrayOrMatrixType(type)){
+			return recursiveStringArray(convertArrayToSimpleType(type),value);
+		} else return ""+value;
 	}
 }
 
