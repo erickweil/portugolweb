@@ -16,8 +16,56 @@ import java.io.IOException;
 
 
 public class VersionChecker {
+    // https://stackoverflow.com/questions/198431/how-do-you-compare-two-version-strings-in-java?page=1&tab=scoredesc#tab-top
+    public static class Version implements Comparable<Version> {
+
+        private String version;
+
+        public final String get() {
+            return this.version;
+        }
+
+        public Version(String version) {
+            if(version == null)
+                throw new IllegalArgumentException("Version can not be null");
+            if(!version.matches("[0-9]+(\\.[0-9]+)*"))
+                throw new IllegalArgumentException("Invalid version format");
+            this.version = version;
+        }
+
+        @Override public int compareTo(Version that) {
+            if(that == null)
+                return 1;
+            String[] thisParts = this.get().split("\\.");
+            String[] thatParts = that.get().split("\\.");
+            int length = Math.max(thisParts.length, thatParts.length);
+            for(int i = 0; i < length; i++) {
+                int thisPart = i < thisParts.length ?
+                        Integer.parseInt(thisParts[i]) : 0;
+                int thatPart = i < thatParts.length ?
+                        Integer.parseInt(thatParts[i]) : 0;
+                if(thisPart < thatPart)
+                    return -1;
+                if(thisPart > thatPart)
+                    return 1;
+            }
+            return 0;
+        }
+
+        @Override public boolean equals(Object that) {
+            if(this == that)
+                return true;
+            if(that == null)
+                return false;
+            if(this.getClass() != that.getClass())
+                return false;
+            return this.compareTo((Version) that) == 0;
+        }
+
+    }
+
     public static final int READ_TIMEOUT = 30000;
-    public static final int VERSAO_ASSETS_WEBAPP = 3; // Versão do webapp incluso no apk nos assets
+    public static final int VERSAO_ASSETS_WEBAPP = 4; // Versão do webapp incluso no apk nos assets
 
     public String endereco;
     public String versaoApp;
@@ -129,6 +177,8 @@ public class VersionChecker {
     */
 
     public void executar() {
+        Log.d("VERSIONCHECKER","Iniciando checagem de versão...");
+
         HttpGetTask<HttpGetTask.TaskText> conn = new HttpGetTask<>(READ_TIMEOUT, resposta -> {
             if(resposta == null || resposta.length == 0 || resposta[0] == null || !resposta[0].acao_sucesso)
             {
@@ -200,19 +250,24 @@ public class VersionChecker {
                 }
                 else
                 {
-                    Log.d("VERSIONCHECKER","WebApp Já está atualizado! Versão:"+versaoWeb);
+                    Log.d("VERSIONCHECKER","WebApp Já está atualizado! Versão, atual:"+versaoWeb+", encontrada:"+web_app_version);
                 }
             }
 
             String respVersion = resposta.getString("version");
-            if(!respVersion.equals(versaoApp))
+            //if(!respVersion.equals(versaoApp))
+
+            // Compara mesmo as versões, não reclamando de estar em uma versão MAIS NOVA
+            Version versaoAtual = new Version(versaoApp);
+            Version versaoResposta = new Version(respVersion);
+            if(versaoAtual.compareTo(versaoResposta) < 0)
             {
                 //Utilidades.msgpopup(this,"Atualize seu aplicativo, há uma versão nova para download");
                 JanelaHelper.AbrirJanelaAplicativoDesatualizado(context,versaoApp,respVersion);
             }
             else
             {
-                Log.d("VersionChecker", "App já está na última versão:"+respVersion);
+                Log.d("VersionChecker", "App já está na última versão, atual:"+versaoApp+", encontrada:"+respVersion);
             }
             return true;
         } catch (Exception e) {

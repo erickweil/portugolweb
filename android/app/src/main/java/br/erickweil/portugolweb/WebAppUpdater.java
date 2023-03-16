@@ -51,8 +51,10 @@ public class WebAppUpdater {
     public void executar() {
         // https://stackoverflow.com/questions/54996665/how-to-save-downloaded-file-in-internal-storage-in-android-studio
         // Utiliza a versao no nome do arquivo para não sobrescrever e estragar o que estiver sendo utilizado agora.
-        // Deveria apagar a versão antiga após o download da nova. mas só não será feito e é isso .-.
-        final File filesDir = new File(context.getFilesDir(),"portugolweb"+web_app_version);
+        // Deveria apagar a versão antiga após o download da nova. mas só não será feito e é isso .-. OQ?
+        //final File filesDir = new File(context.getFilesDir(),"portugolweb"+web_app_version);
+        // IDEIA RIDÍCULA, VAI SOBRESCREVER SIM!!, QUAL A CHANCE DE DAR ALGO ERRADO? MÍNIMA...
+        final File filesDir = new File(context.getFilesDir(),"portugolweb");
         if(!filesDir.exists()){
             filesDir.mkdir();
         }

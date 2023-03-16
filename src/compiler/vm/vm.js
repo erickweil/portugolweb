@@ -388,18 +388,27 @@ export function VM_async_return(retValue)
 	VM_stack[VM_si++] = retValue;
 }
 
-function recursiveStringArray(type,arr)
+let MAXSTRINGARRAY = 255;
+function recursiveStringArray(type,arr,elemsLeft)
 {	
 	let ret = false;
+
+	if(!elemsLeft) elemsLeft = {count:MAXSTRINGARRAY};
 	
 	for(let e of arr) {
 		if(!ret) ret = "[";
 		else ret += ", ";
 
 		if(Array.isArray(e)) {
-			ret += recursiveStringArray(type,e);
+			ret += recursiveStringArray(type,e,elemsLeft);
 		} else {
+			elemsLeft.count--;
 			ret += VM_valueToString(type,e);
+		}
+
+		if(elemsLeft.count <= 0) {
+			ret += ", ...";
+			break;
 		}
 	}
 
@@ -573,7 +582,7 @@ export function VMrun(execMax)
 		
 		let code = VM_code[VM_i++];
 		
-		
+		//console.log(bytecodeName(code));
 		switch(code)
 		{
 			case B_PUSH: VM_stack[VM_si++] = VM_code[VM_i++]; break;

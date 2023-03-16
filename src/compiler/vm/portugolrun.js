@@ -325,6 +325,21 @@ export default class PortugolRuntime {
 			console.log("Compilou: Tempo de execução:"+first_Time+" milissegundos \n[token:"+token_Time+" ms,tree:"+tree_Time+" ms,compiler:"+compiler_Time+" ms, other:"+other_Time+"]");
 		}
 	}
+
+	_step() {
+		let i = getCurrentTokenIndex();
+		let ui = i;
+		do
+		{
+			this.lastvmState = VMrun(1);
+		
+			//console.log(i+","+ui+","+lastvmState);
+			
+			ui = i;
+			i = getCurrentTokenIndex();
+		}
+		while( (i == 0 || i == ui) && this.lastvmState == STATE_BREATHING);
+	}
 	
 	executarVM()
 	{
@@ -334,24 +349,14 @@ export default class PortugolRuntime {
 			return this.lastvmState;
 		}
 
+		let justReceivedInput = this.lastvmState == STATE_WAITINGINPUT;
 		this.lastvmState = STATE_RUNNING;
 		
 		if(this.lastvmStep)
 		{
-			let i = getCurrentTokenIndex();
-			let ui = i;
+			this._step();
+			if(justReceivedInput) {this._step();} // mais uma vez para sair do leia
 
-			do
-			{
-				this.lastvmState = VMrun(1);
-			
-				//console.log(i+","+ui+","+lastvmState);
-				
-				ui = i;
-				i = getCurrentTokenIndex();
-			}
-			while( (i == 0 || i == ui) && this.lastvmState == STATE_BREATHING);
-			
 			//console.log(i+","+ui+","+lastvmState);
 			
 			if(this.lastvmState == STATE_BREATHING)

@@ -31,7 +31,7 @@ import Hotbar from "./pages/index/hotbar.js";
 	export const portugolRun = new PortugolRuntime(div_saida);
 
 	export const editorManager = new EditorManager();
-	const hotbarManager = new Hotbar(hotbar,div_saida,errosSaida,isMobile,(sz) => {
+	const hotbarManager = new Hotbar(hotbar,div_saida,errosSaida,div_tabelavariaveis,isMobile,(sz) => {
 		editorManager.resizeEditor(sz);
 	});
 	
@@ -40,7 +40,13 @@ import Hotbar from "./pages/index/hotbar.js";
 	//####################################################
 	function gerarTabelaVariaveis() {
 		const tabela = portugolRun.getCurrentDeclaredVariables();
-		let txt = "<table class='tabelavariaveis'><thead><tr><th class='tabelanome'>Nome</th><th class='tabelavalor'>Valor</th></tr></thead><tbody>";
+
+		if(!tabela || tabela.length == 0) {
+			ocultarTabelaVariaveis();
+			return;
+		}
+
+		let txt = "<div class='atecemporcento'><table class='tabelavariaveis'><thead><tr><th>Variaveis</th></tr></thead><tbody>";
 		for(const v of tabela) {
 			let vtxt = "";
 
@@ -49,12 +55,12 @@ import Hotbar from "./pages/index/hotbar.js";
 			else vtxt = VM_valueToString(v.type,v.value);
 			
 
-			if(vtxt.length > 100) {
-				vtxt = vtxt.substring(0,64) + "...";
+			if(vtxt.length > 1000) {
+				vtxt = vtxt.substring(0,1000) + "...";
 			}
-			txt += "<tr><td>"+v.name+"</td><td>"+vtxt+"</td></tr>";
+			txt += "<tr><td>"+v.name+":&emsp;"+vtxt+"</td></tr>";
 		}
-		txt += "</tbody></table>";
+		txt += "</tbody></table></div>";
 
 		div_tabelavariaveis.style.display = "block";
 		div_tabelavariaveis.innerHTML = txt;
@@ -246,6 +252,7 @@ import Hotbar from "./pages/index/hotbar.js";
 		
 		div_saida.style.fontSize = fontSize+"pt";
 		errosSaida.style.fontSize = fontSize+"pt";
+		div_tabelavariaveis.style.fontSize = fontSize+"pt";
 	}
 
 	export function fonteAumentar()
@@ -515,9 +522,9 @@ import Hotbar from "./pages/index/hotbar.js";
 	let _PreCompileLastHash = -1;
 	let _PreCompileCompileHash = -1;
 	// Para melhorar o auto completar e para não ficar os erros para sempre na tela
-	// Talvez vai deixar um pouco mais lento, mas só compila se ficar uns 4 a 5 segundos sem escrever nada
+	// Talvez vai deixar um pouco mais lento, mas só compila se ficar uns 2 a 5 segundos sem escrever nada
 	// Também não compila duas vezes seguidas o mesmo código
-	// usa um hash do código para saber se algo mudou. Talvez deveria usar os listeners do Acer ao invés disso
+	// usa o tamanho do código para saber se algo mudou. Talvez deveria usar os listeners do Acer ao invés disso
 	function autoPreCompile()
 	{
 		// Essa compilação é para melhorar o auto completar
@@ -602,9 +609,10 @@ import Hotbar from "./pages/index/hotbar.js";
 
 	div_saida.style.fontSize = fontSize+"pt";
 	errosSaida.style.fontSize = fontSize+"pt";
+	div_tabelavariaveis.style.fontSize = fontSize+"pt";
 
-	setInterval(autoSave, 30000);
-	setInterval(autoPreCompile, 5000);
+	setInterval(autoSave, 10000);
+	setInterval(autoPreCompile, 1000);
 
 	//https://stackoverflow.com/questions/821011/prevent-a-webpage-from-navigating-away-using-javascript
 	window.onbeforeunload = function() {

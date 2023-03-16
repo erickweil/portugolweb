@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="Ajuda">
+  <meta name="keywords" content="HTML,CSS,XML,JavaScript">
+  <meta name="author" content="Erick Weil">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Portugol Web - Avaliador</title>
+	<link rel="stylesheet" type="text/css" href="portugol.css">
+	
+	<style>
+	#myFilesTable {
+		color: #FFFFFF;
+	}
+	#myFilesTable td{
+		min-width:100px;
+	}
+	</style>
+</head>
+<body style="margin:0">
+
+<div id="myFiles" style="overflow:auto">
+<table id="myFilesTable">
+<tr><td>SUPER AVALIADOR AUTOMÁTICO</td></tr>
+<tr><td>Ninguém disse que ia ser fácil de usar ou bonito<br> Clique no botão de Carregar e Selecione Vários arquivos,<br> Então clique em executar e veja a mágica acontecer</td></tr>
+<tr><td>Obs: Arquivos devem estar na codificação UTF-8</td></tr>
+<tr><td>Obs²: O site trava se selecionar arquivos que sejam imagens, pdf, zip etc..., o arquivo DEVE ser um arquivo de texto</td></tr>
+<tr><td>Obs³: Programas que recebem dados de entrada, você deve digitar no console a entrada</td></tr>
+<tr><td>Obs^4: Não testado com programas que usam Gráficos.</td></tr>
+</table>
+</div>
+<!-- Canvas modo Gráfico -->
+<div id="myCanvasModal">
+<div id="myCanvasMiddle">
+<div id="myCanvasWindow">
+<div style="white-space: nowrap;">
+<input type="button" value="Janela Sem Titulo" style="float:left;background: #1E2324;" id="myCanvasWindowTitle"/>
+<input type="button" value="X" style="float:right;background: #1E2324;" onclick="executar(document.getElementById('btn-run'));"/>
+</div>
+<canvas tabindex="1" id="myCanvas" width="100" height="100"></canvas>
+</div>
+</div>
+</div>
+
+<div id="hotbar" class="portugol-buttons" style="width:100%">
+<div id="myOutput_buttons" class="portugol-buttons" style="overflow-x:auto;white-space:nowrap;width: auto;">
+<input type="button" id="btn-run" value="Executar" onclick="executar(this,false)"/>
+
+<input tabindex="-1" type="button" style="background-image: url(icons/FontPlus.png);" id="btn-fonteMaior" value=" " onclick="fonteAumentar()" onfocus="preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(icons/FontMinus.png);" id="btn-fonteMenor" value=" " onclick="fonteDiminuir()" onfocus="preventFocus(event)"/>
+<input type="button" style="background-image: url(icons/open.png);"  id="btn-abrir" value=" " onclick="load()"/>
+
+<!--<input type="button" style="background-image: url(icons/full.png);" id="btn-abrir" value=" " onclick="openFullscreen(document.documentElement);"/> Isso não funcionava direito e no pc tem o F11-->
+<!--<input type="button" id="btn-execErros" value="Ignorar Erros" onclick="check_execErros()"/>-->
+</div>
+
+
+<div id="myOutput" style="position:relative;">
+<div class="saida" id="saida"><div id="errorArea"></div><textarea id="textAreaSaida" onclick="cursorToEnd(this)" onkeyup="cursorToEnd(this)" oninput="receiveInput(this)">??</textarea></div>
+<div class="saida" id="hidden"></div>
+<!--<input type="button" value="mostrar bytecode" style="position:absolute;top:0px;right:0px;background:transparent;z-index: 5;border:none" onclick="document.getElementById('hidden').style.display = 'block';"/>-->
+</div>
+</div>
+
+<!-- coisinhas -->
+<script src="extras.js"></script>
+
+<script src="tokenizer.js"></script> <!-- Quebra o texto [para, , tokens, certinho]-->
+<script src="parser.js"></script> <!-- pega os tokens e constroi a árvore -->
+
+<!-- Bibliotecas -->
+<script src="libraries/Util.js"></script>
+<script src="libraries/Calendario.js"></script>
+<script src="libraries/Matematica.js"></script>
+<script src="libraries/Texto.js"></script>
+<script src="libraries/Tipos.js"></script>
+<script src="libraries/Graficos.js"></script>
+
+<script src="libraries/Mouse.js"></script>
+<script src="libraries/Teclado.js"></script>
+<script src="libraries/Objetos.js"></script>
+
+<script src="vm.js"></script> <!-- executa o 'bytecode' -->
+<script src="vmcompiler.js"></script> <!-- compila a árvore em 'bytecode' ( parecido com java só que não é java ) -->
+
+<script src="encoding.min.js"></script> <!-- carregar arquivos -->
+
+<script>
+	function checkECMA6() {
+		"use strict";
+
+		if (typeof Symbol == "undefined") return false;
+		try {
+			eval("class Foo {}");
+		} catch (e) { return false; }
+
+		return true;
+	}
+
+	if (!checkECMA6()) {
+		document.getElementsByTagName('body')[0].innerHTML = "<h1 style='color:#FFFFFF;'>Ops!</h1> <p style='padding:20px;color:#FFFFFF;'>Esta página depende de funcionalidades JavaScript ES6, porém seu navegador não é capaz de executar. <br/> Se você está usando o Aplicativo, experimente usar um navegador mais recente para abrir este link: <h2 style='padding:20px;'><a href='https://erickweil.github.io/portugolweb'>https://erickweil.github.io/portugolweb</a></h2> </p>";
+		throw new Error("Esta página depende de funcionalidades JavaScript ES6, porém seu navegador não é capaz de executar.");
+	}
+
+	
+
+	//var codigo = document.getElementById("myEditor");
+	var saida = document.getElementById("textAreaSaida");
+	var errosSaida =document.getElementById("errorArea");
+//for( var i = 0;i< codigos.length;i++)
+//{
+	//var div_port = codigo;
+	var div_saida = saida;
+	
+	var myCanvasModal = document.getElementById("myCanvasModal");
+	var myCanvasWindow = document.getElementById("myCanvasWindow");
+	var myCanvasWindowTitle = document.getElementById("myCanvasWindowTitle");
+	var myCanvas = document.getElementById("myCanvas");
+	//var string_cod = decodeEntities(div_port.innerHTML);
+	var fontSize = 10;
+	
+	var isMobile = isMobile();
+	var hotbar = document.getElementById("hotbar");
+    var hotbar_currentY;
+    var hotbar_initialY;
+	var hotbar_clickY;
+	// se mexer nesses numeros tudo para de funcionar deixa assim.
+	var hotbar_initialHeight = 200;
+	
+	var hotbar_minyOffset = 40;
+	var hotbar_collapsedyOffset = 80;
+	var hotbar_middleyOffset = 120;
+	var hotbar_extendedyOffset = 295;
+	//var hotbar_maxyOffset = 300;
+    var hotbar_yOffset = hotbar_collapsedyOffset;
+	var hotbar_active = false;
+	var hotbar_textarea = false;
+	var hotbar_isDragging = false;
+	//var screenDimension = getScreenDimensions();
+	//isMobile = true;
+	
+	if(isMobile)
+	{
+		//hotbar.style.display = "block";
+		
+		//var myOutput = document.getElementById("myOutput");
+		//hotbar.appendChild(myOutput);
+		//hotbar.insertBefore(document.getElementById("myOutput_buttons"),document.getElementById("hotbar_commands"));
+				
+		
+		document.body.classList.add('mobile');
+		//document.getElementById("myEditor").classList.add('mobile');
+		//myOutput.classList.add('mobile');
+		//document.getElementById("myOutput_buttons").classList.add('mobile');
+		//saida.classList.add('mobile');
+
+		setHotbarPosition(hotbar_middleyOffset);
+	}
+	else
+	{
+		// se mexer nesses numeros tudo para de funcionar deixa assim.
+		hotbar_initialHeight = hotbar_initialHeight - 80;
+		
+		hotbar_minyOffset = hotbar_minyOffset;
+		hotbar_collapsedyOffset = hotbar_collapsedyOffset - 80;
+		hotbar_middleyOffset = hotbar_middleyOffset - 80;
+		hotbar_extendedyOffset = hotbar_extendedyOffset - 80;
+		//hotbar_maxyOffset = hotbar_maxyOffset + 600;
+		hotbar_yOffset = hotbar_collapsedyOffset;
+		//hotbar.style.display = "none";
+		
+		//document.getElementById("hotbar_commands").style.display = "none";
+		//document.getElementById("hotbar_keys").style.display = "none";
+		
+		setHotbarPosition(hotbar_extendedyOffset);
+	}
+	
+	hotbar.addEventListener("touchstart", hotbar_dragStart, false);
+	hotbar.addEventListener("touchend", hotbar_dragEnd, false);
+	hotbar.addEventListener("touchmove", hotbar_drag, false);
+	
+	hotbar.addEventListener("mousedown",hotbar_dragStart, false);
+	window.addEventListener("mouseup", hotbar_dragEnd, false);
+	//hotbar.addEventListener("mouseleave",hotbar_dragEnd, false);
+	window.addEventListener("mousemove",hotbar_drag, false);
+	
+	
+	
+	window.addEventListener("resize", resizeEditorToFitHotbar);
+	
+
+	var libraries = {};
+	libraries["Util"] = new Util();
+	libraries["Calendario"] = new Calendario();
+	libraries["Matematica"] = new Matematica();
+	libraries["Texto"] = new Texto();
+	libraries["Graficos"] = new Graficos(myCanvas,myCanvasModal,myCanvasWindow,myCanvasWindowTitle);
+	libraries["Mouse"] = new Mouse(myCanvas);
+	libraries["Teclado"] = new Teclado(myCanvas);
+	libraries["Objetos"] = new Objetos();
+	libraries["Tipos"] = new Tipos();
+	
+	if(isMobile) {
+		fontSize = 9;
+	}
+    		
+	div_saida.style.fontSize = fontSize+"pt";
+	errosSaida.style.fontSize = fontSize+"pt";
+
+	var errosAnnot = [];
+
+	// Tabela
+	var tabela_arquivos = [];
+
+	function limparErros()
+	{
+		errosSaida.innerHTML = "";
+		errosAnnot = [];
+		//editor.getSession().setAnnotations(errosAnnot);
+		//for(var i=0;i<errosMarkers.length;i++)
+		//{
+		//	editor.getSession().removeMarker(errosMarkers[i]);
+		//}
+		//errosMarkers = [];
+	}
+	
+	function realcarLinha(textInput,index)
+	{
+		var linha = numberOfLinesUntil(index,textInput);
+		var prev_line = textInput.substring(textInput.lastIndexOf('\n', index)+1,index).replace(/\t/g,'    ');
+		var next_line = textInput.substring(index,textInput.indexOf('\n', index));
+		var coluna = prev_line.length;
+		var colunaFim = coluna+next_line.length;
+		
+		errosAnnot.push({
+		  row: linha-1,
+		  column: coluna,
+		  text: "", // Or the Json reply from the parser 
+		  type: "information" // also warning and information
+		});
+		//editor.getSession().setAnnotations(errosAnnot);
+		//errosMarkers.push(editor.getSession().addMarker(new Range(linha-1, 0, linha-1, colunaFim), 'ace_realceportugol-marker', 'screenLine'));
+	}
+	
+	function enviarErro(textInput,token,msg)
+	{
+		var lineNumber = numberOfLinesUntil(token.index,textInput);
+		var prev_line = textInput.substring(textInput.lastIndexOf('\n', token.index)+1,token.index).replace(/\t/g,'    ');
+		var next_line = textInput.substring(token.index,textInput.indexOf('\n', token.index));
+		var colNumber = prev_line.length;
+		var logprev = "Linha "+lineNumber+":"+prev_line;
+		
+		try {
+			ERRO();
+		} catch (e) {
+			var myStackTrace = e.stack || e.stacktrace || "";
+			
+			//console.log(myStackTrace);
+		}
+		
+		//console.log(lineNumber+":"+colNumber+" -> "+msg);
+		errosSaida.innerHTML += htmlEntities(msg)+"\n";
+		errosSaida.innerHTML += htmlEntities(logprev+next_line)+"\n";
+		errosSaida.innerHTML += " ".repeat(logprev.length)+"^\n\n";
+		_enviarErro(lineNumber,colNumber,colNumber+next_line.length,msg);
+	}
+	
+	function _enviarErro(linha,coluna,colunaFim,msg)
+	{
+		errosAnnot.push({
+		  row: linha-1,
+		  column: coluna,
+		  text: msg, // Or the Json reply from the parser 
+		  type: "error" // also warning and information
+		});
+		
+		//editor.getSession().setAnnotations(errosAnnot);
+		//errosMarkers.push(editor.getSession().addMarker(new Range(linha-1, 0, linha-1, colunaFim), 'ace_erroportugol-marker', 'screenLine'));
+	}
+
+	function load() {
+	
+		if(typeof Android !== 'undefined')
+		{
+			Android.load();
+		}
+		else
+		{
+	
+			var element = document.createElement('input');
+			element.setAttribute('type', 'file');
+			element.setAttribute('multiple', 'true');
+
+			element.style.display = 'none';
+			document.body.appendChild(element);
+
+			element.click();
+			
+			element.addEventListener('change', function(){
+				var files = element.files;
+				openedMultipleFiles(files);
+				document.body.removeChild(element);
+			});
+		
+		}
+	}
+	
+	function fonteAumentar()
+	{
+		fontSize++;
+		
+		div_saida.style.fontSize = fontSize+"pt";
+		errosSaida.style.fontSize = fontSize+"pt";
+	}
+	
+	function fonteDiminuir()
+	{
+		fontSize--;
+		
+		div_saida.style.fontSize = fontSize+"pt";
+		errosSaida.style.fontSize = fontSize+"pt";
+	}
+	
+	var execMesmoComErros = false;
+	function check_execErros()
+	{
+		// Get the checkbox
+		var btn = document.getElementById("btn-execErros");
+
+		// If the checkbox is checked, display the output text
+		execMesmoComErros = !execMesmoComErros;
+		if(!execMesmoComErros)
+			btn.value = "Ignorar Erros";
+		else
+			btn.value = "Parar em Erros";
+	}
+	
+		
+	function cursorToEnd(textarea)
+	{
+		var txtEnd =textarea.value.length;
+		textarea.selectionStart= txtEnd;
+		textarea.selectionEnd= txtEnd;
+	}
+	
+	//var lastvm = false;
+	var lastvmState = STATE_ENDED;
+	var lastvmTime = 0;
+	var lastvmStep = false;
+	var lastCodeLoaded = -1;
+	
+	function executar(btn,passoapasso)
+	{
+		if(passoapasso && lastvmState == STATE_STEP)
+		{
+		
+			// abrir hotbar e animar
+			//if(isMobile)
+			//{
+				if(hotbar_yOffset < hotbar_extendedyOffset)
+				setHotbarPosition(hotbar_extendedyOffset,true);
+			//}
+		
+			executarVM();
+			return;
+		}
+	
+		lastvmStep = passoapasso;
+		if(btn.value == "Executar" && lastvmState == STATE_ENDED)
+		{
+			limparErros();
+			limpa();
+			
+			// abrir hotbar e animar
+			//if(isMobile)
+			//{
+				if(hotbar_yOffset < hotbar_extendedyOffset)
+				setHotbarPosition(hotbar_extendedyOffset,true);
+			//}
+			
+			
+			
+			var string_cod = "programa{ funcao inicio(){escreva(\"Não há nenhum arquivo ou já executou todos\")} }";
+			
+			lastCodeLoaded++;
+			if(lastCodeLoaded >=  tabela_arquivos.length) lastCodeLoaded = 0;
+			
+			if(tabela_arquivos.length > 0 && lastCodeLoaded < tabela_arquivos.length)
+			{
+				string_cod = tabela_arquivos[lastCodeLoaded].textValue;
+				tabela_arquivos[lastCodeLoaded].status = "executando...";
+				popularTabelaArquivos();
+			}
+			
+			
+			try{
+				
+				string_cod = string_cod.replace(/\r\n/g,"\n");
+				
+				console.log(string_cod);
+				var tokenizer = new Tokenizer(string_cod);
+				//console.log(tokenizer.tokenize());
+				tokenizer.tokenize()
+				if(!execMesmoComErros && errosAnnot.length > 0)
+				{
+					return;
+				}
+				//div_port.innerHTML = tokenizer.formatHTML();
+				
+				var relevantTokens = tokenizer.getRelevantTokens();
+				var tree = new Parser(relevantTokens,string_cod).parse();
+				//console.log(tree);
+				if(!execMesmoComErros && errosAnnot.length > 0)
+				{
+					return;
+				}
+				
+				var librariesNames = Object.keys(libraries);
+				for(var i =0;i<librariesNames.length;i++)
+				{
+					libraries[librariesNames[i]].resetar();
+				}
+				
+				var compiler = new Compiler(tree,libraries,relevantTokens,string_cod,div_saida);
+				compiler.compile();
+				if(!execMesmoComErros && errosAnnot.length > 0)
+				{
+					return;
+				}
+				//lastvm = new Vm(compiler.functions,string_cod,div_saida);
+				
+				//myPortugolCompleter.setCompiler(compiler);
+				var jsgenerator = {"functions":false};
+				VMsetup(compiler.functions,jsgenerator.functions,libraries,compiler.globalCount,string_cod,div_saida);
+				
+				try{
+					document.getElementById("hidden").innerHTML = VMtoString();
+				}
+				catch(e){
+					var myStackTrace = e.stack || e.stacktrace || "";
+					console.log(myStackTrace);
+				}
+				//lastvmState = lastvm.run();
+				lastvmTime = performance.now();
+				
+			}
+			catch(e)
+			{
+				var myStackTrace = e.stack || e.stacktrace || "";
+
+				//console.log(myStackTrace);
+			
+				
+				enviarErro(string_cod,{index:0},"Erro na compilação:"+e);
+				return;
+			}
+			finally
+			{
+				if(errosAnnot.length > 0)
+				{
+					if(tabela_arquivos.length > 0 && lastCodeLoaded < tabela_arquivos.length)
+					{
+						tabela_arquivos[lastCodeLoaded].errosExecucao = errosSaida.textContent;
+						tabela_arquivos[lastCodeLoaded].status = "ERRO";
+						
+						popularTabelaArquivos();
+						
+						if(lastCodeLoaded < tabela_arquivos.length -1)
+						setTimeout(function(){
+						executar(document.getElementById('btn-run'));
+						}, 0);
+					}
+				}
+			}
+			
+			btn.value = "Parar";
+			executarVM();
+		}
+		else if(btn.value == "Parar" && (lastvmState == STATE_RUNNING || lastvmState == STATE_WAITINGINPUT || lastvmState == STATE_BREATHING || lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT || lastvmState == STATE_STEP))
+		{
+			btn.value = "Parando...";
+			if(lastvmState == STATE_WAITINGINPUT || lastvmState == STATE_STEP)
+			{
+				escreva("\n\nPrograma interrompido pelo usuário. Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
+				executarParou();
+			}
+			else if(lastvmState == STATE_RUNNING || lastvmState == STATE_BREATHING || lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT )
+			{
+				lastvmState = STATE_PENDINGSTOP; // isso pode dar problema para valores de delay muito altos.
+			}
+			else
+			{
+				console.log("botão estava em estado inconsistente: lastvmState:'"+lastvmState+"' e valor:'"+btn.value+"'");
+			}
+		}
+		else if(btn.value == "Parando..." && lastvmState == STATE_PENDINGSTOP)
+		{
+			// ta idaí?
+			lastvmState = STATE_PENDINGSTOP; // só para confirmar
+		}
+		else // para deixar o botao do jeito certo, e corrigir no caso de algum erro.
+		{
+			console.log("botão estava em estado inconsistente: lastvmState:'"+lastvmState+"' e valor:'"+btn.value+"'");
+			if(lastvmState == STATE_ENDED) btn.value = "Executar";
+			else if(lastvmState == STATE_PENDINGSTOP) btn.value = "Parando...";
+			else btn.value = "Parar";
+		}
+	}
+	
+	function executarParou()
+	{
+		lastvmState = STATE_ENDED;
+		document.getElementById("btn-run").value = "Executar";
+		myCanvasModal.style.display = "none";
+		if(libraries["Graficos"].telaCheia)
+		{
+			libraries["Graficos"].encerrar_modo_grafico();
+		}
+		
+		if(tabela_arquivos.length > 0 && lastCodeLoaded < tabela_arquivos.length)
+		{
+			tabela_arquivos[lastCodeLoaded].errosExecucao = errosSaida.textContent;
+			tabela_arquivos[lastCodeLoaded].status = "OK";
+			tabela_arquivos[lastCodeLoaded].saida = VM_saida;
+			
+			popularTabelaArquivos();
+			
+			if(lastCodeLoaded < tabela_arquivos.length -1)
+			setTimeout(function(){
+			executar(document.getElementById('btn-run'));
+			}, 0);
+		}
+		
+		limparErros();
+	}
+	
+	function executarVM()
+	{
+		if(lastvmState == STATE_PENDINGSTOP) {
+			// blz então
+			escreva("\n\nPrograma interrompido pelo usuário. Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
+			executarParou();
+			return;
+		}
+		lastvmState = STATE_RUNNING;
+		
+		if(lastvmStep)
+		{
+
+			i = getTokenIndex(VM_i,VM_funcIndex);
+			ui = i;
+			
+			limparErros();
+			realcarLinha(VM_textInput,i);
+			
+			do
+			{
+				lastvmState = VMrun(1);
+			
+				//console.log(i+","+ui+","+lastvmState);
+				
+				ui = i;
+				i = getTokenIndex(VM_i,VM_funcIndex);
+			}
+			while( (i == 0 || i == ui) && lastvmState == STATE_BREATHING);
+			
+			//console.log(i+","+ui+","+lastvmState);
+			
+			if(lastvmState == STATE_BREATHING)
+			{
+				lastvmState = STATE_STEP;
+			}
+		}
+		else
+		{	
+			lastvmState = VMrun(VM_codeMax);
+		}
+		//VM_saidaDiv.value = VM_saida;
+		if(lastvmState == STATE_ENDED)
+		{
+			escreva("\n\nPrograma finalizado. Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
+			executarParou();
+		}
+		else if(lastvmState == STATE_WAITINGINPUT) {
+			div_saida.focus();
+			
+			//if(isMobile)
+			//setTimeout(function(){window.dispatchEvent(new Event('resize'));}, 200); // pq n funciona?
+			
+			cursorToEnd(div_saida);
+		}
+		else if(lastvmState == STATE_BREATHING) {
+			setTimeout(executarVM, 0); // permite o navegador ficar responsivo
+		}
+		else if(lastvmState == STATE_DELAY || lastvmState == STATE_DELAY_REPEAT) {
+			setTimeout(executarVM, VM_delay);
+		}
+	}
+	
+	function receiveInput(textarea)
+	{
+		if(lastvmState == STATE_WAITINGINPUT)
+		{
+			var saidadiv = textarea.value;
+			var entrada = saidadiv.substring(VM_saida.length,saidadiv.length);
+			
+			if(entrada.endsWith("\n"))
+			{
+				executarVM();
+			}
+		}
+		else
+		{
+			div_saida.value = VM_saida;
+		}
+	}
+	
+	function preventFocus(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		/*if (event.relatedTarget) {
+			// Revert focus back to previous blurring element
+			event.relatedTarget.focus();
+		} else {
+			// No previous focus target, blur instead
+			event.currentTarget.blur();
+		}*/
+	}
+	
+	// HOTBAR
+	
+	function hideHotBarWhenLandscape()
+	{
+		var screenDimension = getScreenDimensions();
+		if(isMobile)
+		{
+			
+			//if(h < 40*2 + 200)
+			if(screenDimension.width > h*1.5)
+			{
+				document.getElementById("hotbar").style.display = "none";
+			}
+			else
+			{
+				document.getElementById("hotbar").style.display = "block";
+			}
+		}
+		
+		if(hotbar_yOffset > screenDimension.height)
+		{
+			setHotbarPosition(screenDimension.height,false);
+		}
+	}
+	
+	function hotbar_dragStart(e) {
+		var yValue = 0;
+		if (e.type === "touchstart") {
+			yValue = -e.touches[0].clientY;
+		} else {
+			yValue = -e.clientY;
+		}
+		
+		hotbar_clickY = yValue;
+		hotbar_initialY = yValue - hotbar_yOffset;
+
+		//console.log("click:"+hotbar_clickY);
+		if(e.target === errosSaida)
+		{
+			// nada. deixa quieto
+		}
+		else if(e.target === saida)
+		{
+			hotbar_textarea = true;
+		}
+		else if (e.target === hotbar || e.type !== "touchstart") {
+			hotbar_active = true;
+		}
+		
+		
+    }
+
+    function hotbar_dragEnd(e) {
+		if(e.type !== "touchend")
+		{
+			if(!hotbar_active) return; // só passou o mouse
+			
+			hotbar.style.cursor = "grab";
+		}
+		//initialX = currentX;
+		hotbar_initialY = hotbar_currentY;
+
+		
+		
+		/*if(hotbar_yOffset > (hotbar_extendedyOffset + 30))
+		{
+			setHotbarPosition(hotbar_maxyOffset,true);
+		}
+		else */
+		if(hotbar_yOffset > (hotbar_middleyOffset + 30) && hotbar_yOffset < hotbar_extendedyOffset)
+		{
+			setHotbarPosition(hotbar_extendedyOffset,true);
+		}
+		else if(Math.abs(hotbar_yOffset - hotbar_middleyOffset) < 30)
+		{
+			setHotbarPosition(hotbar_middleyOffset,true);
+		}
+		else if(Math.abs(hotbar_yOffset - hotbar_collapsedyOffset) < 30)
+		{
+			setHotbarPosition(hotbar_collapsedyOffset,true);
+		}
+		else if(Math.abs(hotbar_yOffset - hotbar_minyOffset) < 30)
+		{
+			setHotbarPosition(hotbar_minyOffset,true);
+		}
+		else
+		{
+			resizeEditorToFitHotbar();
+		}
+
+
+		hotbar_active = false;
+		hotbar_textarea = false;
+		hotbar_isDragging = false;
+    }
+
+    function hotbar_drag(e) {
+		var yValue = 0
+		if (e.type === "touchmove") {
+			yValue = -e.touches[0].clientY;
+		} else {
+			if(!hotbar_active) return; // só passou o mouse
+			yValue = -e.clientY;
+			
+			hotbar.style.cursor = "grabbing";
+		}
+		
+		var hotbar_lastY = hotbar_currentY;
+		hotbar_currentY = yValue - hotbar_initialY;
+		var yOff = Math.abs(hotbar_clickY - yValue);
+		//console.log("drag:"+hotbar_initialY);
+		
+		
+	
+		if (!hotbar_active) {
+		
+			if(hotbar_textarea && !elementIsAllScrolled(saida))
+			{
+				hotbar_clickY = yValue;
+				hotbar_initialY = yValue - hotbar_yOffset;
+				return;
+			}
+		
+			if(yOff < 20)
+			{
+				return;
+			}
+			else
+			{
+				hotbar_active = true;
+			}
+		}
+		else
+		{
+			if(e.cancelable)
+			{
+				e.preventDefault();
+			}
+		}
+
+		//xOffset = currentX;
+		
+
+		//setTranslate(hotbar_currentY, hotbar);
+		setHotbarPosition(hotbar_currentY,false,true);
+		
+		if(!hotbar_isDragging)
+		resizeEditorMax();
+		
+		hotbar_isDragging = true;
+    }
+
+    function setHotbarPosition(yPos,animate,fastUpdates) {
+		if(animate)
+		{
+			hotbar.classList.add('animate');
+		}
+		else
+		{
+			hotbar.classList.remove('animate');
+		}
+		
+		
+		//el.style.transform = "translate3d(0px,	  " + yPos + "px, 0)";
+		var screenDimension = getScreenDimensions();
+		hotbar_yOffset = Math.max(hotbar_minyOffset,yPos);
+		hotbar_yOffset = Math.min(hotbar_yOffset,screenDimension.height-5);
+		//hotbar_yOffset = Math.min(hotbar_maxyOffset,yPos);
+		hotbar.style.bottom = (hotbar_yOffset - hotbar_initialHeight)+"px";
+		
+		if(!fastUpdates)
+		resizeEditorToFitHotbar(false);
+    }
+
+	function resizeEditorToFitHotbar(e)
+	{
+		//if(!editor) return;
+		var h = window.innerHeight
+		|| document.documentElement.clientHeight
+		|| document.body.clientHeight;
+		
+		//if(!isMobile)
+		//document.getElementById("myEditor").style.height = (h-hotbar_yOffset+15)+"px";
+		//else
+		
+		document.getElementById("myFiles").style.height = (h-hotbar_yOffset)+"px";
+		//editor.resize();
+		
+		if(!isMobile)
+		saida.style.height = (hotbar_yOffset-50)+"px";
+		else
+		saida.style.height = (hotbar_yOffset-130)+"px";
+	}
+	
+	function resizeEditorMax()
+	{
+		var screenDimension = getScreenDimensions();
+		
+		document.getElementById("myFiles").style.height = (screenDimension.height)+"px";
+		//editor.resize();
+		
+		
+		saida.style.height = (screenDimension.height)+"px";
+	}
+	
+	//https://stackoverflow.com/questions/821011/prevent-a-webpage-from-navigating-away-using-javascript
+	window.onbeforeunload = function() {
+	return "";
+	}
+	
+	if (document.addEventListener)
+	{
+		window.addEventListener("resize", hideHotBarWhenLandscape);
+		document.addEventListener('fullscreenchange', exitHandler, false);
+		document.addEventListener('mozfullscreenchange', exitHandler, false);
+		document.addEventListener('MSFullscreenChange', exitHandler, false);
+		document.addEventListener('webkitfullscreenchange', exitHandler, false);
+	}
+
+	function exitHandler()
+	{
+		//if (document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement !== null)
+		//{
+		//	// Run code on exit
+		//	console.log("AAA");
+		//}
+		//else{
+		//	console.log("BBB");
+		//}
+		var fullscreenElement = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement;
+		if(!fullscreenElement)
+		{
+			if(lastvmState != STATE_ENDED) {
+				if(libraries["Graficos"].telaCheia)
+				{
+					libraries["Graficos"].sair_modo_tela_cheia();
+				}
+			}
+		}
+	}
+	
+	// Tabela
+	function popularTabelaArquivos()
+	{
+		var htmlTabela = document.getElementById("myFilesTable");
+		
+		var innerHTML = "<tr><th>Nome</th><th>Status</th><th>Erros Compilação</th><th>Erros Execução</th><th>Tempo</th>";
+		
+		for(var i =0;i<tabela_arquivos.length;i++)
+		{
+			file = tabela_arquivos[i];
+			innerHTML += "<tr><td>"+file.name+"</td><td>"+file.status+"</td><td>"+file.errosCompilacao+"</td><td>"+file.tempoExecucao+"</td><td><textarea rows=\"7\" cols=\"50\">"+file.errosExecucao+"</textarea></td><td><textarea rows=\"7\" cols=\"80\">"+file.textValue+"</textarea></td><td><textarea rows=\"7\" cols=\"50\">"+file.saida+"</textarea></td></tr>";
+		}
+		
+		htmlTabela.innerHTML = innerHTML;
+	}
+	
+	function openedMultipleFiles(files)
+	{
+		lastCodeLoaded = -1;
+		for(var i =0;i<files.length;i++)
+		{
+			var file = files[i];
+			if(file.size < 1000000)
+			{
+				var reader = new FileReader();
+				reader.fileReaded = file;
+				reader.onload = function(progressEvent)
+				{
+					var readed = this.result;
+					
+					//readed = fixEncoding(readed);
+					
+					//console.log(file.type);
+					if(this.fileReaded.type == "html" || this.fileReaded.type == "text/html")
+					{
+						readed = removeHTML(readed);
+						
+					}
+					readed = removeEntities(readed);
+					readed = removenbsp(readed);
+				
+					//console.log(readed);
+					tabela_arquivos.push({
+					  file: this.fileReaded,
+					  name: this.fileReaded.name,
+					  textValue: readed, // Or the Json reply from the parser
+					  status: "na fila",
+					  errosCompilacao: false,
+					  errosExecucao: false,
+					  tempoExecucao: 0,
+					  saida: ""
+					});
+					
+					popularTabelaArquivos();
+				};
+				reader.readAsText(file);
+			}
+			else enviarErro("",{index:0},"Erro ao carregar arquivo: O arquivo "+file.name+" é muito grande:"+file.size);
+		}
+		limparErros();
+		
+		
+	}
+	
+	function fixEncoding(text)
+	{
+		var codes = new Uint8Array(text);
+		var encoding = Encoding.detect(codes);
+		
+		// Convert encoding to unicode
+		var utf8 = Encoding.convert(text, {
+		  to: 'UTF8',
+		  from: 'AUTO',
+		});
+		
+		var retVal = Encoding.codeToString(utf8);
+		
+		console.log("Converting from "+encoding+" :"+retVal);
+		
+		return retVal;
+	}
+	
+	function removeHTML(html)
+	{
+		html = html.replaceAll("&lt;","@LT").replaceAll("&gt;","@GT");
+		var tmp = document.createElement("DIV");
+		tmp.innerHTML = html;
+		convertTagToNewLine(tmp,"p");
+		var ret = tmp.textContent || tmp.innerText || "";
+		
+		ret = ret.replaceAll("@LT","&lt;").replaceAll("@GT","&gt;");
+		return ret;
+		//var doc = new DOMParser().parseFromString(html, 'text/html');
+		//return doc.body.textContent || "";
+	}
+	
+	function convertTagToNewLine(elem,tag)
+	{
+		if(!elem) return;
+		
+		if(elem.tagName.toLowerCase() == tag)
+		{
+			elem.innerHTML = elem.innerHTML+"\n";
+		}
+		else
+		{
+			var children = elem.children;
+			if(children && children.length > 0)
+			{
+				for(var i =0;i<children.length;i++)
+				{
+					convertTagToNewLine(children[i],tag);
+				}
+			}
+		}
+	}
+	
+	function removenbsp(txt)
+	{
+		var newTxt = txt.replace(/&nbsp;/gi, " ").replace(/\u00A0/g, " ");
+		return newTxt;
+	}
+	
+	var removeEntities = (function() {
+	  // this prevents any overhead from creating the object each time
+	  var element = document.createElement('div');
+
+	  function decodeHTMLEntities (str) {
+		if(str && typeof str === 'string') {
+		  // strip script/html tags
+		  str = str.replace(/<script[^>]*>([\S\s]*?)<\/script>/gmi, '');
+		  str = str.replace(/<\/?\w(?:[^"'>]|"[^"]*"|'[^']*')*>/gmi, '');
+		  element.innerHTML = str;
+		  str = element.textContent;
+		  element.textContent = '';
+		}
+
+		return str;
+	  }
+
+	  return decodeHTMLEntities;
+	})();
+//}
+</script>
+<!--<script src="codetest.js"></script><!-- para testar -->
+</html>

@@ -182,27 +182,32 @@ body.mobile .mobileHidden{
 
 .tabelavariaveis {
 	border: 1px solid #ddd;
-    width: 100%;
+    /*width: 100%;*/
     table-layout: fixed;
 
 	border-collapse: collapse;
+	background-color: #000000;
 }
 
 .tabelavariaveis td,.tabelavariaveis th {
 	text-overflow: ellipsis;
     overflow: hidden;
 
+	text-align: left;
 	border: 1px solid;
-	padding: 10px;
 }
 
 .tabelavariaveis td {
-	text-align: left;
+	padding: 5px;
+}
+
+.tabelavariaveis th {
 	padding: 10px;
 }
 
-.tabelanome {
-	width: 30%;
+.atecemporcento {
+	display: inline-block;
+	max-width: 100%;
 }
 
 .divariaveis {
@@ -213,9 +218,9 @@ body.mobile .mobileHidden{
 	margin: 10px;
 	top: 0px;
 	right: 0px;
-
-	max-height: calc(100vh - 80px);
+	overflow-x: auto;
 	overflow-y: auto;
+	text-align: right;
 }
 
 .paragrafo{

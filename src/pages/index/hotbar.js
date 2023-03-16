@@ -1,11 +1,12 @@
 import { elementIsAllScrolled, getScreenDimensions } from "../../extras/extras.js";
 
 export default class Hotbar {
-    constructor(div_hotbar,div_saida,errosSaida,isMobile,resizeEditorCallback) {
+    constructor(div_hotbar,div_saida,errosSaida,div_tabelavariaveis,isMobile,resizeEditorCallback) {
         this.isMobile = isMobile;
         this.hotbar = div_hotbar;
         this.div_saida = div_saida;
         this.errosSaida = errosSaida;
+		this.div_tabelavariaveis = div_tabelavariaveis;
         this.resizeEditorCallback = resizeEditorCallback;
         this.hotbar_currentY;
         this.hotbar_initialY;
@@ -287,11 +288,10 @@ export default class Hotbar {
 		
 		let isHotbarVisible = document.getElementById("hotbar_commands").style.display != "none";
 		
-		if(!isHotbarVisible)
-		this.div_saida.style.height = (this.hotbar_yOffset-50)+"px";
-		else
-		this.div_saida.style.height = (this.hotbar_yOffset-130)+"px";
-		
+		let saidaHeight = isHotbarVisible ? this.hotbar_yOffset-130 : this.hotbar_yOffset-50;
+
+		this.div_saida.style.height = saidaHeight+"px";
+		this.div_tabelavariaveis.style.height = saidaHeight+"px";
 	}
 	
 	resizeEditorMax()
@@ -301,5 +301,6 @@ export default class Hotbar {
 		this.resizeEditorCallback(screenDimension.height);
 		
 		this.div_saida.style.height = (screenDimension.height)+"px";
+		this.div_tabelavariaveis.style.height = (screenDimension.height)+"px";
 	}
 }

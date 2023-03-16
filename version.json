@@ -1,6 +1,6 @@
 {
   "version": "1.6",
-  "web_app_version": 3,
+  "web_app_version": 4,
   "web_app_files": [
     {
       "file": "icons/arrowD.png",
@@ -72,7 +72,7 @@
     },
     {
       "file": "exemplos/aleatorio5.por",
-      "md5": "35a549af4420b4ae9fc5b56f2e0c1003"
+      "md5": "78b52703c05c50626426683a8b6e937f"
     },
     {
       "file": "exemplos/bibliotecas.por",
@@ -144,7 +144,7 @@
     },
     {
       "file": "portugol.css",
-      "md5": "61f40eeee1185217944abcb98ba2ed70"
+      "md5": "fb892d74162c17b1075e67e62cbb5990"
     },
     {
       "file": "dist/ace.js",
@@ -152,11 +152,11 @@
     },
     {
       "file": "dist/main.js",
-      "md5": "9bed18ca9de2554cca15687e1256b61c"
+      "md5": "98e4482056f9abcd7a5e05e9a76d25e7"
     },
     {
       "file": "index.html",
-      "md5": "3f223e790f588ee814500f02164f6960"
+      "md5": "fe6155bbd3bb051b54cb61a37b7f2788"
     },
     {
       "file": "favicon.ico",
