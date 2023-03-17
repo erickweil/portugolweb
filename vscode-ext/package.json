@@ -18,7 +18,7 @@
     }],
     "grammars": [{
       "language": "portugol",
-      "scopeName": "",
+      "scopeName": "source.por",
       "path": "./syntaxes/portugol.tmLanguage.json"
     }]
   }
