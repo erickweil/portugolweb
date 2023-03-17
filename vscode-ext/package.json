@@ -1,0 +1,25 @@
+{
+  "name": "portugolmobile",
+  "displayName": "Portugol",
+  "description": "Extensão para executar pseudocódigo Portugol estilo Portugol Studio",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.76.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "portugol",
+      "aliases": ["Portugol", "portugol"],
+      "extensions": [".por",".por.txt",".portugol"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "portugol",
+      "scopeName": "",
+      "path": "./syntaxes/portugol.tmLanguage.json"
+    }]
+  }
+}
