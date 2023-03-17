@@ -10,12 +10,21 @@
 import glob from "glob";
 import path from "node:path";
 import { createHash } from 'crypto';
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, copyFileSync } from "node:fs";
 
 // ATUALIZAR AQUI OS VALORES
-const APPVERSION = "1.6";
-const WEBAPPVERSION = 3;
+// Qualquer versão antes dessa avisa que é preciso atualizar
+// Se a atualização do app não é 'necessária', pode deixar esse numa versão passada
+// Assim usuários não serão notificados a cada abertura do app sobre isso
+const APPVERSION = "1.7"; 
 
+// Causa o app ser atualizado automaticamente caso seja menor que isso
+// Atualizar também o VERSAO_ASSETS_WEBAPP no arquivo VersionChecker.java no aplicativo quando mudar aqui
+// Não tem efeito se a versão webapp dos assets for maior... (Não vai desatualizar)
+const WEBAPPVERSION = 4; 
+
+
+const ANDROIDPATH = "android/app/src/main/assets/portugolweb";
 // Caminho dos arquivos necessários para o aplicativo funcionar
 const files = [
     "icons/*"
@@ -42,6 +51,9 @@ for(let f of files) {
 for(let row of web_app_files) {
     let arquivo = readFileSync(row.file);
     let hash = createHash("md5").update(arquivo).digest("hex");
+
+    console.log("Copiando '"+row.file+"' para '"+path.join(ANDROIDPATH,row.file)+"'");
+    copyFileSync(row.file,path.join(ANDROIDPATH,row.file));
     row.md5 = hash;
 }
 

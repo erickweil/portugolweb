@@ -1,6 +1,6 @@
 import { checkIsMobile } from "./extras/mobile.js";
 
-import { STATE_ASYNC_RETURN, STATE_ENDED, STATE_WAITINGINPUT, VM_getExecJS, VM_getSaida, VM_setExecJS 
+import { getCurrentTokenIndex, STATE_ASYNC_RETURN, STATE_ENDED, STATE_STEP, STATE_WAITINGINPUT, VM_getExecJS, VM_getSaida, VM_setExecJS, VM_valueToString 
 } from "./compiler/vm/vm.js";
 import { httpGetAsync, numberOfLinesUntil, cursorToEnd as _cursorToEnd } from "./extras/extras.js";
 import { htmlEntities } from "./compiler/tokenizer.js";
@@ -12,6 +12,7 @@ import Hotbar from "./pages/index/hotbar.js";
 
 	const div_saida = document.getElementById("textAreaSaida");
 	const errosSaida =document.getElementById("errorArea");
+	const div_tabelavariaveis = document.getElementById("divariaveis");
 
 	const myCanvasModal = document.getElementById("myCanvasModal");
 	const myCanvasWindow = document.getElementById("myCanvasWindow");
@@ -27,18 +28,69 @@ import Hotbar from "./pages/index/hotbar.js";
 
 	let mostrar_bytecode = false;
 
-	let portugolRun = new PortugolRuntime(div_saida);
+	export const portugolRun = new PortugolRuntime(div_saida);
 
 	export const editorManager = new EditorManager();
-	const hotbarManager = new Hotbar(hotbar,div_saida,errosSaida,isMobile,(sz) => {
+	const hotbarManager = new Hotbar(hotbar,div_saida,errosSaida,div_tabelavariaveis,isMobile,(sz) => {
 		editorManager.resizeEditor(sz);
 	});
 	
 	//####################################################
 	//################# UI ###############################
 	//####################################################
+	function gerarTabelaVariaveis() {
+		const tabela = portugolRun.getCurrentDeclaredVariables();
+
+		if(!tabela || tabela.length == 0) {
+			ocultarTabelaVariaveis();
+			return;
+		}
+
+		let txt = "<div class='atecemporcento'><table class='tabelavariaveis'><thead><tr><th>Variaveis</th></tr></thead><tbody>";
+		for(const v of tabela) {
+			let vtxt = "";
+
+			if (v.value === undefined || v.value === null) 
+			vtxt = "";
+			else vtxt = VM_valueToString(v.type,v.value);
+			
+
+			if(vtxt.length > 1000) {
+				vtxt = vtxt.substring(0,1000) + "...";
+			}
+			txt += "<tr><td>"+v.name+":&emsp;"+vtxt+"</td></tr>";
+		}
+		txt += "</tbody></table></div>";
+
+		div_tabelavariaveis.style.display = "block";
+		div_tabelavariaveis.innerHTML = txt;
+	}
+
+	function ocultarTabelaVariaveis() {
+		div_tabelavariaveis.style.display = "none";
+	}
+
 	export function executar(btn,passoapasso)
 	{
+		if(passoapasso && portugolRun.lastvmState == STATE_STEP)
+		{
+			// abrir hotbar e animar
+			hotbarManager.extendUntil("EXTENDED");
+
+			// realçar linha?
+			limparErros();
+			realcarLinha(editorManager.getValue(),getCurrentTokenIndex(),true);
+
+			portugolRun.executar_step();
+			
+
+			gerarTabelaVariaveis();
+
+			return;
+		} else {
+			ocultarTabelaVariaveis();
+		}
+
 		if(portugolRun.lastvmState == STATE_ENDED)
 		{
 			if(btn.value != "Executar")
@@ -64,8 +116,12 @@ import Hotbar from "./pages/index/hotbar.js";
 				}
 				
 				btn.value = "Parar";
-				portugolRun.executar(string_cod,compilado,enviarErro)
+				portugolRun.executar(string_cod,compilado,enviarErro,passoapasso)
 				.then((output) => {
+
+					if(passoapasso)
+					limparErros(["information"]); // Limpa o último realce de linha (por algum motivo não funciona no leia quando é pulado)
+
 					btn.value = "Executar";
 				})
 				.catch((err) => {
@@ -162,6 +218,13 @@ import Hotbar from "./pages/index/hotbar.js";
 		btn.className = '';
 	}
 
+	export function preventFocusSaida(event) {
+		event.preventDefault();
+		event.stopPropagation();
+
+		div_saida.focus();
+	}
+
 	export function preventFocusCanvas(event) {
 		event.preventDefault();
 		event.stopPropagation();
@@ -182,22 +245,24 @@ import Hotbar from "./pages/index/hotbar.js";
 		editorManager.focus();
 	}
 
-	export function fonteAumentar()
+	function fonteTamanho(size) 
 	{
-		fontSize++;
+		fontSize = size;
 		editorManager.setFontSize(fontSize);
 		
 		div_saida.style.fontSize = fontSize+"pt";
 		errosSaida.style.fontSize = fontSize+"pt";
+		div_tabelavariaveis.style.fontSize = fontSize+"pt";
+	}
+
+	export function fonteAumentar()
+	{
+		fonteTamanho(fontSize+1);
 	}
 	
 	export function fonteDiminuir()
 	{
-		fontSize--;
-		editorManager.setFontSize(fontSize);
-		
-		div_saida.style.fontSize = fontSize+"pt";
-		errosSaida.style.fontSize = fontSize+"pt";
+		fonteTamanho(fontSize-1);
 	}
 
 	export function save() {
@@ -392,6 +457,8 @@ import Hotbar from "./pages/index/hotbar.js";
 			let mostrandoHotbar = document.getElementById("check-mostrar-hotbar").checked;
 			persistentStoreValue("mostrarHotbar",mostrandoHotbar);
 			
+			let tamanhoFonte = fontSize;
+			persistentStoreValue("tamanhoFonte",tamanhoFonte);
 			
 		} catch (e) {
 			let myStackTrace = e.stack || e.stacktrace || "";
@@ -407,6 +474,7 @@ import Hotbar from "./pages/index/hotbar.js";
 		let mostrandoHotbar = persistentGetValue("mostrarHotbar");
 		let autoComplete = persistentGetValue("autoComplete");
 		let modoTurbo = persistentGetValue("modoTurbo");
+		let tamanhoFonte = persistentGetValue("tamanhoFonte");
 		
 		if(typeof(autoComplete) == "string")
 		{
@@ -432,11 +500,20 @@ import Hotbar from "./pages/index/hotbar.js";
 		
 		if(typeof(mostrandoHotbar) == "string")
 		{
+			// Lembrando da última escolha do usuário
 			mostrandoHotbar = ""+mostrandoHotbar == "true";
-			
-			
 			document.getElementById("check-mostrar-hotbar").checked = mostrandoHotbar; 
 			toggleHotbar(mostrandoHotbar);
+		} 
+		else 
+		{
+			// Padrão mostrar hotbar no mobile, esconder no pc
+			toggleHotbar(isMobile);
+		}
+
+		if(typeof(tamanhoFonte) == "string")
+		{
+			fonteTamanho(parseInt(""+tamanhoFonte));
 		}
 		
 		return last_code;
@@ -445,9 +522,9 @@ import Hotbar from "./pages/index/hotbar.js";
 	let _PreCompileLastHash = -1;
 	let _PreCompileCompileHash = -1;
 	// Para melhorar o auto completar e para não ficar os erros para sempre na tela
-	// Talvez vai deixar um pouco mais lento, mas só compila se ficar uns 4 a 5 segundos sem escrever nada
+	// Talvez vai deixar um pouco mais lento, mas só compila se ficar uns 2 a 5 segundos sem escrever nada
 	// Também não compila duas vezes seguidas o mesmo código
-	// usa um hash do código para saber se algo mudou. Talvez deveria usar os listeners do Acer ao invés disso
+	// usa o tamanho do código para saber se algo mudou. Talvez deveria usar os listeners do Acer ao invés disso
 	function autoPreCompile()
 	{
 		// Essa compilação é para melhorar o auto completar
@@ -532,9 +609,10 @@ import Hotbar from "./pages/index/hotbar.js";
 
 	div_saida.style.fontSize = fontSize+"pt";
 	errosSaida.style.fontSize = fontSize+"pt";
+	div_tabelavariaveis.style.fontSize = fontSize+"pt";
 
-	setInterval(autoSave, 30000);
-	setInterval(autoPreCompile, 5000);
+	setInterval(autoSave, 10000);
+	setInterval(autoPreCompile, 1000);
 
 	//https://stackoverflow.com/questions/821011/prevent-a-webpage-from-navigating-away-using-javascript
 	window.onbeforeunload = function() {
@@ -568,9 +646,4 @@ import Hotbar from "./pages/index/hotbar.js";
 	if(isMobile)
 	{
 		document.body.classList.add('mobile');
-		hotbarManager.mostrarHotbar();
-	}
-	else
-	{
-		hotbarManager.ocultarHotbar();
 	}

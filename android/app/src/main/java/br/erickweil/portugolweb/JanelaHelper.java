@@ -12,7 +12,7 @@ public class JanelaHelper {
     public static void AbrirJanelaAplicativoDesatualizado(final Context context,String versaoApp, String respVersion) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.app_name);
-        builder.setMessage("Foi detectado que seu aplicativo está desatualizado, é altamente recomendado que você atualize o aplicativo\n A versão mais recente é "+respVersion+" e você ainda está na "+versaoApp);
+        builder.setMessage("Foi detectado que seu aplicativo está desatualizado, é altamente recomendado que você atualize o aplicativo\n*Salve seu trabalho* antes de atualizar\n A versão mais recente é "+respVersion+" e você ainda está na "+versaoApp);
         builder.setIcon(R.drawable.ic_launcher_foreground);
         builder.setPositiveButton("Atualizar", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
@@ -75,7 +75,7 @@ public class JanelaHelper {
     public static void abrirJanelaAtualizaoComSucesso(final Activity context, int versaoAntiga, int versaoAtual) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.app_name);
-        builder.setMessage("O Site do aplicativo atualizou para a versão "+versaoAtual+" (Você estava na "+versaoAntiga+"). Download da versão nova concluído. Reinicie o aplicativo para ter efeito.");
+        builder.setMessage("O Site do aplicativo atualizou para a versão "+versaoAtual+" (Você estava na "+versaoAntiga+"). Download da versão nova concluído.\n *Salve seu trabalho* e reinicie o aplicativo para ter efeito.");
         builder.setIcon(R.drawable.ic_launcher_foreground);
         builder.setPositiveButton("Reiniciar", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {

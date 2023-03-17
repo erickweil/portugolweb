@@ -14,7 +14,7 @@ import Teclado from "./libraries/Teclado.js";
 import Texto from "./libraries/Texto.js";
 import Tipos from "./libraries/Tipos.js";
 import Util from "./libraries/Util.js";
-import { escreva, STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMrun, VMsetup, VMtoString, VM_async_return, VM_getCodeMax, VM_getDelay, VM_getExecJS 
+import { escreva, getCurrentTokenIndex, getScopeFromTokenIndex, STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMgetGlobalVar, VMgetVar, VMrun, VMsetup, VMtoString, VM_async_return, VM_b2s, VM_f2s, VM_getCodeMax, VM_getDelay, VM_getExecJS, VM_i2s 
 } from "./vm.js";
 import { checkIsMobile } from "../../extras/mobile.js";
 
@@ -49,6 +49,11 @@ function _doExec(that,resolve)
 		cursorToEnd(that.div_saida);
 		return;
 	}
+	else if(state == STATE_STEP)
+	{
+		// não faz nada quando é o passo-a-passo, vai esperar clicar denovo no botão
+		return;
+	}
 	else if(state == STATE_BREATHING)
 	{
 		mySetTimeout("EXEC",that.promisefn,0);
@@ -63,6 +68,7 @@ export default class PortugolRuntime {
     constructor(div_saida) {
 		this.lastvmState = STATE_ENDED;
 		this.lastvmTime = 0;
+		this.lastvmStep = false;
 		this.errosCount = 0;
 		this.execMesmoComErros = false;
 		this.mostrar_bytecode = false;
@@ -141,31 +147,27 @@ export default class PortugolRuntime {
 		}
 	}
 
-	executar(string_cod,compilado,erroCallback)
-	{
-		if(!compilado.success)
+	executar_step() {
+		if(this.lastvmStep && this.lastvmState == STATE_STEP)
+		{
+			this.promisefn();
+		}
+	}
+
+	executar(string_cod,compilado,erroCallback,passoapasso)
+	{		
+		if(!compilado || !compilado.success)
 		{
 			throw "Tentou executar mas havia erros na compilação";
 		}
-
+		
 		const that = this;
 		if(that.lastvmState == STATE_ENDED)
 		{	
 			return new Promise((resolve, reject)=> {
+				that.lastvmStep = !(!passoapasso); // converte para boolean com o !!
 				try{					
-					// Preparar Máquina
-					VMsetup(
-						compilado.compiler.functions,
-						compilado.jsgenerator.functions,
-						that.libraries,
-						compilado.compiler.globalCount,
-						string_cod,
-						that.div_saida,
-						that.getErroMiddleCallback(erroCallback)
-					);
-					
-					// Para testar compilação se tiver ativado
-					if(that.mostrar_bytecode) debug_exibe_bytecode();					
+					that._prepararMaquina(string_cod,compilado,erroCallback);
 				}
 				catch(e)
 				{
@@ -184,6 +186,23 @@ export default class PortugolRuntime {
 				that.promisefn();
 		});
 		}
+	}
+
+	_prepararMaquina(string_cod,compilado,erroCallback) {
+		// Preparar Máquina
+		VMsetup(
+			compilado.compiler.functions,
+			compilado.jsgenerator.functions,
+			this.libraries,
+			compilado.compiler.scopeList,
+			compilado.compiler.globalCount,
+			string_cod,
+			this.div_saida,
+			this.getErroMiddleCallback(erroCallback)
+		);
+			
+		// Para testar compilação se tiver ativado
+		if(this.mostrar_bytecode) debug_exibe_bytecode();
 	}
 
 	parar()
@@ -306,6 +325,21 @@ export default class PortugolRuntime {
 			console.log("Compilou: Tempo de execução:"+first_Time+" milissegundos \n[token:"+token_Time+" ms,tree:"+tree_Time+" ms,compiler:"+compiler_Time+" ms, other:"+other_Time+"]");
 		}
 	}
+
+	_step() {
+		let i = getCurrentTokenIndex();
+		let ui = i;
+		do
+		{
+			this.lastvmState = VMrun(1);
+		
+			//console.log(i+","+ui+","+lastvmState);
+			
+			ui = i;
+			i = getCurrentTokenIndex();
+		}
+		while( (i == 0 || i == ui) && this.lastvmState == STATE_BREATHING);
+	}
 	
 	executarVM()
 	{
@@ -315,9 +349,34 @@ export default class PortugolRuntime {
 			return this.lastvmState;
 		}
 
+		let justReceivedInput = this.lastvmState == STATE_WAITINGINPUT;
 		this.lastvmState = STATE_RUNNING;
 		
-		this.lastvmState = VMrun(VM_getCodeMax());
+		if(this.lastvmStep)
+		{
+			this._step();
+			if(justReceivedInput) {this._step();} // mais uma vez para sair do leia
+
+			//console.log(i+","+ui+","+lastvmState);
+			
+			if(this.lastvmState == STATE_BREATHING)
+			{
+				this.lastvmState = STATE_STEP;
+				//var btnStep = document.getElementById('btn-step');
+				//if(btnStep.className=="clicou")
+				//{
+				//	mySetTimeout("STATE_STEP",executarVM,1000);
+				//}
+				//if(btnStep.className=="segurando")
+				//{
+				//	mySetTimeout("STATE_STEP",executarVM,100);
+				//}
+			}
+		}
+		else
+		{	
+			this.lastvmState = VMrun(VM_getCodeMax());
+		}
 		
 		if(this.lastvmState == STATE_ENDED)
 		{
@@ -365,5 +424,36 @@ export default class PortugolRuntime {
 		{
 			this.libraries["Graficos"].encerrar_modo_grafico();
 		}
+	}
+	// Para o Passo a Passo
+	// Retorna uma lista onde que contém os nomes e valores das variáveis
+	getCurrentDeclaredVariables()
+	{
+		let scope = getScopeFromTokenIndex(getCurrentTokenIndex());
+		if(!scope) return [];
+
+		let varTable = [];
+		let v = false;
+		let index = 0;
+		while((v = scope.getVarByIndex(index,false)) != false) {
+			const value = VMgetVar(v.index);
+			varTable.push({
+				...v,
+				value: value
+			});
+			index++;
+		}
+
+		index = 0;
+		while((v = scope.getVarByIndex(index,true)) != false) {
+			const value = VMgetGlobalVar(v.index);
+			varTable.push({
+				...v,
+				value: value
+			});
+			index++;
+		}		
+
+		return varTable;
 	}
 }

@@ -180,6 +180,48 @@ body.mobile .mobileHidden{
 	transition: bottom 0.3s ease 0s;
 }
 
+.tabelavariaveis {
+	border: 1px solid #ddd;
+    /*width: 100%;*/
+    table-layout: fixed;
+
+	border-collapse: collapse;
+	background-color: #000000;
+}
+
+.tabelavariaveis td,.tabelavariaveis th {
+	text-overflow: ellipsis;
+    overflow: hidden;
+
+	text-align: left;
+	border: 1px solid;
+}
+
+.tabelavariaveis td {
+	padding: 5px;
+}
+
+.tabelavariaveis th {
+	padding: 10px;
+}
+
+.atecemporcento {
+	display: inline-block;
+	max-width: 100%;
+}
+
+.divariaveis {
+	width: 50%;
+    /*display: inline-block;*/
+	display: none;
+	position: absolute;
+	margin: 10px;
+	top: 0px;
+	right: 0px;
+	overflow-x: auto;
+	overflow-y: auto;
+	text-align: right;
+}
 
 .paragrafo{
 white-space: pre-wrap;

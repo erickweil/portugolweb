@@ -32,9 +32,9 @@ public class Inicio extends Activity {
     public static final String SITE_DOMINIO = "erickweil.github.io";
     public static final String SITE_INDEX_PATH = "/portugolweb/";
     // Configs teste local
-    /*public static final String SITE_PROTOCOLO = "http://";
-    public static final String SITE_DOMINIO = "192.168.1.2";
-    public static final String SITE_INDEX_PATH = "/";*/
+    //public static final String SITE_PROTOCOLO = "http://";
+    //public static final String SITE_DOMINIO = "192.168.1.6";
+    //public static final String SITE_INDEX_PATH = "/";
 
     public static final String SITE_VERSIONCHECK_FILE = "version.json";
     public static final String ANDROID_ASSETS_CACHE_URL = "file:///android_asset/portugolweb/";

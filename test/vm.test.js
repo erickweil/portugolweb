@@ -11,6 +11,11 @@ doFetchMock();
 
 describe("Testando VM", () => {
 
+    test("Testando Declarar Array", () => {
+        let arr = vm.recursiveDeclareArray([3,3],1,0);
+        expect(arr).toStrictEqual([[1,1,1],[1,1,1],[1,1,1]]);
+    });
+
     test("Executar Hello World via bytecode direto:", () => {
         let saida = {value:"",scrollTop:0};
         vm.VMsetup([
@@ -42,7 +47,7 @@ describe("Testando VM", () => {
                 type:T_vazio,
                 jsSafe:true
             },
-        ],false,false,false,"",saida,false);
+        ],false,false,false,10,"",saida,false);
 
         vm.VMrun(10000);
 

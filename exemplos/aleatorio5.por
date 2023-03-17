@@ -6,7 +6,7 @@ programa
 	inclua biblioteca Teclado --> teclado
 	
 	
-	inteiro gradew = 20
+	const inteiro gradew = 20
 	inteiro grade[gradew][gradew]
 	inteiro grade_off = 2
 	
@@ -185,6 +185,7 @@ programa
 			
 			desenhar_grade()
 			
+			g.renderizar()
 			u.aguarde(5)
 		}
 		
