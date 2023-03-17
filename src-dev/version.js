@@ -16,7 +16,7 @@ import { readFileSync, writeFileSync, copyFileSync } from "node:fs";
 // Qualquer versão antes dessa avisa que é preciso atualizar
 // Se a atualização do app não é 'necessária', pode deixar esse numa versão passada
 // Assim usuários não serão notificados a cada abertura do app sobre isso
-const APPVERSION = "1.6"; 
+const APPVERSION = "1.7"; 
 
 // Causa o app ser atualizado automaticamente caso seja menor que isso
 // Atualizar também o VERSAO_ASSETS_WEBAPP no arquivo VersionChecker.java no aplicativo quando mudar aqui
