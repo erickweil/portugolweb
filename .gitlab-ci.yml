@@ -1,0 +1,82 @@
+variables:
+  TAG_LATEST: $CI_REGISTRY/$GITLAB_USER_LOGIN/portugolweb:latest
+  TAG_COMMIT: $CI_REGISTRY/$GITLAB_USER_LOGIN/portugolweb:$CI_COMMIT_SHORT_SHA
+
+.base-rules:
+  # https://how-to.dev/how-to-set-up-monorepo-build-in-gitlab-ci
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      when: never
+    - if: $CI_COMMIT_TAG
+      when: never
+#   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+#     changes:
+#       - $RULES_CHANGES_PATH
+    - when: manual
+      allow_failure: true
+
+stages:
+  - test
+  - build
+  - publish
+
+cache:
+  key: "$CI_PROJECT_ID"
+  paths:
+    - node_modules/
+
+
+test-job:
+  stage: test
+  image: node:alpine
+  extends: .base-rules
+  needs: []
+  script:
+    - npm install
+    - npm run test
+
+build-job:
+  stage: build
+  image: node:alpine
+  extends: .base-rules
+  needs: ["test-job"]
+  script:
+    - npm install
+    - npm run build
+    - npm run buildace
+
+# https://blog.callr.tech/building-docker-images-with-gitlab-ci-best-practices/
+publish-nodejs-exemplo:
+  stage: publish
+  extends: .base-rules
+  needs: ["build-job"]
+
+  # do not use latest
+  image: docker:dind
+
+  script:
+    # https://stackoverflow.com/questions/45344158/multiple-dockerignore-files-in-same-directory
+    - export DOCKER_BUILDKIT=1
+    # fetches the latest image (not failing if image is not found)
+    - docker pull $TAG_LATEST || true
+    # builds the project, passing proxy variables, using OCI labels
+    # notice the cache-from, which is going to use the image we just pulled locally
+    # the built image is tagged locally with the commit SHA, and then pushed to 
+    # the GitLab registry
+    - >
+      docker build
+      --pull
+      --cache-from $TAG_LATEST
+      --label "org.opencontainers.image.title=$CI_PROJECT_TITLE"
+      --label "org.opencontainers.image.url=$CI_PROJECT_URL"
+      --label "org.opencontainers.image.created=$CI_JOB_STARTED_AT"
+      --label "org.opencontainers.image.revision=$CI_COMMIT_SHA"
+      --label "org.opencontainers.image.version=$CI_COMMIT_REF_NAME"
+      --tag $TAG_COMMIT
+      -f production.Dockerfile
+      .
+    - docker tag $TAG_COMMIT $TAG_LATEST
+    - docker push "$TAG_COMMIT"
+    - docker push "$TAG_LATEST"

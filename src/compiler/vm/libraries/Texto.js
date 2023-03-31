@@ -46,9 +46,10 @@ export default class Texto {
 	extrair_subtexto(cad,posicao_inicial,posicao_final)
 	{
 		if(posicao_inicial > posicao_final) 
-		throw "Posição inicial e final inválidas, a posição final deve ser maior que a inicial";
+		throw "Posição inicial e final inválidas, a posição final deve ser maior ou igual que a inicial";
 
-		if(posicao_inicial >= 0 && posicao_final < cad.length) {
+		// maior ou igual a zero E menor OU IGUAL ao tamanho do texto
+		if(posicao_inicial >= 0 && posicao_final <= cad.length) {
 			return {value:cad.substring(posicao_inicial,posicao_final)};
 		} else throw "Posição inicial ou final fora do intervalo. Deve estar entre 0 e o tamanho do texto";
 	}
@@ -60,6 +61,7 @@ export default class Texto {
 	
 	obter_caracter(cad,indice)
 	{
+		// Pode ser 0 mas tem que ser MENOR que o tamanho do texto
 		if(indice >= 0 && indice < cad.length)
 		return {value:cad.charAt(indice)};
 		else throw "Índice fora do intervalo. Deve estar entre 0 e o tamanho do texto";
@@ -67,9 +69,10 @@ export default class Texto {
 	
 	posicao_texto(texto,cad,posicao_inicial)
 	{
-		if(posicao_inicial < 0 || posicao_inicial >= cad.length)
-		throw "Posição inicial fora do intervalo, Deve estar entre 0 e o tamanho do texto";
-
+		// Essa checagem não deveria existir?
+		//if(posicao_inicial < 0 || posicao_inicial >= cad.length)
+		//throw "Posição inicial fora do intervalo, Deve estar entre 0 e o tamanho do texto";
+		
 		return {value:cad.indexOf(texto,posicao_inicial)};
 	}
 	

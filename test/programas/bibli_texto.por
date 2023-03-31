@@ -17,7 +17,17 @@ programa
 			escreva(t.obter_caracter(txt,i))
 		}
 
+		cadeia texto = "PAREDES"
+		cadeia sub_texto
 
+		
+		sub_texto = t.extrair_subtexto(texto, 0, 7)
+		escreva(sub_texto, "\n")
+
+		escreva(t.obter_caracter(texto, 0))
+		escreva(t.obter_caracter(texto, 6))
+
+		escreva(t.posicao_texto("RE", texto, -300))
 	}
 }
 /*---
@@ -29,5 +39,6 @@ m
 22
 ******Lorem ipsum dolor sit amet
 Lore? ipsu? dolor sit a?et
-Lorem ipsum dolor sit amet
+Lorem ipsum dolor sit ametPAREDES
+PS2
 ---*/

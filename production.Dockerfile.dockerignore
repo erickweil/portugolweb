@@ -1,5 +1,6 @@
 .gradle/
 .vscode/
+.git/
 android/
 lib/
 node_modules/
@@ -20,3 +21,10 @@ production.Dockerfile.dockerignore
 README.md
 test.html
 webpack.config.cjs
+policy.html
+.eslintrc.json
+.gitattributes
+.babelrc
+.eslintignore
+.gitignore
+.dockerignore
