@@ -1,6 +1,7 @@
 variables:
   TAG_LATEST: $CI_REGISTRY/$GITLAB_USER_LOGIN/portugolweb:latest
   TAG_COMMIT: $CI_REGISTRY/$GITLAB_USER_LOGIN/portugolweb:$CI_COMMIT_SHORT_SHA
+  DEV_BRANCH: "develop"
 
 .base-rules:
   # https://how-to.dev/how-to-set-up-monorepo-build-in-gitlab-ci
@@ -17,6 +18,12 @@ variables:
     - when: manual
       allow_failure: true
 
+.test-rules:
+  extends: .base-rules
+  rules:
+    - if: $CI_COMMIT_BRANCH == $DEV_BRANCH
+      when: always
+
 stages:
   - test
   - build
@@ -25,13 +32,13 @@ stages:
 cache:
   key: "$CI_PROJECT_ID"
   paths:
-    - node_modules/
-
+    - node_modules/ # npm install
+    - dist/ # webpack
 
 test-job:
   stage: test
   image: node:alpine
-  extends: .base-rules
+  extends: .test-rules
   needs: []
   script:
     - npm install
