@@ -13,4 +13,4 @@ RUN npm install
 ENTRYPOINT ["node", "terminal.js"]
 
 # docker build -t erickweil/portugolweb:terminal -f terminal.Dockerfile .
-# docker run -it --rm erickweil/portugolweb:terminal -v ./:/app/exemplos --programa=./exemplos/entrada.por
+# docker run -it --rm erickweil/portugolweb:terminal -v ./:/app/exemplos --programa ./exemplos/entrada.por

@@ -126,7 +126,7 @@ Também é possível executar via terminal interativo, sem abrir a aplicação g
 Considerando que existe um diretório 'exemplos' com um arquivo 'entrada.por', 
 o comando abaixo cria um container e executa este arquivo
 ```
-docker run -it --rm erickweil/portugolweb:terminal -v ./:/app/exemplos --programa=./exemplos/entrada.por
+docker run -it --rm erickweil/portugolweb:terminal -v ./:/app/exemplos --programa ./exemplos/entrada.por
 ```
 
 ### Executar Aplicação Web
@@ -140,10 +140,10 @@ Pode ser que você queira apenas a possibilidade de executar programas portugol 
 Para executar programas escritos em portugol via terminal basta clonar o repositório, ter nodejs instalado e executar:
 ```
 npm install
-node terminal.js --programa=./exemplos/entrada.por
+node terminal.js --programa ./exemplos/entrada.por
 ```
 
-Mude a opção --programa= para o caminho do arquivo .por que deseja executar
+Mude a opção --programa para o caminho do arquivo .por que deseja executar
 Veja a ajuda com --ajuda para mais detalhes
 
 ## Licença 

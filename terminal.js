@@ -20,37 +20,35 @@ let ajuda =  false;
 let escreverTempo = true;
 let compilarJS = false;
 
-process.argv.slice(2)
-	.map(arg => arg.split("="))
-	.forEach((keyvaluepair) => {
-        let value = keyvaluepair.length == 2 ? keyvaluepair[1] : 0;
-		
-		switch(keyvaluepair[0]) {
-            case "-f":
-            case "--file": 
-            case "-p":
-            case "--programa": 
-                // ler arquivo em 'value'
-                filePrograma = value;
-                break;
-            case "-t":
-            case "--tempo": 
-                escreverTempo = value != 0;
-                break;
-            case "--js": 
-                compilarJS = value != 0;
-                break;
-            case "-h":
-            case "--help":
-            case "-a":
-            case "--ajuda":
-                ajuda = true;
+let argumentos = process.argv.slice(2);
+for(let i = 0; i < argumentos.length; i++) {
+    let key = argumentos[i];
+    
+    switch(key) {
+        case "-f":
+        case "--file": 
+        case "-p":
+        case "--programa": 
+            filePrograma = argumentos[++i];
             break;
-		}
-});
+        case "-t":
+        case "--tempo": 
+            escreverTempo = parseInt(argumentos[++i]) != 0;
+            break;
+        case "--js": 
+            compilarJS = parseInt(argumentos[++i]) != 0;
+            break;
+        case "-h":
+        case "--help":
+        case "-a":
+        case "--ajuda":
+            ajuda = true;
+        break;
+    }
+}
 
 if(ajuda) {
-    console.log("node terminal.js [--programa=<arquivo>] [--tempo=<0|1>] [--js=<0|1>] [--ajuda]");
+    console.log("node terminal.js [--programa <arquivo>] [--tempo <0|1>] [--js <0|1>] [--ajuda]");
     console.log("programa: arquivo com o código a ser executado");
     console.log("Se não for informado, o programa padrão será executado");
     console.log("tempo: se deve ou não imprimir o tempo de execução");
