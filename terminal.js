@@ -61,13 +61,55 @@ if(filePrograma) {
     programa = await readFile(new URL(filePrograma, import.meta.url),{encoding:"utf8"});
 }
 
-const readline = createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
+let run;
+let saidaEscrita = "";
+const escreverSaida = () => {
+    const saida = run.div_saida.value;
+    if(saidaEscrita.length == saida.length) return;
+
+    if(saida.length < saidaEscrita.length) {
+        // Para não pular linha
+        process.stdout.write(saida);
+        saidaEscrita = saida;
+    } else {
+        process.stdout.write(saida.substring(saidaEscrita.length, saida.length));
+        saidaEscrita = saida;
+    }
+};
+
+let readline;
+if(!process.stdin.isTTY) {
+    readline = createInterface({
+        input: process.stdin
+    });
+
+    let lines = [];
+    let fakeReadLine = {
+        question: async (question) => {
+            let line = lines.shift();
+            escreverSaida();
+            //process.stdout.write(line+"\n");
+            return line;
+        },
+        close: () => {
+            lines = [];
+        }
+    };
+
+    // quando não é TTY tem que ler assim
+    // Para funcionar fazer piping do input
+    for await (const line of readline) {
+        lines.push(line);
+    }
+    readline = fakeReadLine;
+} else {
+    readline = createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+}
 try {
-    let saidaEscrita = "";
-    const run = new PortugolRuntime({
+    run = new PortugolRuntime({
         value:"",
         leia: async () => {
             const valorLido = await readline.question("");
@@ -85,19 +127,6 @@ try {
 
     if(!compilado.success) throw "Erro na compilação";
 
-    const escreverSaida = () => {
-        const saida = run.div_saida.value;
-        if(saidaEscrita.length == saida.length) return;
-
-        if(saida.length < saidaEscrita.length) {
-            // Para não pular linha
-            process.stdout.write(saida);
-            saidaEscrita = saida;
-        } else {
-            process.stdout.write(saida.substring(saidaEscrita.length, saida.length));
-            saidaEscrita = saida;
-        }
-    };
     let saidaListener = setInterval(escreverSaida,100);
 
     try {
