@@ -171,7 +171,7 @@ export class FunctionScopeRef {
 		this.funCalls.push(func);
 		if(!func.jsSafe)
 		{
-			console.log("Marcou como unsafe porque chamou a função "+func.name);
+			//console.log("Marcou como unsafe porque chamou a função "+func.name);
 			this.jsSafe = false;
 		}
 	}
@@ -1561,7 +1561,7 @@ export class Compiler {
 					}
 					else if(expr.name == "leia")
 					{
-						console.log("Marcou como unsafe porque chamou a função leia");
+						//console.log("Marcou como unsafe porque chamou a função leia");
 						this.funcScopeRef.jsSafe = false;
 						let methName= expr.name;
 						if(args.length == 1)
@@ -1747,7 +1747,7 @@ export class Compiler {
 						
 						if(!libObj.members[campo.name].jsSafe)
 						{
-							console.log("Marcou como unsafe porque chamou a função da biblioteca "+campo.name);
+							//console.log("Marcou como unsafe porque chamou a função da biblioteca "+campo.name);
 							this.funcScopeRef.jsSafe = false;
 						}
 						

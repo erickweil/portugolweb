@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portugolweb
+spec:
+  selector:
+    matchLabels:
+      app: portugolweb
+  template:
+    metadata:
+      labels:
+        app: portugolweb
+    spec:
+      containers:
+      - name: portugolweb
+        image: registry.fslab.dev/erickweil/portugolweb:latest
+        resources: {}
+        ports:
+        - containerPort: 80
+      imagePullSecrets:
+      - name: regcred
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: portugolweb
+spec:
+  type: NodePort
+  selector:
+    app: portugolweb
+  ports:
+  - port: 80
+    targetPort: 80
+    NodePort: 30088

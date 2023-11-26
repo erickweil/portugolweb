@@ -42,12 +42,24 @@ function _doExec(that,resolve)
 	}
 	else if(state == STATE_WAITINGINPUT || state == STATE_ASYNC_RETURN)
 	{
-		// Vai continuar depois
-		if(typeof that.div_saida.focus === 'function')
-			that.div_saida.focus();
+		if (typeof window !== 'undefined') {
+			// BROWSER
+			// Vai continuar depois
+			if(typeof that.div_saida.focus === 'function')
+				that.div_saida.focus();
 
-		cursorToEnd(that.div_saida);
-		return;
+			cursorToEnd(that.div_saida);
+			return;
+		} else {
+			// NODE
+			if(state == STATE_WAITINGINPUT)
+			that.div_saida.leia().then((input) => {
+				that.div_saida.value += input;
+				that.notifyReceiveInput();
+			});
+
+			return;
+		}
 	}
 	else if(state == STATE_STEP)
 	{
@@ -72,6 +84,8 @@ export default class PortugolRuntime {
 		this.errosCount = 0;
 		this.execMesmoComErros = false;
 		this.mostrar_bytecode = false;
+		this.escrever_erros = true;
+		this.escrever_debug = false; // Tempo de compilação etc...
 		this.escrever_tempo = true; // Programa finalizado etc...
 		this.div_saida = div_saida;
 
@@ -89,13 +103,15 @@ export default class PortugolRuntime {
 			let logprev = "Linha "+lineNumber+":"+prev_line;
 			
 			that.errosCount++;
-			try {
-				let obj = {};
-				console.log(obj.erro.erromesmo);
-			} catch (e) {
-				let myStackTrace = e.stack || e.stacktrace || "";
-				
-				console.log(myStackTrace);
+			if(that.escrever_erros) {
+				try {
+					let obj = {};
+					console.log(obj.erro.erromesmo);
+				} catch (e) {
+					let myStackTrace = e.stack || e.stacktrace || "";
+					
+					console.log(myStackTrace);
+				}
 			}
 			
 			// manter no formato de erro esperado pelo Ace Editor
@@ -321,7 +337,7 @@ export default class PortugolRuntime {
 			first_Time = Math.trunc(performance.now()-first_Time);
 			other_Time = first_Time - (token_Time + tree_Time + compiler_Time);
 
-			if(this.escrever_tempo)
+			if(this.escrever_debug)
 			console.log("Compilou: Tempo de execução:"+first_Time+" milissegundos \n[token:"+token_Time+" ms,tree:"+tree_Time+" ms,compiler:"+compiler_Time+" ms, other:"+other_Time+"]");
 		}
 	}

@@ -110,7 +110,7 @@ Ferramentas apenas importantes durante o desenvolvimento:
 > acesse: <a>https://erickweil.github.io/portugolweb/</a> para utilizar direto do navegador
 > ou baixe o aplicativo Android:<a>https://play.google.com/store/apps/details?id=br.erickweil.portugolweb</a> que permite utilizar offline.
 
-### Docker
+### Docker Aplicação Web
 
 É possível executar uma imagem Docker baseada no nginx para hospedar o site em um container Docker.
 Com o docker instalado basta executar:
@@ -120,9 +120,31 @@ docker run -d -p 80:80 erickweil/portugolweb
 
 em seguida acesse http://localhost/
 
-### Manual
+### Docker via terminal
+
+Também é possível executar via terminal interativo, sem abrir a aplicação gráfica
+Considerando que existe um diretório 'exemplos' com um arquivo 'entrada.por', 
+o comando abaixo cria um container e executa este arquivo
+```
+docker run -it --rm erickweil/portugolweb:terminal -v ./:/app/exemplos --programa=./exemplos/entrada.por
+```
+
+### Executar Aplicação Web
 
 Pode também baixar o inteiro projeto e abrir o arquivo index.html para utilizar offline no Computador ( É necessário ter um navegador web ). Não funcionará clicar nos exemplos a não ser que hospede em um servidor web estático local, como por exemplo apache ou nginx (Uma forma fácil seria instalar o XAMPP).
+
+### Executar via terminal
+
+Pode ser que você queira apenas a possibilidade de executar programas portugol .por, sem utilizar o editor web. É possível!
+
+Para executar programas escritos em portugol via terminal basta clonar o repositório, ter nodejs instalado e executar:
+```
+npm install
+node terminal.js --programa=./exemplos/entrada.por
+```
+
+Mude a opção --programa= para o caminho do arquivo .por que deseja executar
+Veja a ajuda com --ajuda para mais detalhes
 
 ## Licença 
 
