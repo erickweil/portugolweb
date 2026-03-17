@@ -5,6 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
+    "dev": "serve -l 3000",
     "lint": "npx eslint ./",
     "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js --verbose",
     "build": "webpack --config ./webpack.config.cjs",
@@ -22,6 +23,8 @@
   },
   "homepage": "https://github.com/erickweil/portugolweb#readme",
   "devDependencies": {
+    "serve": "^14.2.0",
+    "webpack-dev-server": "^5.0.0",
     "@babel/core": "^7.21.0",
     "@babel/preset-env": "^7.20.2",
     "@types/ace": "^0.0.48",
