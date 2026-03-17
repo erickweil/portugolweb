@@ -9,24 +9,7 @@ body {
 	font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* VS Code style title bar */
-.vscode-titlebar {
-	background: #3c3c3c;
-	height: 30px;
-	display: flex;
-	align-items: center;
-	padding: 0 10px;
-	color: #cccccc;
-	font-size: 12px;
-	-webkit-app-region: drag;
-	user-select: none;
-}
 
-.vscode-titlebar .title {
-	flex: 1;
-	text-align: center;
-	font-weight: 400;
-}
 
 /* Status bar at bottom */
 .vscode-statusbar {
@@ -132,20 +115,211 @@ body.mobile .mobileHidden{
 .ModalContent{
 	margin-left: auto;
 	margin-right: auto;
-	/*display: table; Parece que n precisava ser table*/
 	display: flex;
 	flex-direction: column;
 	position: relative;
-	background: #252526;
-	min-width:220px;
-	max-width:420px;
+	background: #1e1e1e;
+	min-width:280px;
+	max-width:480px;
+	width: 90vw;
 	pointer-events:auto;
 	border: 1px solid #3c3c3c;
-	border-radius: 6px;
-	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-	max-height:95vh;
+	border-radius: 8px;
+	box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+	max-height:90vh;
+	overflow: hidden;
 }
 
+/* New Examples Modal Styles */
+.examples-modal {
+	font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.examples-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px 20px;
+	border-bottom: 1px solid #3c3c3c;
+	background: #252526;
+}
+
+.examples-title {
+	font-size: 16px;
+	font-weight: 600;
+	color: #ffffff;
+}
+
+.examples-close {
+	background: transparent;
+	border: none;
+	color: #858585;
+	cursor: pointer;
+	padding: 4px;
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.15s ease;
+}
+
+.examples-close:hover {
+	background: rgba(255,255,255,0.1);
+	color: #ffffff;
+}
+
+.examples-content {
+	padding: 16px;
+	overflow-y: auto;
+	max-height: 50vh;
+}
+
+.example-card {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 14px 16px;
+	background: #0e639c;
+	border: none;
+	border-radius: 6px;
+	color: #ffffff;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.15s ease;
+	margin-bottom: 16px;
+}
+
+.example-card:hover {
+	background: #1177bb;
+}
+
+.example-card svg {
+	flex-shrink: 0;
+}
+
+.example-category {
+	margin-bottom: 12px;
+}
+
+.category-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 12px;
+	color: #858585;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.category-items {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	padding-left: 4px;
+}
+
+.example-item {
+	background: #2d2d2d;
+	border: 1px solid #3c3c3c;
+	border-radius: 4px;
+	color: #cccccc;
+	font-size: 12px;
+	padding: 6px 12px;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.example-item:hover {
+	background: #3c3c3c;
+	border-color: #505050;
+	color: #ffffff;
+}
+
+.examples-settings {
+	padding: 12px 16px;
+	border-top: 1px solid #3c3c3c;
+	background: #252526;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.setting-toggle {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+	font-size: 12px;
+	color: #cccccc;
+}
+
+.setting-toggle input {
+	display: none;
+}
+
+.toggle-slider {
+	width: 32px;
+	height: 18px;
+	background: #3c3c3c;
+	border-radius: 9px;
+	position: relative;
+	transition: background 0.2s ease;
+}
+
+.toggle-slider::after {
+	content: '';
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: 14px;
+	height: 14px;
+	background: #858585;
+	border-radius: 50%;
+	transition: all 0.2s ease;
+}
+
+.setting-toggle input:checked + .toggle-slider {
+	background: #0e639c;
+}
+
+.setting-toggle input:checked + .toggle-slider::after {
+	left: 16px;
+	background: #ffffff;
+}
+
+.toggle-label {
+	user-select: none;
+}
+
+.examples-footer {
+	padding: 12px 16px;
+	border-top: 1px solid #3c3c3c;
+	display: flex;
+	justify-content: center;
+}
+
+.github-link {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: #858585;
+	text-decoration: none;
+	font-size: 13px;
+	padding: 6px 12px;
+	border-radius: 4px;
+	transition: all 0.15s ease;
+}
+
+.github-link:hover {
+	background: rgba(255,255,255,0.05);
+	color: #cccccc;
+}
+
+/* Keep old listaExemplos for backwards compatibility */
 .listaExemplos{
 	color:#4fc1ff;
 	font-weight: 600;
@@ -355,18 +529,21 @@ div.portugol-buttons{
 div.portugol-buttons input, #myCanvasModal input, .ModalContent input, .listaExemplos button{
 	color: #cccccc;
 	font-weight: 400;
-	min-width: 28px;
-	height: 28px;
-	padding: 0 8px;
+	min-width: 32px;
+	height: 32px;
+	padding: 0 10px;
 	background-color: transparent;
 	border: none;
-	border-radius: 3px;
-	font-size: 12px;
+	border-radius: 4px;
+	font-size: 13px;
 	transition: background-color 0.1s ease;
 	cursor: pointer;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	background-size: 18px 18px;
+	background-repeat: no-repeat;
+	background-position: center;
 }
 
 div.portugol-buttons input:hover, #myCanvasModal input:hover, .ModalContent input:hover, .listaExemplos button:hover{
