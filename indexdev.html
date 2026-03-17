@@ -44,8 +44,8 @@
 <div id="myCanvasMiddle">
 <div id="myCanvasWindow">
 <div style="white-space: nowrap;">
-<input type="button" value="Janela Sem Titulo" style="float:left;background: #1E2324;" id="myCanvasWindowTitle"/>
-<input type="button" value="X" style="float:right;background: #1E2324;" onclick="index.executar(document.getElementById('btn-run'));"/>
+<input type="button" value="Janela Sem Titulo" style="float:left;background: #252526;" id="myCanvasWindowTitle"/>
+<input type="button" value="X" style="float:right;background: #252526;" onclick="index.executar(document.getElementById('btn-run'));"/>
 </div>
 <canvas tabindex="1" id="myCanvas" width="100" height="100"></canvas>
 <div id="myCanvasKeys">
@@ -61,13 +61,13 @@
 <div class="ModalInside">
 <div class="ModalContent">
 <div>
-<input type="button" value="" style="float:left;background: #1E2324;" class="ModalTitle"/>
-<input type="button" value="X" style="float:right;background: #1E2324;" onclick="document.getElementById('modalExemplos').style.display = 'none';"/>
+<input type="button" value="" style="float:left;background: #252526;" class="ModalTitle"/>
+<input type="button" value="X" style="float:right;background: #252526;" onclick="document.getElementById('modalExemplos').style.display = 'none';"/>
 </div>
 <br/>
 <div class="listaExemplos">
 <h2 onclick="index.exemplo('branco');">Novo Programa em Branco</h2>
-<hr style="border: 1px solid #01EABC;"/>
+<hr style="border: 1px solid #3c3c3c;"/>
 <details><summary><h2>Básico</h2></summary>
   <h2 onclick="index.exemplo('variaveis');">Variáveis</h2>
   <h2 onclick="index.exemplo('entrada');">Entrada de dados</h2>
@@ -92,7 +92,7 @@
   <h2 onclick="index.exemplo('aleatorio5');">A*</h2>
 </details>
 
-<hr style="border: 1px solid #01EABC;"/>
+<hr style="border: 1px solid #3c3c3c;"/>
 <span style="white-space:nowrap"><input id="check-mostrar-hotbar" style="height: 20px;" name="mostrar-hotbar" type="checkbox" onchange="index.toggleHotbar(this.checked);"/><label for="mostrar-hotbar">Mostrar Hotbar</label></span> 
 <span style="white-space:nowrap"><input id="check-modo-turbo" style="height: 20px;" name="modo-turbo" type="checkbox" onchange="index.setModoTurbo(this);" title="Compila o código para Javascript, executa muito mais rápido. Só vai acelerar se não utilizar nenhuma função que pausa o código, como o leia ou o aguarde da biblioteca Util"/><label for="modo-turbo">Modo Turbo</label></span> 
 <span style="white-space:nowrap"><input id="check-auto-completar" style="height: 20px;" name="auto-completar" type="checkbox" checked="true" onchange="index.setAutoCompleterState(this.checked);"/><label for="auto-completar">Auto-Completar</label></span> 
@@ -101,11 +101,11 @@
 <button class="mobileHidden" title="A TogetherJS possibilita a utilização em grupo de um site. Permitindo editar em conjunto, chat e muito mais" onclick="TogetherJS(this);return false;">Ativar TogetherJS</button>
 -->
 
-<hr style="border: 1px solid #01EABC;"/>
+<hr style="border: 1px solid #3c3c3c;"/>
 
 <div style="white-space:nowrap;">
-  <a style="color: #01EABC; text-decoration: none; text-align: center;display: flex;align-items:center;justify-content: center;" href="#" onclick="index.abrirPagina('https://github.com/erickweil/portugolweb')">
-    <svg style="fill: #01EABC" height="24" aria-hidden="true" viewBox="0 0 24 24" version="1.1" width="24" data-view-component="true" class="octicon octicon-mark-github v-align-middle color-fg-default">
+  <a style="color: #4fc1ff; text-decoration: none; text-align: center;display: flex;align-items:center;justify-content: center;" href="#" onclick="index.abrirPagina('https://github.com/erickweil/portugolweb')">
+    <svg style="fill: #4fc1ff" height="24" aria-hidden="true" viewBox="0 0 24 24" version="1.1" width="24" data-view-component="true" class="octicon octicon-mark-github v-align-middle color-fg-default">
       <path d="M12.5.75C6.146.75 1 5.896 1 12.25c0 5.089 3.292 9.387 7.863 10.91.575.101.79-.244.79-.546 0-.273-.014-1.178-.014-2.142-2.889.532-3.636-.704-3.866-1.35-.13-.331-.69-1.352-1.18-1.625-.402-.216-.977-.748-.014-.762.906-.014 1.553.834 1.769 1.179 1.035 1.74 2.688 1.25 3.349.948.1-.747.402-1.25.733-1.538-2.559-.287-5.232-1.279-5.232-5.678 0-1.25.445-2.285 1.178-3.09-.115-.288-.517-1.467.115-3.048 0 0 .963-.302 3.163 1.179.92-.259 1.897-.388 2.875-.388.977 0 1.955.13 2.875.388 2.2-1.495 3.162-1.179 3.162-1.179.633 1.581.23 2.76.115 3.048.733.805 1.179 1.825 1.179 3.09 0 4.413-2.688 5.39-5.247 5.678.417.36.776 1.05.776 2.128 0 1.538-.014 2.774-.014 3.162 0 .302.216.662.79.547C20.709 21.637 24 17.324 24 12.25 24 5.896 18.854.75 12.5.75Z"></path>
     </svg>
     <span style="padding: 5px;">Abrir no GitHub</span>
