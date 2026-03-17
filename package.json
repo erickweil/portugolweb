@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "dev": "webpack serve --config ./webpack.dev.config.cjs --open indexdev.html",
+    "dev": "npx serve -l 3000",
     "lint": "npx eslint ./",
     "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js --verbose",
     "build": "webpack --config ./webpack.config.cjs",
