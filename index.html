@@ -8,7 +8,7 @@
   <meta charset="utf-8">
   <meta lang="pt-br">
   <meta name="author" content="Erick L. Weil">
-  <meta name="theme-color" content="#08ecbc">
+  <meta name="theme-color" content="#007acc">
   <meta name="description" content="Utilize o portugol diretamente do seu navegador!">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
@@ -31,6 +31,11 @@
 	<link rel="stylesheet" type="text/css" href="portugol.css">
 </head>
 <body style="margin:0">
+<!-- VS Code Title Bar -->
+<div class="vscode-titlebar">
+	<span class="title">Portugol Web</span>
+</div>
+
 <div id="myEditor">programa 
 {
 	funcao inicio()
@@ -177,6 +182,10 @@ title="Executa o código mostando linha a linha a cada clique"
 <input tabindex="-1" type="button" value="!=" onclick='index.editorType("!=")' onfocus="index.preventFocus(event)"/>
 
 </div>
+<div class="terminal-header">
+	<span class="terminal-tab active">TERMINAL</span>
+	<span class="terminal-tab">PROBLEMAS</span>
+</div>
 <div id="myOutput" style="position:relative;">
 <div class="saida" id="saida"><div id="errorArea"></div><div class="saida" id="hidden"></div><textarea id="textAreaSaida" onclick="index.cursorToEnd(this)" onkeyup="index.cursorToEnd(this)" oninput="index.receiveInput(this)">??</textarea><div id="divariaveis" class="divariaveis"></div>
 
@@ -204,6 +213,13 @@ title="Executa o código mostando linha a linha a cada clique"
 	}
 
 </script>
+
+<!-- VS Code Status Bar -->
+<div class="vscode-statusbar">
+	<span class="vscode-statusbar-item">Portugol</span>
+	<span class="vscode-statusbar-item">UTF-8</span>
+	<span class="vscode-statusbar-item" style="margin-left: auto;">Ln 1, Col 1</span>
+</div>
 
 <script src="dist/ace.js"></script>
 <script src="dist/main.js"></script>

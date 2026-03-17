@@ -6,6 +6,51 @@ body {
 	height:100%;
 	overflow-y: hidden;
 	overflow-x: hidden;
+	font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* VS Code style title bar */
+.vscode-titlebar {
+	background: #3c3c3c;
+	height: 30px;
+	display: flex;
+	align-items: center;
+	padding: 0 10px;
+	color: #cccccc;
+	font-size: 12px;
+	-webkit-app-region: drag;
+	user-select: none;
+}
+
+.vscode-titlebar .title {
+	flex: 1;
+	text-align: center;
+	font-weight: 400;
+}
+
+/* Status bar at bottom */
+.vscode-statusbar {
+	background: #007acc;
+	height: 22px;
+	display: flex;
+	align-items: center;
+	padding: 0 10px;
+	color: #ffffff;
+	font-size: 12px;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: 100;
+}
+
+.vscode-statusbar-item {
+	padding: 0 8px;
+	cursor: pointer;
+}
+
+.vscode-statusbar-item:hover {
+	background: rgba(255,255,255,0.12);
 }
 
 #hidden{
@@ -181,11 +226,11 @@ body.mobile .mobileHidden{
 	position: fixed;
 	bottom:-80px;
 	left:0px;
-	border-top: 1px solid #3c3c3c;
+	border-top: 1px solid #414141;
 	padding-top:0px;
 	cursor:grab;
 	touch-action: none;
-	background: #252526;
+	background: #181818;
 }
 
 #hotbar.animate{
@@ -245,18 +290,37 @@ div.saida {
 	color: #cccccc;
 	background: #1e1e1e;
 	font-family: 'Cascadia Code', 'Fira Code', Consolas, 'Liberation Mono', 'Courier New', monospace;
-	/*font-family: "Courier New", Courier, monospace;*/
 	tab-size: 4;
-/*-webkit-box-shadow: 0px 13px 21px 0px rgba(207,207,207,1);*/
-/*-moz-box-shadow: 0px 13px 21px 0px rgba(207,207,207,1);*/
-/*box-shadow: 0px 13px 21px 0px rgba(207,207,207,1);*/
-	/*height: 100%;*/
 	display: block;
-	padding: 8px 12px;
+	padding: 10px 14px;
 	overflow: auto;
-	border-top: 1px solid #3c3c3c;
 	font-size: 13px;
 	line-height: 1.5;
+}
+
+/* Terminal panel header */
+.terminal-header {
+	background: #252526;
+	border-bottom: 1px solid #3c3c3c;
+	padding: 8px 12px;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+}
+
+.terminal-tab {
+	color: #cccccc;
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	padding: 4px 0;
+	border-bottom: 1px solid transparent;
+	cursor: pointer;
+}
+
+.terminal-tab.active {
+	color: #ffffff;
+	border-bottom-color: #007acc;
 }
 
 div.portugol {
@@ -279,38 +343,58 @@ box-shadow: 0px 13px 21px 0px rgba(207,207,207,1);
 }
 
 div.portugol-buttons{
-	background: #252526;
-	/*border-top: 1px solid #1E2324;*/
-	border-top: none;
+	background: #333333;
+	border-bottom: 1px solid #252526;
 	font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+	padding: 4px 8px;
+	display: flex;
+	align-items: center;
+	gap: 4px;
 }
 
 div.portugol-buttons input, #myCanvasModal input, .ModalContent input, .listaExemplos button{
-	color:#4fc1ff;
-	font-weight: 500;
-	min-width:35px;
-	height:36px;
-	padding: 0 10px;
-	/*background: #263238;*/
+	color: #cccccc;
+	font-weight: 400;
+	min-width: 28px;
+	height: 28px;
+	padding: 0 8px;
 	background-color: transparent;
 	border: none;
-	border-radius: 4px;
-	font-size: 13px;
-	transition: background-color 0.15s ease;
+	border-radius: 3px;
+	font-size: 12px;
+	transition: background-color 0.1s ease;
 	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 }
 
 div.portugol-buttons input:hover, #myCanvasModal input:hover, .ModalContent input:hover, .listaExemplos button:hover{
-	background-color: #2a2d2e;
+	background-color: rgba(90, 93, 94, 0.31);
 }
 
 div.portugol-buttons input#btn-run{
+	background-color: #388a34;
+	color: #ffffff;
+	padding: 0 12px;
+	font-weight: 500;
+}
+
+div.portugol-buttons input#btn-run:hover{
+	background-color: #45a341;
+}
+
+div.portugol-buttons input#btn-step{
 	background-color: #0e639c;
 	color: #ffffff;
 }
 
-div.portugol-buttons input#btn-run:hover{
+div.portugol-buttons input#btn-step:hover{
 	background-color: #1177bb;
+}
+
+div.portugol-buttons input#btn-exemplos{
+	color: #4fc1ff;
 }
 
 .code-ln{
