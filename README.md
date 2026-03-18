@@ -1,7 +1,7 @@
 # Portugol Mobile
 Simples versão web, compatível com smartphones, para programar na linguagem do portugol studio.
 
-![Site no celular](celular.jpeg)
+![Site no celular](public/celular.jpeg)
 
 ## Utilização
 
@@ -99,7 +99,7 @@ Experimental: Clique no 'modo turbo' e em vez de ir para máquina virtual seu c�
 
 Ferramentas apenas importantes durante o desenvolvimento:
 * [NodeJS](https://nodejs.org/en/) - Para permitir todos esses módulos e plugins abaixo. (O site em si não roda em node).
-* [WebPack](https://webpack.js.org/) + [Babel](https://babeljs.io/)- Para tornar o site mais leve, combinar os arquivos em um e escrever javascript moderno enquanto ainda tem suporte a mais navegadores
+* [Vite](https://vite.dev/) - Para executar o projeto em desenvolvimento com recarga rápida e gerar o build de produção
 * [Jest](https://jestjs.io/) - Para testar o código durante o processo de desenvolvimento
 * [ESLint](https://eslint.org/docs/latest/integrate/nodejs-api) - Para encontrar erros antes de executar o código javascript(Quase como em linguagens compiladas), e garantir certos estilos de escrita do código
 * [Docker](https://www.docker.com/) - Para durante o desenvolvimento executar o site
@@ -131,7 +131,19 @@ docker run -it --rm erickweil/portugolweb:terminal -v ./:/app/exemplos --program
 
 ### Executar Aplicação Web
 
-Pode também baixar o inteiro projeto e abrir o arquivo index.html para utilizar offline no Computador ( É necessário ter um navegador web ). Não funcionará clicar nos exemplos a não ser que hospede em um servidor web estático local, como por exemplo apache ou nginx (Uma forma fácil seria instalar o XAMPP).
+Necessário possuir NodeJS instalado para executar o site em desenvolvimento
+
+Para executar em desenvolvimento, com cada mudança tendo efeito imediato:
+```
+npm install
+npm run dev
+```
+
+Para executar a partir do build de produção
+```
+npm run build
+npm run preview
+```
 
 ### Executar via terminal
 

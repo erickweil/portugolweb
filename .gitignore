@@ -2,6 +2,4 @@ node_modules/
 .vscode/
 .gradle/
 .idea/
-lib/src-noconflict/
-lib-old/
 dist/

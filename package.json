@@ -5,10 +5,11 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
+    "dev": "vite",
     "lint": "npx eslint ./",
     "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js --verbose",
-    "build": "webpack --config ./webpack.config.cjs",
-    "buildace": "webpack --config ./ace-webpack.config.cjs",
+    "build": "vite build",
+    "preview": "vite preview",
     "buildversion": "node src-dev/version.js"
   },
   "repository": {
@@ -20,28 +21,19 @@
   "bugs": {
     "url": "https://github.com/erickweil/portugolweb/issues"
   },
-  "homepage": "https://github.com/erickweil/portugolweb#readme",
+  "homepage": "https://erickweil.github.io/portugolweb/",
   "dependencies": {
     "ace-builds": "^1.43.6"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.0",
-    "@babel/preset-env": "^7.29.2",
     "@types/ace": "^0.0.52",
-    "@webpack-cli/generators": "^3.0.7",
-    "babel-loader": "^10.1.1",
-    "css-loader": "^7.1.4",
     "eslint": "^9",
     "eslint-plugin-import": "^2.32.0",
     "glob": "^13.0.6",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.3.0",
-    "mini-css-extract-plugin": "^2.10.1",
     "node-fetch": "^3.3.2",
     "prettier": "^3.8.1",
-    "style-loader": "^4.0.0",
-    "webpack": "^5.105.4",
-    "webpack-bundle-analyzer": "^5.2.0",
-    "webpack-cli": "^7.0.2"
+    "vite": "^8.0.0"
   }
 }

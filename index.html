@@ -28,7 +28,7 @@
   <meta name="twitter:title" content="Portugol Web">
   <meta name="twitter:description" content="Utilize o portugol diretamente do seu navegador!">
   
-	<link rel="stylesheet" type="text/css" href="portugol.css">
+	<link rel="stylesheet" type="text/css" href="/portugol.css">
 </head>
 <body style="margin:0">
 <div id="myEditor">programa 
@@ -120,15 +120,15 @@
 <div id="myOutput_buttons" class="portugol-buttons" style="overflow-x:auto;white-space:nowrap;width: auto;">
 <input type="button" id="btn-run" value="Executar" onclick="index.executar(this,false)" title="Executa o seu código"/>
 
-<input tabindex="-1" id="btn-step" type="button" style="background-image: url(icons/step.png);" value=" " 
+<input tabindex="-1" id="btn-step" type="button" style="background-image: url(/icons/step.png);" value=" " 
 onclick="index.executarStepStart(this)" 
 title="Executa o código mostando linha a linha a cada clique"
 />
 
-<input tabindex="-1" type="button" style="background-image: url(icons/FontPlus.png); cursor: zoom-in;" id="btn-fonteMaior" value=" " onclick="index.fonteAumentar()" onfocus="index.preventFocus(event)" title="Aumenta o tamanho da fonte"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/FontMinus.png); cursor: zoom-out;" id="btn-fonteMenor" value=" " onclick="index.fonteDiminuir()" onfocus="index.preventFocus(event)" title="Diminui o tamanho da fonte"/>
-<input type="button" style="background-image: url(icons/save.png);" id="btn-salvar" value=" " onclick="index.save()" title="Baixa o código"/>
-<input type="button" style="background-image: url(icons/open.png);"  id="btn-abrir" value=" " onclick="index.load()" title="Carrega um código"/>
+<input tabindex="-1" type="button" style="background-image: url(/icons/FontPlus.png); cursor: zoom-in;" id="btn-fonteMaior" value=" " onclick="index.fonteAumentar()" onfocus="index.preventFocus(event)" title="Aumenta o tamanho da fonte"/>
+<input tabindex="-1" type="button" style="background-image: url(/icons/FontMinus.png); cursor: zoom-out;" id="btn-fonteMenor" value=" " onclick="index.fonteDiminuir()" onfocus="index.preventFocus(event)" title="Diminui o tamanho da fonte"/>
+<input type="button" style="background-image: url(/icons/save.png);" id="btn-salvar" value=" " onclick="index.save()" title="Baixa o código"/>
+<input type="button" style="background-image: url(/icons/open.png);"  id="btn-abrir" value=" " onclick="index.load()" title="Carrega um código"/>
 <!--<input type="button" tabindex="-1" id="btn-mostrar-hotbar" value="Ocultar" onclick='toggleHotbar();' onfocus="preventFocus(event)"/>-->
 <input type="button" id="btn-exemplos" value="Exemplos" onclick="document.getElementById('modalExemplos').style.display = 'table';"  title="Abre o menu inicial"/>
 
@@ -140,14 +140,14 @@ title="Executa o código mostando linha a linha a cada clique"
 
 <div id="hotbar_commands" style="overflow-x:auto;white-space:nowrap;width: auto;">
 <input tabindex="-1" type="button" value="TAB" onclick="index.editorCommand(9)" onfocus="index.preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/arrowL.png);" value=" " onclick="index.editorCommand(37)" onfocus="index.preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/arrowR.png);" value=" " onclick="index.editorCommand(39)" onfocus="index.preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/arrowU.png);" value=" " onclick="index.editorCommand(38)" onfocus="index.preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/arrowD.png);" value=" " onclick="index.editorCommand(40)" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(/icons/arrowL.png);" value=" " onclick="index.editorCommand(37)" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(/icons/arrowR.png);" value=" " onclick="index.editorCommand(39)" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(/icons/arrowU.png);" value=" " onclick="index.editorCommand(38)" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(/icons/arrowD.png);" value=" " onclick="index.editorCommand(40)" onfocus="index.preventFocus(event)"/>
 <input tabindex="-1" type="button" value="DEL" onclick="index.editorCommand(46)" onfocus="index.preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/undo.png);" value=" " onclick="index.editorManager.undo()" onfocus="index.preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/redo.png);" value=" " onclick="index.editorManager.redo()" onfocus="index.preventFocus(event)"/>
-<input tabindex="-1" type="button" style="background-image: url(icons/autocomplete.png);" value=" " onclick="index.editorManager.autoComplete()" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(/icons/undo.png);" value=" " onclick="index.editorManager.undo()" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(/icons/redo.png);" value=" " onclick="index.editorManager.redo()" onfocus="index.preventFocus(event)"/>
+<input tabindex="-1" type="button" style="background-image: url(/icons/autocomplete.png);" value=" " onclick="index.editorManager.autoComplete()" onfocus="index.preventFocus(event)"/>
 </div>
 <div id="hotbar_keys" style="overflow-x:auto;white-space:nowrap;width: auto;">
 
@@ -204,6 +204,9 @@ title="Executa o código mostando linha a linha a cada clique"
 	}
 
 </script>
-<script src="dist/main.js"></script>
+<!--
+<script src="dist/main.js"></script> 
+-->
+<script type="module" src="src/index.js"></script>
 </body>
 </html>
