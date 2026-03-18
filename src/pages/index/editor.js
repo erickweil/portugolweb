@@ -1,16 +1,10 @@
+import ace from "../../ace_editor/ace_webpack.js";
+import * as __portugolMode from "../../ace_editor/mode-portugol.js";
+import * as __portugolTheme from "../../ace_editor/theme-portugol_dark.js";
 import portugolCompleter from "../../ace_editor/ace_portugol_completer.js";
-
-// Unico jeito que achei de fazer a biblioteca funcionar
-// É NÃO IMPORTANDO ELA
-//import * as __ace from '../lib/src-min-noconflict/ace.js';
-//import * as __langtools from '../lib/src-min-noconflict/ext-language_tools.js';
-//import * as __emmet from '../lib/src-min-noconflict/ext-emmet.js';
-const ace = window.ace;
-ace.config.set('basePath','/lib/src-min-noconflict/');
 
 // precisa disso aqui para usar a classe Range
 const Range = ace.require("ace/range").Range;
-
 export default class EditorManager {
 
     constructor() {

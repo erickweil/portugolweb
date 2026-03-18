@@ -1,6 +1,4 @@
-//import * as ace from '../../lib/src-min-noconflict/ace.js';
-
-const ace = window.ace;
+import ace from "./ace_webpack.js";
 ace.define('ace/mode/portugol',function(require, exports, module) {
 "use strict";
 

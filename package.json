@@ -21,13 +21,14 @@
     "url": "https://github.com/erickweil/portugolweb/issues"
   },
   "homepage": "https://github.com/erickweil/portugolweb#readme",
+  "dependencies": {
+    "ace-builds": "^1.43.6"
+  },
   "devDependencies": {
     "@babel/core": "^7.29.0",
-    "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "@babel/preset-env": "^7.29.2",
     "@types/ace": "^0.0.52",
     "@webpack-cli/generators": "^3.0.7",
-    "ace-builds": "^1.43.6",
     "babel-loader": "^10.1.1",
     "css-loader": "^7.1.4",
     "eslint": "^9",

@@ -4,3 +4,4 @@ node_modules/
 .idea/
 lib/src-noconflict/
 lib-old/
+dist/

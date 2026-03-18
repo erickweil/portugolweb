@@ -27,7 +27,15 @@
   <meta property="twitter:url" content="https://erickweil.github.io/portugolweb/">
   <meta name="twitter:title" content="Portugol Web">
   <meta name="twitter:description" content="Utilize o portugol diretamente do seu navegador!">
-  
+    
+  <script type="importmap">
+  {
+    "imports": {
+      "ace-builds/": "./node_modules/ace-builds/"
+    }
+  }
+  </script>
+
 	<link rel="stylesheet" type="text/css" href="portugol.css">
 </head>
 <body style="margin:0">
@@ -205,11 +213,6 @@ title="Executa o código mostando linha a linha a cada clique"
 
 </script>
 
-<script src="lib/src-min-noconflict/ace.js"></script>
-<script src="lib/src-min-noconflict/ext-emmet.js"></script>
-<script src="lib/src-min-noconflict/ext-language_tools.js"></script>
-<script src="lib/src-min-noconflict/theme-portugol_dark.js"></script>
-<script src="lib/src-min-noconflict/mode-portugol.js"></script>
 <script type="module" src="src/index.js"></script>
 </body>
 </html>
