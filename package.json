@@ -26,10 +26,13 @@
     "ace-builds": "^1.43.6"
   },
   "devDependencies": {
+    "@eslint/compat": "^2.0.3",
+    "@eslint/eslintrc": "^3.3.5",
+    "@eslint/js": "^10.0.1",
     "@types/ace": "^0.0.52",
-    "eslint": "^9",
-    "eslint-plugin-import": "^2.32.0",
+    "eslint": "^10",
     "glob": "^13.0.6",
+    "globals": "^17.4.0",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.3.0",
     "node-fetch": "^3.3.2",

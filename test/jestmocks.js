@@ -23,7 +23,9 @@ export function doFetchMock() {
         {
             //return nodefetch("file://."+url,options);
 
-            return readFile(new URL(".."+url, import.meta.url),{encoding:"utf8"})
+            //return readFile(new URL(".."+url, import.meta.url),{encoding:"utf8"})
+            // Read from /public
+            return readFile(fileURLToPath(new URL("../public"+url, import.meta.url)),{encoding:"utf8"})
             .then((file) => {
                 return new Promise((resolve,reject) => {
                     resolve({

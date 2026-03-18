@@ -45,7 +45,7 @@ function doExecCheck(input) {
 
 function testExemplo(exemplo) {
     test(exemplo,() => {
-        return fetch("/test/programas/"+exemplo, {method:"GET"})
+        return fetch("/exemplos/test/"+exemplo, {method:"GET"})
         .then((response) => {
             if (!response.ok) return Promise.reject(response.status);    
 
