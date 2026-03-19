@@ -23,6 +23,14 @@ export default class Internet {
 		this.tempo = 0;
 		this.tempo_limite = 10000;
 	}
+
+	finalizarRequisicao()
+	{
+		this.ocupado = false;
+		this.retorno = false;
+		this.tempo = 0;
+		this.abortador = false;
+	}
 	
 	baixar_imagem(endereco, caminho)
 	{
@@ -31,7 +39,7 @@ export default class Internet {
 
 	definir_tempo_limite(tempo_limite)
 	{
-		this.tempo_limite = tempo_limite;
+		this.tempo_limite = Math.max(0, tempo_limite);
 	}
 	
 	endereco_disponivel(endereco)
@@ -63,26 +71,18 @@ export default class Internet {
 		{
 			if(this.ocupado)
 			{
-				this.tempo = this.tempo + 1;
-
 				if(this.retorno !== false)
 				{
 					let ret = this.retorno;
-					this.ocupado = false;
-					this.retorno = false;	
-					this.tempo = 0;
-					this.abortador = false;				
+					this.finalizarRequisicao();
 					return ret;
 				}
 				else
 				{
-					if(this.tempo > this.tempo_limite)
+					if((Date.now() - this.tempo) > this.tempo_limite)
 					{
-						this.abortador.abort();
-						this.ocupado = false;
-						this.retorno = false;	
-						this.tempo = 0;
-						this.abortador = false;	
+						if(this.abortador) this.abortador.abort();
+						this.finalizarRequisicao();
 						return {value:"Tempo limite atingido",__sucess:false};
 					}
 					else 
@@ -95,7 +95,7 @@ export default class Internet {
 			else
 			{
 				this.ocupado = true;
-				this.tempo = 0;
+				this.tempo = Date.now();
 				this.retorno = false;
 				this.abortador = new AbortController();
 				
@@ -120,20 +120,17 @@ export default class Internet {
 						that.retorno = {value:""+text,__sucess:true};
 					})
 					.catch( (reason) => {
-						console.log("FETCH --> CATCH:"+reason);
+						console.error(reason);
 						if (reason.name === 'AbortError') {
-							console.log('Fetch aborted');
+							return;
 						} else {
 							that.retorno = {value:""+reason,__sucess:false};
 						}
 					});
 				}
 				catch(e) {
-					console.log("TRY --> CATCH"+e);
-					this.ocupado = false;
-					this.retorno = false;	
-					this.tempo = 0;
-					this.abortador = false;	
+					console.error(e);
+					this.finalizarRequisicao();
 					return {value:""+e,__sucess:false};
 				}
 

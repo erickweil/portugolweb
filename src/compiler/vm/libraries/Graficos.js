@@ -207,28 +207,23 @@ export default class Graficos {
 		// Vamos aproveitar essa função para atualizar os botões do teclado, caso tenha algum
 		if(this.isMobile && this.modal.style.display !== "none")
 		{
-			let teclas = Object.keys(this.libTeclado.checkMap);
-			let teclaCharMap = Object.keys(this.libTeclado.teclaCharMap);
+			if(!this.libTeclado.checkMapDirty && this.divKeys.innerHTML === "") return;
+
 			let resHTML = "";
-			
-			if(teclas.length > 0)
+			for(const t in this.libTeclado.checkMap)
 			{
-				for(let i =0;i<teclas.length;i++)
+				if(this.libTeclado.checkMap[t] === true)
 				{
-					let t = teclas[i];
-					
-					if(this.libTeclado.checkMap[t] === true)
+					this.libTeclado.checkMap[t] = false;
+					let tvalue = this.libTeclado.teclaCharMap[t];
+					if(typeof tvalue === 'undefined')
 					{
-						this.libTeclado.checkMap[t] = false;
-						let tvalue = this.libTeclado.teclaCharMap[t];
-						if(typeof tvalue === 'undefined')
-						{
-							tvalue = String.fromCharCode(t);
-						}
-						resHTML += "<input type=\"button\" value=\""+tvalue+"\" ontouchstart=\"index.GraficosBtnTypeDown('"+t+"')\" ontouchend=\"index.GraficosBtnTypeUp('"+t+"')\" onfocus=\"index.preventFocusCanvas(event)\" style=\"background: #1E2324;\">";
+						tvalue = String.fromCharCode(Number(t));
 					}
+					resHTML += "<input type=\"button\" value=\""+tvalue+"\" ontouchstart=\"index.GraficosBtnTypeDown('"+t+"')\" ontouchend=\"index.GraficosBtnTypeUp('"+t+"')\" onfocus=\"index.preventFocusCanvas(event)\" style=\"background: #1E2324;\">";
 				}
 			}
+			this.libTeclado.checkMapDirty = false;
 					
 			if(this.divKeys.innerHTML != resHTML)
 			this.divKeys.innerHTML = resHTML;
@@ -467,12 +462,12 @@ export default class Graficos {
 			
 			img.onerror = function()
 			{
-				console.log("Erro ao carregar imagem :"+url);
+				console.error("Erro ao carregar a imagem: "+url);
 				imgObject.error = true;
 			};
 			
 			img.onload = function() {
-				console.log("Carregada imagem :"+url);
+				console.log("Carregou imagem: "+url);
 				imgObject.loaded = true;
 			};
 			

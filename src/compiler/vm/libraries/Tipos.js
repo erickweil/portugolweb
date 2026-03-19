@@ -52,7 +52,7 @@ export default class Tipos {
 		return {value:/^[+-]?[0-9]+$/.test(cad)};
 		else if(base == 16)
 		return {value:/^[+-]?(0x)?[0-9a-f]+$/.test(cad)};
-		else throw "A base deve ser 2,10 ou 16";
+		else throw "A base deve ser 2, 10 ou 16";
 	}
 	
 	cadeia_e_logico(cad)
@@ -62,7 +62,7 @@ export default class Tipos {
 	
 	cadeia_e_real(cad)
 	{
-		return {value:/^[+-]?[0-9]+\.[0-9]+$/.test(cad)};
+		return {value:/^[\+\-]?(?:\d+\.\d*|\d*\.\d+|\d+)(?:[eE][\+\-]?\d+)?$/.test(cad)};
 	}
 	
 	cadeia_para_caracter(cad)
@@ -73,8 +73,15 @@ export default class Tipos {
 	
 	cadeia_para_inteiro(cad,base)
 	{
-		if(this.cadeia_e_inteiro(cad,base).value) return {value:parseInt(cad,base)};
-		else throw "o valor '"+cad+"' não pode ser convertido para inteiro";
+		if(this.cadeia_e_inteiro(cad,base).value) {
+			cad = cad.toLowerCase();
+			if(base === 2) {
+				cad = cad.replace(/0b/, "");
+			} else if(base === 16) {
+				cad = cad.replace(/0x/, "");
+			}
+			return {value:parseInt(cad,base,base)};
+		} else throw "o valor '"+cad+"' não pode ser convertido para inteiro";
 	}
 	
 	cadeia_para_logico(cad)
@@ -129,6 +136,7 @@ export default class Tipos {
 	
 	inteiro_para_cadeia(i,base)
 	{
+		if(base !== 2 && base !== 10 && base !== 16) throw "A base deve ser 2, 10 ou 16";
 		return {value: i.toString(base)};
 	}
 	
@@ -170,6 +178,6 @@ export default class Tipos {
 	
 	real_para_inteiro(rea)
 	{
-		return {value:Math.floor( rea )};
+		return {value:Math.trunc( rea )};
 	}
 }

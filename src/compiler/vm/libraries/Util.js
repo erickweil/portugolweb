@@ -33,7 +33,7 @@ export default class Util {
 	
 	resetar()
 	{
-		this.time = new Date().getTime();
+		this.time = Date.now();
 	}
 	
 	aguarde(intervalo)
@@ -59,12 +59,12 @@ export default class Util {
 	
 	sorteia(minimo,maximo)
 	{
-		maximo += 1; // para incluir o maximo dentro do intervalo
-		return {value: Math.floor(Math.random() * (maximo-minimo)) + minimo};
+		if(maximo < minimo) throw "O valor máximo deve ser maior ou igual ao mínimo";
+		return {value:Math.floor(Math.random() * ((maximo-minimo) + 1)) + minimo};
 	}
 	
 	tempo_decorrido()
 	{
-		return {value:new Date().getTime() - this.time};
+		return {value:Date.now() - this.time};
 	}
 }

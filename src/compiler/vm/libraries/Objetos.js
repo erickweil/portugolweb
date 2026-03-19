@@ -1,4 +1,5 @@
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../tokenizer.js";
+
 export default class Objetos {
 	constructor() {
 		this.TIPO_CADEIA = 2;
@@ -17,22 +18,7 @@ export default class Objetos {
 		"TIPO_OBJETO":{id:T_word,type:T_inteiro},
 		"TIPO_REAL":{id:T_word,type:T_inteiro},
 		"TIPO_VETOR":{id:T_word,type:T_inteiro},
-		
-		// T_vazio coringa para qualquer tipo na função
-		
 		"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_vazio}],type:T_vazio,jsSafe:true},
-		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_caracter}],type:T_vazio,jsSafe:true},
-		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_inteiro}],type:T_vazio,jsSafe:true},
-		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_real}],type:T_vazio,jsSafe:true},
-		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_logico}],type:T_vazio,jsSafe:true},
-		
-		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_squareO}],type:T_vazio,jsSafe:true},
-		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_Vcadeia}],type:T_vazio,jsSafe:true},
-		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_Vcaracter}],type:T_vazio,jsSafe:true},
-		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_Vinteiro}],type:T_vazio,jsSafe:true},
-		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_Vreal}],type:T_vazio,jsSafe:true},
-		//"atribuir_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia},{name:"valor",type:T_Vlogico}],type:T_vazio,jsSafe:true},
-		
 		"contem_propriedade":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro},{name:"propriedade",type:T_cadeia}],type:T_logico,jsSafe:true},
 		"criar_objeto":{id:T_parO,parameters:[],type:T_inteiro,jsSafe:true},
 		"criar_objeto_via_json":{id:T_parO,parameters:[{name:"json",type:T_cadeia}],type:T_inteiro,jsSafe:true},
@@ -62,44 +48,47 @@ export default class Objetos {
 		this.obter_propriedade_tipo_logico = this.obter_propriedade_tipo_danese;
 		this.obter_propriedade_tipo_objeto = this.obter_propriedade_tipo_danese;
 		this.obter_propriedade_tipo_real = this.obter_propriedade_tipo_danese;
-		
+
 		this.obter_propriedade_tipo_cadeia_em_vetor = this.obter_propriedade_tipo_danese_em_vetor;
 		this.obter_propriedade_tipo_caracter_em_vetor = this.obter_propriedade_tipo_danese_em_vetor;
 		this.obter_propriedade_tipo_inteiro_em_vetor = this.obter_propriedade_tipo_danese_em_vetor;
 		this.obter_propriedade_tipo_logico_em_vetor = this.obter_propriedade_tipo_danese_em_vetor;
 		this.obter_propriedade_tipo_objeto_em_vetor = this.obter_propriedade_tipo_danese_em_vetor;
 		this.obter_propriedade_tipo_real_em_vetor = this.obter_propriedade_tipo_danese_em_vetor;
-		
+
 		this.resetar();
+	}
+
+	obter_objeto(endereco)
+	{
+		let obj = this.objs[endereco];
+		if(obj) return obj;
+		throw "Nenhum objeto encontrado no endereco "+endereco;
+	}
+
+	obter_valor_propriedade(endereco,propriedade)
+	{
+		let obj = this.obter_objeto(endereco);
+		if(propriedade in obj)
+		{
+			return obj[propriedade];
+		}
+
+		throw "Não pôde acessar a propriedade '"+propriedade+"' no endereco "+endereco;
 	}
 	
 	atribuir_propriedade(endereco,propriedade,valor)
 	{
-		if(this.objs[endereco])
-		{
-			let obj = this.objs[endereco];
-			obj[propriedade] = valor;
-		}
-		else throw "Nenhum objeto encontrado no endereco "+endereco;
+		let obj = this.obter_objeto(endereco);
+		obj[propriedade] = valor;
 	}
 	
 	contem_propriedade(endereco,propriedade)
 	{
-		if(this.objs[endereco])
-		{
-			let obj = this.objs[endereco];
-			if(propriedade in obj)
-			{
-				return {value: true};
-			}
-			else
-			{
-				return {value: false};
-			}
-		}
-		else throw "Nenhum objeto encontrado no endereco "+endereco;
+		let obj = this.obter_objeto(endereco);
+		return {value:propriedade in obj};
 	}
-	
+
 	resetar()
 	{
 		this.objs = [];
@@ -124,7 +113,7 @@ export default class Objetos {
 	
 	liberar()
 	{
-		this.resetar();
+		this.objs = [];
 	}
 	
 	liberar_objeto(endereco)
@@ -134,47 +123,38 @@ export default class Objetos {
 	
 	obter_json(endereco)
 	{
-		if(this.objs[endereco])
-			return {value:JSON.stringify(this.objs[endereco])};
-		else throw "Nenhum objeto encontrado no endereco "+endereco;
+		return {value:JSON.stringify(this.obter_objeto(endereco))};
 	}
 	
 	obter_propriedade_tipo_danese(endereco,propriedade)
 	{
-		if(this.objs[endereco])
-		{
-			let obj = this.objs[endereco];
-			if(propriedade in obj)
-			{
-				return {value:obj[propriedade]};
-			}
-			else throw "Não pôde acessar a propriedade '"+propriedade+"' no endereco "+endereco;
-		}
-		else throw "Nenhum objeto encontrado no endereco "+endereco;
+		return {value:this.obter_valor_propriedade(endereco,propriedade)};
 	}
 	
 	obter_propriedade_tipo_danese_em_vetor(endereco,propriedade,indice)
 	{
-		let arr = this.obter_propriedade_tipo_danese(endereco,propriedade);
-		
+		let arr = this.obter_valor_propriedade(endereco,propriedade);
+		if(!Array.isArray(arr)) throw "A propriedade '"+propriedade+"' não é um vetor";
 		return {value:arr[indice]};
 	}
 	
 	obter_tamanho_vetor_propriedade(endereco,propriedade)
 	{
-		let arr = this.obter_propriedade_tipo_danese(endereco,propriedade);
-		
+		let arr = this.obter_valor_propriedade(endereco,propriedade);
+		if(!Array.isArray(arr)) throw "A propriedade '"+propriedade+"' não é um vetor";
 		return {value:arr.length};
 	}
 	
 	tipo_propriedade(endereco,propriedade)
 	{
-		let prop = this.obter_propriedade_tipo_danese(endereco,propriedade);
+		let prop = this.obter_valor_propriedade(endereco,propriedade);
 		
 		if(typeof prop === "object")
 		{
-			if(prop.isArray)
+			if(Array.isArray(prop))
 				return {value:this.TIPO_VETOR};
+			else if(prop === null)
+				throw "Tipo desconhecido 'null'";
 			else
 				return {value:this.TIPO_OBJETO};
 		}
@@ -186,5 +166,5 @@ export default class Objetos {
 		return {value:this.TIPO_REAL};
 		else throw "Tipo desconhecido '"+(typeof prop)+"'";
 	}
-	
+
 }

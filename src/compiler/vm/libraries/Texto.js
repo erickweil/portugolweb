@@ -1,19 +1,5 @@
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../tokenizer.js";
 
-function replaceSubstring(inSource, inToReplace, inReplaceWith) {
-	let outString = [];
-	let repLen = inToReplace.length;
-	let idx = inSource.indexOf(inToReplace);
-	while (idx !== -1) {
-		outString.push(inSource.substring(0, idx));
-		outString.push(inReplaceWith);
-
-		inSource = inSource.substring(idx + repLen);
-		idx = inSource.indexOf(inToReplace);
-	}
-	outString.push(inSource);
-	return outString.join("");
-}
 	
 export default class Texto {
 	constructor() {
@@ -81,12 +67,12 @@ export default class Texto {
 		return {value:cad.padStart(tamanho,car)};
 	}
 	
-
-	
 	substituir(cad,texto_pesquisa,texto_substituto)
 	{
 		//return {value:cad.replace(texto_pesquisa, texto_substituto)};
-		let ret = replaceSubstring(cad, texto_pesquisa, texto_substituto);
-		return {value:ret};
+		//let ret = replaceSubstring(cad, texto_pesquisa, texto_substituto);
+		return {
+			value: texto_pesquisa === "" ? cad : cad.replaceAll(texto_pesquisa, texto_substituto)
+		};
 	}
 }

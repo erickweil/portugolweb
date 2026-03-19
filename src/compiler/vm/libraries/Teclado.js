@@ -515,10 +515,20 @@ export default class Teclado {
 		// Mapa de teclas que foram checadas pelo tecla_pressionada
 		// Para exibir os botões no Mobile
 		this.checkMap = {};
+		this.checkMapDirty = false;
 		this.pressionadas = 0;
 		this.ultimaPressionada = -1;
 		this.aguardandoLer = false;
 		this.ultimaSolta = -1;
+	}
+
+	marcarTeclaComoChecada(key)
+	{
+		if(this.checkMap[key] !== true)
+		{
+			this.checkMap[key] = true;
+			this.checkMapDirty = true;
+		}
 	}
 	
 	tecladoDown(evt,codekey)
@@ -531,7 +541,6 @@ export default class Teclado {
 			if(typeof key === 'undefined') key = -1;
 		}
 		this.ultimaPressionada = key;
-		console.log(evt.key+" --> "+key);
 		if(this.keyMap[key] !== true)
 		{
 			this.pressionadas++;
@@ -558,7 +567,7 @@ export default class Teclado {
 
 	alguma_tecla_pressionada()
 	{
-		this.checkMap[0] = true;
+		this.marcarTeclaComoChecada(0);
 		return {value:this.pressionadas > 0};
 	}
 	
@@ -572,11 +581,11 @@ export default class Teclado {
 	{
 		for(let i =49;i<58;i++)
 		{
-			this.checkMap[i] = true;
+			this.marcarTeclaComoChecada(i);
 		}
 		for(let i =65;i<91;i++)
 		{
-			this.checkMap[i] = true;
+			this.marcarTeclaComoChecada(i);
 		}
 		
 		if(this.libGraficos != false)
@@ -609,7 +618,7 @@ export default class Teclado {
 	tecla_pressionada(key)
 	{
 		// marca que foi checada essa tecla
-		this.checkMap[key] = true;
+		this.marcarTeclaComoChecada(key);
 		return {value:this.keyMap[key] === true};
 	}
 }
