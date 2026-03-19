@@ -1,5 +1,3 @@
-/* eslint-env node, jest */
-
 import {jest,describe,expect,test} from '@jest/globals';
 
 const sum = (a,b) => a + b;

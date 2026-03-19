@@ -293,8 +293,6 @@ let VM_escrevaCount = 0;
 let VM_escrevaMax = 1000;
 let enviarErro = false;
 
-
-
 export function recursiveDeclareArray(sizes,defaultValue,i)
 {
 	if(i >= sizes.length)
@@ -429,15 +427,16 @@ export function VM_valueToString(type,value) {
 	}
 }
 
+const VM_LOCALE_NO_GROUPING = { useGrouping: false };
 export function VM_i2s(value)
 {
-	return value.toLocaleString('fullwide', { useGrouping: false });
+	return value.toLocaleString('fullwide', VM_LOCALE_NO_GROUPING);
 }
 
 export function VM_f2s(value)
 {
 	let strFloat = ""+value;
-	if(!strFloat.includes(".")) strFloat += ".0";
+	if(!strFloat.includes(".") && !strFloat.includes("e")) strFloat += ".0";
 	return strFloat;
 }
 
@@ -570,7 +569,7 @@ export function VMrun(execMax)
 {
 	try {
 	VM_codeCount = 0;
-	while(true) // eslint-disable-line
+	while(true)
 	{
 		VM_codeCount++; // para parar o programa e atualizar a saida em loops muito demorados
 		if(VM_codeCount > execMax) return STATE_BREATHING;
@@ -644,12 +643,19 @@ export function VMrun(execMax)
 				let lib = VM_code[VM_i++];
 				let meth = VM_code[VM_i++];
 				let methArgsN = VM_code[VM_i++];
-				let methArgs = [];
-				for(let i = 0;i<methArgsN; i++)
+				let methArgs;
+				if(methArgsN === 0)
+					methArgs = [];
+				else if(methArgsN === 1)
+					methArgs = [VM_stack[--VM_si]];
+				else
 				{
-					methArgs.push(VM_stack[--VM_si]);
+					methArgs = new Array(methArgsN);
+					for(let i = methArgsN - 1;i >= 0; i--)
+					{
+						methArgs[i] = VM_stack[--VM_si];
+					}
 				}
-				methArgs.reverse();
 				
 				let ret = VM_libraries[lib][meth].apply(VM_libraries[lib], methArgs);
 				
@@ -684,12 +690,19 @@ export function VMrun(execMax)
 			{
 				let methIndex = VM_code[VM_i++];
 				let methArgsN = VM_code[VM_i++];
-				let methArgs = [];
-				for(let i = 0;i<methArgsN; i++)
+				let methArgs;
+				if(methArgsN === 0)
+					methArgs = [];
+				else if(methArgsN === 1)
+					methArgs = [VM_stack[--VM_si]];
+				else
 				{
-					methArgs.push(VM_stack[--VM_si]);
+					methArgs = new Array(methArgsN);
+					for(let i = methArgsN - 1;i >= 0; i--)
+					{
+						methArgs[i] = VM_stack[--VM_si];
+					}
 				}
-				methArgs.reverse();
 				
 				if(
 					methIndex < 0
@@ -784,16 +797,22 @@ export function VMrun(execMax)
 				if(VM_frame.length > 0)
 				{
 					let vI = VM_frame.length -1;
-					//VM_funcIndex = VM_frame[vI].funcIndex;
-					//VM_code = VM_functions[VM_funcIndex].bytecode;
-					//VM_i = VM_frame[vI].i;
-					//VM_stack = VM_frame[vI].stack;
-					//VM_si = VM_frame[vI].si;
-					//VM_vars = VM_frame[vI].vars;
-					
-					//VM_frame.pop();
 					//push on the parent stack
 					VM_frame[vI].stack[VM_frame[vI].si++] = v;
+
+					// Basicamente cada valor é enviado para pilha um por um
+					// E após todo B_RETVALUE será chamado um B_RET, então não precisa aqui fazer pop
+					// Exemplo:
+					//   bc.push(B_RETVALUE);
+					//   bc.push(B_RET);
+					// VM_funcIndex = VM_frame[vI].funcIndex;
+					// VM_code = VM_functions[VM_funcIndex].bytecode;
+					// VM_i = VM_frame[vI].i;
+					// VM_stack = VM_frame[vI].stack;
+					// VM_si = VM_frame[vI].si;
+					// VM_vars = VM_frame[vI].vars;
+					
+					// VM_frame.pop();
 				}
 				else
 				{
@@ -812,15 +831,9 @@ export function VMrun(execMax)
 			
 			case B_F2I: VM_stack[VM_si-1] = Math.trunc(VM_stack[VM_si-1]); break;
 			
-			case B_I2S: VM_stack[VM_si-1] = VM_stack[VM_si-1].toLocaleString('fullwide', { useGrouping: false }); break;
-			case B_F2S: 
-			{
-				let strFloat = ""+VM_stack[VM_si-1];
-				if(!strFloat.includes(".")) strFloat += ".0";
-				VM_stack[VM_si-1] = strFloat;
-			}
-			break;
-			case B_B2S: VM_stack[VM_si-1] = (VM_stack[VM_si-1] == 0 ? "verdadeiro" : "falso"); break;
+			case B_I2S: VM_stack[VM_si-1] = VM_i2s(VM_stack[VM_si-1]); break;
+			case B_F2S: VM_stack[VM_si-1] = VM_f2s(VM_stack[VM_si-1]); break;
+			case B_B2S: VM_stack[VM_si-1] = VM_b2s(VM_stack[VM_si-1]); break;
 			
 			case B_NEWARRAYGLOBAL:
 			case B_NEWARRAY:
@@ -828,19 +841,18 @@ export function VMrun(execMax)
 				let arrayVar = VM_code[VM_i++];
 				let ndims = VM_code[VM_i++];
 				let defaultValue = VM_code[VM_i++];
-				let sizes = [];
-				for(let k=0;k<ndims;k++)
+				let sizes = new Array(ndims);
+				for(let k=ndims-1;k>=0;k--)
 				{
 					let size = VM_stack[--VM_si];
 					if(size>=0)
-						sizes.push(size);
+						sizes[k] = size;
 					else
 					{
 						VMerro("Tentou criar vetor com tamanho inválido '"+size+"'");
 						return STATE_ENDED;
 					}
 				}
-				sizes.reverse();
 				
 				if(code == B_NEWARRAYGLOBAL)
 				VM_globals[arrayVar] = recursiveDeclareArray(sizes,defaultValue,0);
@@ -854,30 +866,36 @@ export function VMrun(execMax)
 				let arrayVar = VM_code[VM_i++];
 				let ndims = VM_code[VM_i++];
 				
-				let indexes = [];
-				for(let k=0;k<ndims;k++)
+				let indexes = new Array(ndims);
+				for(let k=ndims-1;k>=0;k--)
 				{
-					indexes.push(VM_stack[--VM_si]);
+					indexes[k] = VM_stack[--VM_si];
 				}
-				indexes.reverse();
 				
 				let tempArr = code == B_ASTOREGLOBAL ? VM_globals[arrayVar] :VM_vars[arrayVar];
+				if(!tempArr)
+				{
+					VMerro("Tentou acessar vetor ou matriz não inicializado");
+					return STATE_ENDED;
+				}
 				for(let k=0;k<ndims-1;k++)
 				{
-					if(indexes[k]>=0 && indexes[k] < tempArr.length)
+					if(tempArr && indexes[k]>=0 && indexes[k] < tempArr.length)
 						tempArr = tempArr[indexes[k]];
 					else
 					{
-						VMerro("a matriz tem tamanho '"+tempArr.length+"' na dimensão '"+k+"' mas tentou acessar a posição '"+indexes[k]+"'");
+						let currentLength = tempArr ? tempArr.length : -1;
+						VMerro("a matriz tem tamanho '"+currentLength+"' na dimensão '"+k+"' mas tentou acessar a posição '"+indexes[k]+"'");
 						return STATE_ENDED;
 					}
 				}
 				
-				if(indexes[ndims-1]>=0 && indexes[ndims-1] < tempArr.length)
+				if(tempArr && indexes[ndims-1]>=0 && indexes[ndims-1] < tempArr.length)
 					tempArr[indexes[ndims-1]] = VM_stack[--VM_si];
 				else
 				{
-					VMerro("O vetor vai de 0 à "+(tempArr.length-1)+" mas tentou acessar a posição '"+indexes[ndims-1]+"'");
+					let currentLength = tempArr ? tempArr.length : 0;
+					VMerro("O vetor vai de 0 à "+(currentLength-1)+" mas tentou acessar a posição '"+indexes[ndims-1]+"'");
 					return STATE_ENDED;
 				}
 			}
@@ -888,30 +906,36 @@ export function VMrun(execMax)
 				let arrayVar = VM_code[VM_i++];
 				let ndims = VM_code[VM_i++];
 				
-				let indexes = [];
-				for(let k=0;k<ndims;k++)
+				let indexes = new Array(ndims);
+				for(let k=ndims-1;k>=0;k--)
 				{
-					indexes.push(VM_stack[--VM_si]);
+					indexes[k] = VM_stack[--VM_si];
 				}
-				indexes.reverse();
 				
 				let tempArr = code == B_ALOADGLOBAL ? VM_globals[arrayVar] :VM_vars[arrayVar];
+				if(!tempArr)
+				{
+					VMerro("Tentou acessar vetor ou matriz não inicializado");
+					return STATE_ENDED;
+				}
 				for(let k=0;k<ndims-1;k++)
 				{
-					if(indexes[k]>=0 && indexes[k] < tempArr.length)
+					if(tempArr && indexes[k]>=0 && indexes[k] < tempArr.length)
 						tempArr = tempArr[indexes[k]];
 					else
 					{
-						VMerro("a matriz tem tamanho '"+tempArr.length+"' na dimensão '"+k+"' mas tentou acessar a posição '"+indexes[k]+"'");
+						let currentLength = tempArr ? tempArr.length : -1;
+						VMerro("a matriz tem tamanho '"+currentLength+"' na dimensão '"+k+"' mas tentou acessar a posição '"+indexes[k]+"'");
 						return STATE_ENDED;
 					}
 				}
 				
-				if(indexes[ndims-1]>=0 && indexes[ndims-1] < tempArr.length)
+				if(tempArr && indexes[ndims-1]>=0 && indexes[ndims-1] < tempArr.length)
 					VM_stack[VM_si++] = tempArr[indexes[ndims-1]];
 				else
 				{
-					VMerro("O vetor vai de 0 à "+(tempArr.length-1)+" mas tentou acessar a posição '"+indexes[ndims-1]+"'");
+					let currentLength = tempArr ? tempArr.length : 0;
+					VMerro("O vetor vai de 0 à "+(currentLength-1)+" mas tentou acessar a posição '"+indexes[ndims-1]+"'");
 					return STATE_ENDED;
 				}
 			}
@@ -934,7 +958,7 @@ export function VMrun(execMax)
 					return STATE_ENDED;
 				}
 				
-				if(!/^[\+\-]?\d+$/.test(intRead)) // eslint-disable-line
+				if(!/^[\+\-]?\d+$/.test(intRead))
 				{
 					VMerro("Deveria inserir um número inteiro, mas inseriu outro tipo");
 					return STATE_ENDED;
@@ -948,14 +972,19 @@ export function VMrun(execMax)
 				let floatRead = leia();
 				if(!floatRead || 0 === floatRead.length)
 				{
-					VMerro("Deveria inserir um número, mas inseriu nada");
+					VMerro("Deveria inserir um número real, mas inseriu nada");
 					return STATE_ENDED;
 				}
-								
-				let floatConverted = parseFloat(floatRead);
+
+				if(!/^[\+\-]?(?:\d+\.\d*|\d*\.\d+|\d+)(?:[eE][\+\-]?\d+)?$/.test(floatRead))
+				{
+					VMerro("Deveria inserir um número real, mas inseriu outro tipo");
+					return STATE_ENDED;
+				}
+				let floatConverted = Number(floatRead);
 				if(isNaN(floatConverted) || !isFinite(floatConverted))
 				{
-					VMerro("Deveria inserir um número, mas inseriu outro tipo");
+					VMerro("Deveria inserir um número real, mas resultou em um valor inválido");
 					return STATE_ENDED;
 				}
 				
@@ -998,7 +1027,7 @@ export function VMrun(execMax)
 	}
 	}
 	catch(err) {
-		console.log(err.stack);
+		console.error(err);
 		VMerro(err);
 		return STATE_ENDED;
 	}

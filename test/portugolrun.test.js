@@ -1,5 +1,3 @@
-/* eslint-env node, jest */
-
 import { httpGetAsync } from "../src/extras/extras.js";
 import PortugolRuntime from "../src/compiler/vm/portugolrun.js";
 //import { assert, assertEquals, test, testAll } from './test.js';

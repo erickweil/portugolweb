@@ -1,4 +1,5 @@
-/* eslint-env node */
+/* global process */
+
 // Ponto de partida para executar um programa do portugol direto
 // Obtendo o código do programa a ser executado de um arquivo ou da entrada de dados
 

@@ -1,4 +1,4 @@
-/* eslint-env node, jest */
+/* global process, global */
 
 import {jest,describe,expect,test} from '@jest/globals';
 import {default as nodefetch} from 'node-fetch';

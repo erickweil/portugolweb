@@ -43,6 +43,7 @@ export default defineConfig([globalIgnores(
         "no-duplicate-imports": "error",
         "no-invalid-this": "error",
         "no-shadow": "error",
+        "no-useless-assignment": "off",
         //"import/no-absolute-path": "error",
         //"import/no-self-import": "error",
 

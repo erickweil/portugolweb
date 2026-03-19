@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import ace from "./ace_webpack.js";
 ace.define("ace/theme/portugol_dark",["require","exports","module","ace/lib/dom"], function(require, exports, module) {
 

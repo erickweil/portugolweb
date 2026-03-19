@@ -1,4 +1,5 @@
-import { cpSync, existsSync } from "node:fs";
+/* global process */
+
 import path from "node:path";
 import { defineConfig } from "vite";
 
