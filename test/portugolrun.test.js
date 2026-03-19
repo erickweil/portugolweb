@@ -71,4 +71,6 @@ describe("PortugolRuntime",() => {
     testExemplo("bibli_calendario.por");
     testExemplo("bibli_matematica.por");
     testExemplo("bibli_texto.por");
+    testExemplo("notacao_cientifica.por");
+    testExemplo("xor_logico.por");
 });

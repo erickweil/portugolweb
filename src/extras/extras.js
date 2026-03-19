@@ -36,11 +36,17 @@ function stringHashCode(s)
 // Check if a element is scrolled to top or bottom completely
 function elementIsAllScrolled(obj)
 {
-	if( obj.scrollTop === (obj.scrollHeight - obj.offsetHeight))
+	if(!obj)
 	{
 		return true;
 	}
-	if( obj.scrollTop === 0)
+
+	const maxScrollTop = Math.max(0, obj.scrollHeight - (obj.clientHeight ?? obj.offsetHeight ?? 0));
+	if(obj.scrollTop >= (maxScrollTop - 1))
+	{
+		return true;
+	}
+	if(obj.scrollTop <= 0)
 	{
 		return true;
 	}
@@ -127,6 +133,11 @@ function addEvent(element, eventName, callback) {
 
 function referenceSafeRemove(array,index)
 {
+	if(!Array.isArray(array) || index < 0 || index >= array.length)
+	{
+		return false;
+	}
+
 	for(let i = index;i<array.length;i++)
 	{
 		if(i < (array.length -1))
@@ -135,6 +146,7 @@ function referenceSafeRemove(array,index)
 		}
 	}
 	array.pop();
+	return true;
 }
 
 function httpGetAsync(theUrl, callback, options)

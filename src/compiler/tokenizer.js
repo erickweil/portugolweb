@@ -746,9 +746,10 @@ export class Tokenizer {
 				//{
 				
 				let k = i+1;
+				let kc;
 				for(; k< this.input.length;k++)
 				{
-					let kc = this.input.charAt(k);
+					kc = this.input.charAt(k);
 					//if( separators.indexOf(kc) > -1 && kc != '.' &&  kc!= 'X' && kc!='x' && kc!='b' && kc!='B')
 					if(!(/^[0-9A-Fa-f\.XxBb]$/.test(kc)))
 					{
@@ -756,7 +757,23 @@ export class Tokenizer {
 					}
 				}
 				let str = this.input.substring(i,k);
-				if(!str.includes("."))
+				let possivelReal = str.includes(".") || /^[\+\-]?\d+[eE]/.test(str);
+				if(possivelReal && (str.endsWith("e") || str.endsWith("E")) && (kc === '+' || kc === '-'))
+				{
+					// Consome os próximo tokens do número, para casos como "1e+10" ou "1e-5"
+					k++;
+					for(; k< this.input.length;k++)
+					{
+						kc = this.input.charAt(k);
+						if(!(/^[0-9]$/.test(kc)))
+						{
+							break;
+						}
+					}
+					str = this.input.substring(i,k);
+				}
+				
+				if(!possivelReal)
 					this.tokens.push({id:T_inteiroLiteral,index:i,txt:str});
 				else
 					this.tokens.push({id:T_realLiteral,index:i,txt:str});

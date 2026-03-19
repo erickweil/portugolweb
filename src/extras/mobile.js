@@ -99,6 +99,10 @@ class TouchManager {
 			
 			let t = this.getTouchByID(new_t.identifier);
 			//alert(t);
+			if(!t)
+			{
+				continue;
+			}
 			t.x	= new_t.pageX;
 			t.y = new_t.pageY;
 		}
@@ -141,7 +145,10 @@ class TouchManager {
 		{
 			let new_t = e.changedTouches[i];
 			let t = this.getTouchByID(new_t.identifier);
-			referenceSafeRemove(this.touches,this.touches.indexOf(t));
+			if(t)
+			{
+				referenceSafeRemove(this.touches,this.touches.indexOf(t));
+			}
 		}
 		
 		//if(this.touches.length == 0)

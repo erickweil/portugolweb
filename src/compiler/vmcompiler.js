@@ -111,7 +111,7 @@ export function checarCompatibilidadeTipo(tA,tB,op)
 		break;
 		case T_attrib_bitnot:
 		case T_bitnot:
-			return true; // ?????????
+			return (tA == T_inteiro || tA == T_logico);
 		case T_unary_minus:
 		case T_unary_plus:
 		case T_autoinc:
@@ -1452,7 +1452,13 @@ export class Compiler {
 						break;
 						
 					case T_attrib_xor:
-					case T_xor:bc.push(B_XOR);break;
+					case T_xor:
+						if(tExprA == T_logico) {// logico é invertido
+							bc.push(B_XOR);
+							bc.push(B_NO);
+						} else
+							bc.push(B_XOR);
+						break;
 					
 					default:
 						this.erro("o operador "+getSeparator(expr.op)+" não pode ter dois operandos.");

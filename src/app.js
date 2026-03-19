@@ -96,7 +96,7 @@ import Hotbar from "./pages/index/hotbar.js";
 			if(btn.value != "Executar")
 			{
 				console.error("Botão em estado inconsistente(Deveria ser Executar):"+btn.value);
-				btn.value == "Executar";
+				btn.value = "Executar";
 			}
 
 			autoSave();
@@ -159,7 +159,7 @@ import Hotbar from "./pages/index/hotbar.js";
 			{
 				console.error("Botão em estado inconsistente(Deveria ser 'Parar' ou 'Parando...'):"+btn.value);
 			}
-			btn.value == "Parando...";
+			btn.value = "Parando...";
 
 			if(portugolRun.parar())
 			{

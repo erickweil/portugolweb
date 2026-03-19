@@ -1,21 +1,36 @@
+function getStorage()
+{
+	try {
+		if (typeof(Storage) !== "undefined" && typeof localStorage !== "undefined") {
+			return localStorage;
+		} else {
+            return undefined;
+        }
+	} catch (e) {
+		return undefined;
+	}
+}
+
 function persistentStoreValue(key,value){
-    if (typeof(Storage) !== "undefined" && localStorage) {
+    const storage = getStorage();
+    if (storage) {
         // Code for localStorage/sessionStorage.
         // Store
-        localStorage.setItem(key, value);  
+        storage.setItem(key, value);  
     } else {
         // Sorry! No Web Storage support..
     }
 }
     
 function persistentGetValue(key){
+	const storage = getStorage();
 
-    if (typeof(Storage) !== "undefined" && localStorage) {
+    if (storage) {
         // Code for localStorage/sessionStorage.
-        return localStorage.getItem(key);
+        return storage.getItem(key);
     } else {
         // Sorry! No Web Storage support..
-        return false;
+		return null;
     }
 
 }

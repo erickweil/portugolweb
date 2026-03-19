@@ -1,6 +1,6 @@
-import { Compiler } from '../src/compiler/vmcompiler.js';
+import { Compiler, checarCompatibilidadeTipo } from '../src/compiler/vmcompiler.js';
 import { Parser } from '../src/compiler/parser.js';
-import { Tokenizer } from '../src/compiler/tokenizer.js';
+import { T_bitnot, T_inteiro, T_logico, T_real, Tokenizer } from '../src/compiler/tokenizer.js';
 //import { assert, assertEquals, test, testAll } from './test.js';
 
 import {jest,describe,expect,test} from '@jest/globals';
@@ -34,5 +34,11 @@ describe("Testando VmCompiler", () => {
         compiler.compile();
 
         expect(erroCounter.value == 0 && compiler.getFuncIndex("teste",[]) != -1).toBe(true);
+    });
+
+    test("Operador bitnot só aceita inteiro ou lógico", () => {
+        expect(checarCompatibilidadeTipo(T_inteiro,T_inteiro,T_bitnot)).toBe(true);
+        expect(checarCompatibilidadeTipo(T_logico,T_logico,T_bitnot)).toBe(true);
+        expect(checarCompatibilidadeTipo(T_real,T_real,T_bitnot)).toBe(false);
     });
 });
