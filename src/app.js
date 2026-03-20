@@ -442,6 +442,11 @@ import Hotbar from "./pages/index/hotbar.js";
 		}
 	}
 
+	export function toggleMostrarBytecode() {
+		document.getElementById('hidden').style.display = 'block';
+		mostrar_bytecode = !mostrar_bytecode;
+	}
+
 	/**
 	 * PARA FUNCIONAR COM O ANDROID PRECISA DESSAS FUNÇÕES NO OBJETO WINDOW.
 	 * É O JEITO DE INTEGRAR

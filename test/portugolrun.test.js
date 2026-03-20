@@ -74,4 +74,7 @@ describe("PortugolRuntime",() => {
     testExemplo("notacao_cientifica.por");
     testExemplo("xor_logico.por");
     testExemplo("escolha.por");
+    testExemplo("byref_retorno.por");
+    testExemplo("bibli_tipos.por");
+    testExemplo("logico_array_default.por");
 });

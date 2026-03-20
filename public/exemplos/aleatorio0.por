@@ -411,7 +411,6 @@ programa
 		
 	funcao inicio()
 	{
-		mouse.ocultar_cursor()
 		escreva(DELTATIME,"\n")
 		se (TAXA_DE_ATUALIZACAO > 0)
 		{
@@ -420,6 +419,8 @@ programa
 		
 		g.iniciar_modo_grafico(verdadeiro)
 		//g.entrar_modo_tela_cheia()
+
+		mouse.ocultar_cursor()
 		u.aguarde(100)
 		WIDTH2 = g.largura_janela()/2.0
 		HEIGHT2 = g.altura_janela()/2.0

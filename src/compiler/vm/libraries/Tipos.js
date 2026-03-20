@@ -80,7 +80,7 @@ export default class Tipos {
 			} else if(base === 16) {
 				cad = cad.replace(/0x/, "");
 			}
-			return {value:parseInt(cad,base,base)};
+			return {value:parseInt(cad,base)};
 		} else throw "o valor '"+cad+"' não pode ser convertido para inteiro";
 	}
 	
@@ -173,7 +173,9 @@ export default class Tipos {
 	
 	real_para_cadeia(rea)
 	{
-		return {value:""+rea};
+		let strFloat = ""+rea;
+		if(!strFloat.includes(".") && !strFloat.includes("e")) strFloat += ".0";
+		return {value:strFloat};
 	}
 	
 	real_para_inteiro(rea)

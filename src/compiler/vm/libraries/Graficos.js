@@ -149,6 +149,8 @@ export default class Graficos {
 		this.definir_dimensoes_janela(square-32,square-72);
 		
 		this.modal.style.display = "table";
+		// Exibir cursor do mouse por padrão
+		this.canvas.style.cursor = "auto";
 		
 		this.ctx = this.canvas.getContext("2d");
 		this.ctx.lineWidth = 2;
@@ -563,7 +565,8 @@ export default class Graficos {
 	{
 		if(this.imgs[endereco] && this.imgs[endereco].loaded)
 		{
-			return {value:this.imgs[endereco].img.height}; 
+			let img = this.imgs[endereco];
+			return {value: img.rescale ? img.rescaleY : img.img.height}; 
 		}
 		else
 		{
@@ -575,7 +578,8 @@ export default class Graficos {
 	{
 		if(this.imgs[endereco] && this.imgs[endereco].loaded)
 		{
-			return {value:this.imgs[endereco].img.width}; 
+			let img = this.imgs[endereco];
+			return {value: img.rescale ? img.rescaleX : img.img.width}; 
 		}
 		else
 		{

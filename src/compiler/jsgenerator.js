@@ -1,4 +1,4 @@
-import { STATEMENT_block, STATEMENT_caso, STATEMENT_declArr, STATEMENT_declArrValues, STATEMENT_declVar, STATEMENT_enquanto, STATEMENT_escolha, STATEMENT_expr, STATEMENT_facaEnquanto, STATEMENT_para, STATEMENT_pare, STATEMENT_ret, STATEMENT_se 
+import { STATEMENT_block, STATEMENT_caso, STATEMENT_declArr, STATEMENT_declArrValues, STATEMENT_declParVar, STATEMENT_declVar, STATEMENT_enquanto, STATEMENT_escolha, STATEMENT_expr, STATEMENT_facaEnquanto, STATEMENT_para, STATEMENT_pare, STATEMENT_ret, STATEMENT_se 
 } from "./parser.js";
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro, T_Vetor, T_Matriz, T_Vinteiro, T_Vcaracter, T_Vcadeia, T_Vreal, T_Vlogico, T_Mcaracter, T_Mcadeia, T_Mreal, T_Mlogico, convertArrayDimsType, convertArrayType, convertMatrixType, T_attrib, isOperator, getOpPrecedence, T_and, T_or, T_ge, T_gt, T_le, T_lt, T_equals, T_notequals, isAttribOp, getSeparator, T_div, T_attrib_div, T_not, T_unary_plus, T_unary_minus, T_autoinc, T_pre_autoinc, T_autodec, T_pre_autodec, T_bitnot, T_inteiroLiteral, T_realLiteral, T_cadeiaLiteral, T_caracterLiteral, stringEscapeSpecials, T_logicoLiteral, T_squareO, T_dot 
 } from "./tokenizer.js";
@@ -223,8 +223,8 @@ export default class JsGenerator {
 		,
 		{
 			name:"sorteia",jsName:"sorteia",parameters:[
-			{id: STATEMENT_declVar, index: 0, type: T_inteiro, isConst: false, byRef: false, expr:false, name:"a"},
-			{id: STATEMENT_declVar, index: 0, type: T_inteiro, isConst: false, byRef: false, expr:false, name:"a"}
+			{id: STATEMENT_declParVar, index: 0, type: T_inteiro, isConst: false, byRef: false, expr:false, name:"a"},
+			{id: STATEMENT_declParVar, index: 0, type: T_inteiro, isConst: false, byRef: false, expr:false, name:"a"}
 			],type:T_inteiro
 		}
 		];
@@ -520,6 +520,7 @@ export default class JsGenerator {
 					}
 				}
 				break;
+				case STATEMENT_declParVar:
 				case STATEMENT_declVar:
 				{
 					let v = this.createVar(stat.name,stat.type,stat.isConst,false);

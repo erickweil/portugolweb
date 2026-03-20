@@ -2,6 +2,7 @@ import { canBePreUnary, findPreviousComment, getOpPrecedence, isDualOperator, is
 } from "./tokenizer.js";
 
 export const STATEMENT_declVar = 1;
+export const STATEMENT_declParVar = 14; // declaração de parâmetros de função
 export const STATEMENT_declArr = 10;
 export const STATEMENT_declArrValues = 13;
 export const STATEMENT_expr = 2;
@@ -42,7 +43,7 @@ export function getAllVariableParserDecl(stats,ret)
 				getAllVariableParserDecl(s.statements,ret);
 			}
 		}
-		else if(s.id == STATEMENT_declArr || s.id == STATEMENT_declVar)
+		else if(s.id == STATEMENT_declArr || s.id == STATEMENT_declVar || s.id == STATEMENT_declParVar)
 		{
 			ret.push(s);
 		}
@@ -294,7 +295,7 @@ export class Parser {
 			}
 			else
 			{
-				tree.push({id:STATEMENT_declVar,index:tIndex,type:varType,isConst:isConst,byRef:byRef,name:varName,expr:false});
+				tree.push({id:STATEMENT_declParVar,index:tIndex,type:varType,isConst:isConst,byRef:byRef,name:varName,expr:false});
 			}
 			if(tokens[i].id != T_comma)
 			{
