@@ -10,7 +10,7 @@
   <meta name="author" content="Erick L. Weil">
   <meta name="theme-color" content="#08ecbc">
   <meta name="description" content="Utilize o portugol diretamente do seu navegador!">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
   
 
   <!-- Facebook Meta Tags -->
@@ -56,13 +56,39 @@
 </div>
 </div>
 
+<div id="settingsContainer">
+<button id="btn-settings" type="button" title="Configurações" onclick="index.toggleSettingsMenu(event)">⚙</button>
+</div>
+
 <!-- Modal Exemplos -->
-<div class="ModalFull" id="modalExemplos">
+<div class="ModalFull" id="modalExemplos" onclick="event.stopPropagation()">
 <div class="ModalInside">
-<div class="ModalContent">
+
+<div id="settingsMenu">
+  <h2 class="settingsMenuTitle">Configurações</h2>
+  <label class="settingsMenuOption" for="check-mostrar-gutter-menu" title="Ativa os números de linha, útil para acompanhar o código e depurar erros">
+    <input id="check-mostrar-gutter-menu" type="checkbox" checked="true" onchange="index.setMostrarGutter(this.checked)"/>
+    <span>Barra lateral</span>
+  </label>
+  <label class="settingsMenuOption" for="check-auto-completar-menu">
+    <input id="check-auto-completar-menu" type="checkbox" checked="true" onchange="index.setAutoCompleterState(this.checked)"/>
+    <span>Auto-completar</span>
+  </label>
+  <label class="settingsMenuOption" for="check-mostrar-hotbar-menu" title="Ativa a hotbar com teclas comuns, útil no mobile">
+    <input id="check-mostrar-hotbar-menu" type="checkbox" onchange="index.toggleHotbar(this.checked)"/>
+    <span>Mostrar hotbar</span>
+  </label>
+  <label class="settingsMenuOption" for="check-modo-turbo-menu" title="Compila o código para Javascript, executa muito mais rápido. Só vai acelerar se não utilizar nenhuma função que pausa o código, como o leia ou o aguarde da biblioteca Util">
+    <input id="check-modo-turbo-menu" type="checkbox" onchange="index.setModoTurbo(this.checked)"/>
+    <span>Modo turbo</span>
+  </label>
+
+</div>
+
+<div class="ModalContent" id="modalExemplosContent">
 <div>
 <input type="button" value="" style="float:left;background: #1E2324;" class="ModalTitle"/>
-<input type="button" value="X" style="float:right;background: #1E2324;" onclick="document.getElementById('modalExemplos').style.display = 'none';"/>
+<input type="button" value="X" style="float:right;background: #1E2324;" onclick="index.setMostrarModal(false)"/>
 </div>
 <br/>
 <div class="listaExemplos">
@@ -92,10 +118,6 @@
   <h2 onclick="index.exemplo('aleatorio5');">A*</h2>
 </details>
 
-<hr style="border: 1px solid #01EABC;"/>
-<span style="white-space:nowrap"><input id="check-mostrar-hotbar" style="height: 20px;" name="mostrar-hotbar" type="checkbox" onchange="index.toggleHotbar(this.checked);"/><label for="mostrar-hotbar">Mostrar Hotbar</label></span> 
-<span style="white-space:nowrap"><input id="check-modo-turbo" style="height: 20px;" name="modo-turbo" type="checkbox" onchange="index.setModoTurbo(this);" title="Compila o código para Javascript, executa muito mais rápido. Só vai acelerar se não utilizar nenhuma função que pausa o código, como o leia ou o aguarde da biblioteca Util"/><label for="modo-turbo">Modo Turbo</label></span> 
-<span style="white-space:nowrap"><input id="check-auto-completar" style="height: 20px;" name="auto-completar" type="checkbox" checked="true" onchange="index.setAutoCompleterState(this.checked);"/><label for="auto-completar">Auto-Completar</label></span> 
 <!--
 <hr class="mobileHidden" style="border: 1px solid #01EABC;"/>
 <button class="mobileHidden" title="A TogetherJS possibilita a utilização em grupo de um site. Permitindo editar em conjunto, chat e muito mais" onclick="TogetherJS(this);return false;">Ativar TogetherJS</button>
@@ -130,7 +152,7 @@ title="Executa o código mostando linha a linha a cada clique"
 <input type="button" style="background-image: url(/icons/save.png);" id="btn-salvar" value=" " onclick="index.save()" title="Baixa o código"/>
 <input type="button" style="background-image: url(/icons/open.png);"  id="btn-abrir" value=" " onclick="index.load()" title="Carrega um código"/>
 <!--<input type="button" tabindex="-1" id="btn-mostrar-hotbar" value="Ocultar" onclick='toggleHotbar();' onfocus="preventFocus(event)"/>-->
-<input type="button" id="btn-exemplos" value="Exemplos" onclick="document.getElementById('modalExemplos').style.display = 'table';"  title="Abre o menu inicial"/>
+<input type="button" id="btn-exemplos" value="Exemplos" onclick="index.showModalExemplos(event)"  title="Abre o menu inicial"/>
 
 <!--<input type="button" id="btn-run" value="Modo Normal" onclick=""/>-->
 

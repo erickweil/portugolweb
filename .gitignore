@@ -3,3 +3,4 @@ node_modules/
 .gradle/
 .idea/
 dist/
+coverage/

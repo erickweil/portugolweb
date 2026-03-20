@@ -97,7 +97,7 @@ export default class Hotbar {
 		document.getElementById("hotbar_keys").style.display = "block";
 		
 		//document.getElementById("btn-mostrar-hotbar").value = "Ocultar";
-		document.getElementById("check-mostrar-hotbar").checked = true;
+		document.getElementById("check-mostrar-hotbar-menu").checked = true;
 		
 		this.setHotbarPosition(this.hotbar_middleyOffset);
 	}
@@ -120,7 +120,7 @@ export default class Hotbar {
 		document.getElementById("hotbar_keys").style.display = "none";
 		
 		//document.getElementById("btn-mostrar-hotbar").value = "Mostrar";
-		document.getElementById("check-mostrar-hotbar").checked = false;
+		document.getElementById("check-mostrar-hotbar-menu").checked = false;
 		
 		this.setHotbarPosition(this.hotbar_extendedyOffset);
 	}

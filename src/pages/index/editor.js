@@ -30,6 +30,7 @@ export default class EditorManager {
             enableSnippets: true, // negócio chato demais, tenho que fazer ficar mais intuitivo antes de ativar
             enableEmmet: false, // oq é Emmet? nem eu sei
             enableLiveAutocompletion: true,
+            enableMobileMenu: false, // três pontinhos inúteis
             scrollPastEnd: 0.5
         });
 
@@ -46,10 +47,11 @@ export default class EditorManager {
             }
         });
 
-        if(isMobile)
-        {
-            this.editor.renderer.setShowGutter(false);
-        }
+        // A quer saber vamos ativar os números de linhas no mobile né
+        //if(isMobile)
+        //{
+        //    this.editor.renderer.setShowGutter(false);
+        //}
 
         this.editor.on("focus", editorFocusCallback);
         this.editor.focus();
@@ -85,6 +87,15 @@ export default class EditorManager {
         this.editor.setOptions({
 			fontSize: fontSize+"pt"
 		});
+    }
+
+    setGutterState(show) {
+        this.editor.renderer.setShowGutter(show);
+        this.editor.resize();
+    }
+
+    getGutterState() {
+        return this.editor.renderer.getShowGutter();
     }
 
     /**
@@ -206,14 +217,16 @@ export default class EditorManager {
     }
 
     highlight(linha,coluna,colunaFim,scrollTo) {
+        // Coloca um 'i' no gutter
         this.errosAnnot.push({
 			row: linha-1,
 			column: coluna,
 			text: "", // Or the Json reply from the parser 
-			type: "information" // also warning and information
+			type: "info" // also warning, error and security
 		});
 		this.editor.getSession().setAnnotations(this.errosAnnot);
-		
+
+        // Coloca um realce na linha inteira
 		this.errosMarkers.push(
             this.editor.getSession()
             .addMarker(
