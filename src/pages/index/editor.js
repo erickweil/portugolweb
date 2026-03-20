@@ -1,17 +1,14 @@
-import ace from "../../ace_editor/ace_webpack.js";
-import * as __portugolMode from "../../ace_editor/mode-portugol.js";
-import * as __portugolTheme from "../../ace_editor/theme-portugol_dark.js";
 import portugolCompleter from "../../ace_editor/ace_portugol_completer.js";
-
-// precisa disso aqui para usar a classe Range
-const Range = ace.require("ace/range").Range;
 export default class EditorManager {
 
     constructor() {
 
     }
 
-    initEditor(divID,fontSize,libraries,isMobile,editorFocusCallback) {
+    async initEditor(divID,fontSize,libraries,isMobile,editorFocusCallback) {
+        const { default: ace } = await import("../../ace_editor/ace_webpack.js");
+        this.Range = ace.default.require("ace/range").Range;
+
         this.fontSize = fontSize;
         this.editor_divID = divID;
         this.editor = ace.edit(divID,{
@@ -21,7 +18,6 @@ export default class EditorManager {
             navigateWithinSoftTabs: false
         }
         );
-        //console.log(ace);
         this.editor.setTheme("ace/theme/portugol_dark");
         this.editor.session.setMode("ace/mode/portugol");
 
@@ -208,7 +204,7 @@ export default class EditorManager {
 		this.editor.getSession().setAnnotations(this.errosAnnot);
 		
 		this.errosMarkers.push(
-            this.editor.getSession().addMarker(new Range(
+            this.editor.getSession().addMarker(new this.Range(
                     annot.row, 
                     0, 
                     annot.row, 
@@ -230,7 +226,7 @@ export default class EditorManager {
 		this.errosMarkers.push(
             this.editor.getSession()
             .addMarker(
-                new Range(linha-1, 0, linha-1, colunaFim), 
+                new this.Range(linha-1, 0, linha-1, colunaFim), 
                 'ace_realceportugol-marker', 'screenLine'
         ));
 		

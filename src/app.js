@@ -705,17 +705,6 @@ import Hotbar from "./pages/index/hotbar.js";
 	
 	portugolRun.iniciarBibliotecas(myCanvas,myCanvasModal,myCanvasWindow,myCanvasWindowTitle,myCanvasKeys);
 
-	editorManager.initEditor("myEditor",fontSize,portugolRun.libraries,isMobile,() => {
-		if(isMobile)
-		{
-			hotbarManager.collapseUntil("MIDDLE");
-		}
-		else
-		{
-			hotbarManager.collapseUntil("EXTENDED");
-		}
-	});
-
 	div_saida.style.fontSize = fontSize+"pt";
 	errosSaida.style.fontSize = fontSize+"pt";
 	div_tabelavariaveis.style.fontSize = fontSize+"pt";
@@ -747,23 +736,39 @@ import Hotbar from "./pages/index/hotbar.js";
 		window.visualViewport.addEventListener("scroll", syncBodyToViewport, false);
 	}
 
-	if(isMobile) {
-		if(typeof Android === 'undefined')
-		{
-			editorManager.setValue("programa\n{\n\tfuncao inicio()\n\t{\n\t\t\n\t\tescreva(\"Baixe o aplicativo na play store:\\n\")\n\t\tescreva(\"https://play.google.com/store/apps/details?id=br.erickweil.portugolweb \\n\")\n\t\t\n\t}\n}\n");
-		}
-	}
+	async function initEditor() {
+		await editorManager.initEditor("myEditor",fontSize,portugolRun.libraries,isMobile,() => {
+			if(isMobile)
+			{
+				hotbarManager.collapseUntil("MIDDLE");
+			}
+			else
+			{
+				hotbarManager.collapseUntil("EXTENDED");
+			}
+		});
 
-	function setEditorFromAutoSave() {
+		if(isMobile) {
+			if(typeof Android === 'undefined')
+			{
+				editorManager.setValue("programa\n{\n\tfuncao inicio()\n\t{\n\t\t\n\t\tescreva(\"Baixe o aplicativo na play store:\\n\")\n\t\tescreva(\"https://play.google.com/store/apps/details?id=br.erickweil.portugolweb \\n\")\n\t\t\n\t}\n}\n");
+			}
+		}
+
 		let last_code = getAutoSave();
 		if(last_code)
 			editorManager.setValue(last_code);
-	}
-	setEditorFromAutoSave();
 
-	hotbarManager.resizeEditorToFitHotbar();
-	if(isMobile)
-	{
-		document.body.classList.add('mobile');
-		syncBodyToViewport();
+		hotbarManager.resizeEditorToFitHotbar();
+		if(isMobile)
+		{
+			document.body.classList.add('mobile');
+			syncBodyToViewport();
+		}
 	}
+
+	setTimeout(() => {
+		initEditor().catch((err) => {
+			console.error(err);
+		});
+	}, 1);
