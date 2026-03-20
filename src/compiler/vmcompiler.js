@@ -1,4 +1,4 @@
-import { B_ADD, B_ALOAD, B_ALOADGLOBAL, B_AND, B_ASTORE, B_ASTOREGLOBAL, B_B2S, B_CLEAR, B_DIV, B_DUP, B_F2I, B_F2S, B_FALSE, B_GOTO, B_I2S, B_iDIV, B_IFCMPEQ, B_IFCMPGE, B_IFCMPGT, B_IFCMPLE, B_IFCMPLT, B_IFCMPNE, B_IFEQ, B_IFNE, B_INVOKE, B_LIBINVOKE, B_LIBLOAD, B_LOAD, B_LOADGLOBAL, B_MUL, B_NEG, B_NEWARRAY, B_NEWARRAYGLOBAL, B_NO, B_NOT, B_OR, B_POP, B_PUSH, B_READ_BOOL, B_READ_CHAR, B_READ_FLOAT, B_READ_INT, B_READ_STRING, B_REM, B_RET, B_RETVALUE, B_SHL, B_SHR, B_STORE, B_STOREGLOBAL, B_SUB, B_SWAP, B_TRUE, B_WAITINPUT, B_WRITE, B_XOR 
+import { B_ADD, B_ALOAD, B_ALOADGLOBAL, B_AND, B_ASTORE, B_ASTOREGLOBAL, B_B2S, B_CLEAR, B_DIV, B_DUP, B_F2I, B_F2S, B_FALSE, B_GOTO, B_I2S, B_iDIV, B_IFCMPEQ, B_IFCMPGE, B_IFCMPGT, B_IFCMPLE, B_IFCMPLT, B_IFCMPNE, B_IFEQ, B_IFNE, B_INVOKE, B_iREM, B_LIBINVOKE, B_LIBLOAD, B_LOAD, B_LOADGLOBAL, B_MUL, B_NEG, B_NEWARRAY, B_NEWARRAYGLOBAL, B_NO, B_NOT, B_OR, B_POP, B_PUSH, B_READ_BOOL, B_READ_CHAR, B_READ_FLOAT, B_READ_INT, B_READ_STRING, B_REM, B_RET, B_RETVALUE, B_SHL, B_SHR, B_STORE, B_STOREGLOBAL, B_SUB, B_SWAP, B_TRUE, B_WAITINPUT, B_WRITE, B_XOR 
 } from "./vm/vm.js";
 import { STATEMENT_block, STATEMENT_caso, STATEMENT_declArr, STATEMENT_declArrValues, STATEMENT_declVar, STATEMENT_enquanto, STATEMENT_escolha, STATEMENT_expr, STATEMENT_facaEnquanto, STATEMENT_para, STATEMENT_pare, STATEMENT_ret, STATEMENT_se 
 } from "./parser.js";
@@ -979,7 +979,6 @@ export class Compiler {
 						}
 						else
 						{
-							if(k < casosExpressions.length-1)
 							bc.push(B_DUP);// duplica o valor da expressão na stack
 							
 							// deveria checar o tipo?
@@ -1006,9 +1005,10 @@ export class Compiler {
 						this.compileStatements(stat.statements,func);
 					
 					if(!this.loopScope.contrario)
-					{ // se não tem o caso contrário
+					{ // se não tem o caso contrário: emite B_POP para descartar o valor do escolha
 						let jumpIndex = this.loopScope.getContrarioJump();
-						bc[jumpIndex] = bc.length;
+						bc[jumpIndex] = bc.length; // pula para o B_POP abaixo
+						bc.push(B_POP); // descarta o valor do escolha quando nenhum caso combinou
 					}
 					
 					this.loopScope = this.loopScope.parentScope;
@@ -1032,6 +1032,7 @@ export class Compiler {
 						}
 						//console.log("replaced "+jumpIndex+" --> "+bc.length);
 						bc[jumpIndex] = bc.length;
+						bc.push(B_POP); // descarta o valor do escolha (que foi DUP'd) da pilha
 					}
 					else
 					{
@@ -1412,6 +1413,10 @@ export class Compiler {
 				{
 					bc.push(B_iDIV);
 				}
+				else if(tRet == T_inteiro && (expr.op == T_rem || expr.op == T_attrib_rem))
+				{
+					bc.push(B_iREM);
+				}
 				else switch(expr.op)
 				{
 					case T_attrib_plus:
@@ -1573,9 +1578,12 @@ export class Compiler {
 						if(args.length == 1)
 						{
 							let v = this.getVar(args[0].name);
-							if(v.isArray)
+							if(v.isArray) {
+								if(args[0].op != T_squareO) {
+									this.erro("leia com vetor ou matriz deve indexar a posição, ex: leia("+v.name+"[0])");
+								}
 								methName += "$"+getTypeWord(v.arrayType);
-							else
+							} else
 								methName += "$"+getTypeWord(v.type);
 
 							this.compileExpr(args[0],bc,-1);

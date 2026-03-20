@@ -834,6 +834,7 @@ export function VMrun(execMax)
 			case B_I2S: VM_stack[VM_si-1] = VM_i2s(VM_stack[VM_si-1]); break;
 			case B_F2S: VM_stack[VM_si-1] = VM_f2s(VM_stack[VM_si-1]); break;
 			case B_B2S: VM_stack[VM_si-1] = VM_b2s(VM_stack[VM_si-1]); break;
+			case B_C2S: VM_stack[VM_si-1] = ""+VM_stack[VM_si-1]; break;
 			
 			case B_NEWARRAYGLOBAL:
 			case B_NEWARRAY:

@@ -83,6 +83,7 @@ export class Parser {
 	
 	erro(token,msg)
 	{	
+		token = token || {index:0};
 		//var line = this.textInput.substring(token.index,this.textInput.indexOf("\n",token.index));
 		//console.log("linha "+numberOfLinesUntil(token.index,this.textInput)+", erro:"+msg);
 		//console.log("perto de '"+line+"'");

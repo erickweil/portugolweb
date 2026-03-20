@@ -47,7 +47,7 @@ export function htmlEntities(str) {
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-export function removeEscaping(tok,str,escaping)
+export function removeEscaping(tok,str,escaping,baseIndex = 0)
 {
 	// this.erro(this.tokens[this.tokens.length-1],"o tipo caracter deve conter apenas uma letra ou número. mude para cadeia");
 	let ret = "";
@@ -64,7 +64,7 @@ export function removeEscaping(tok,str,escaping)
 			else if(c1 == escaping) c0 = escaping;
 			else 
 			{
-				tok.erro(tok.tokens[tok.tokens.length-1],"Após inserir a barra invertida \\ você deve ter um desses: \\ (barra invertida), n (nova linha), t (tabulação), "+escaping+" (aspas)");
+				tok.erro(baseIndex+i,"Após inserir a barra invertida \\ você deve ter um desses: \\ (barra invertida), n (nova linha), t (tabulação), "+escaping+" (aspas)");
 			}
 			
 			i++;
@@ -584,8 +584,11 @@ export class Tokenizer {
 		this.tokens = [];
     }
 	
-	erro(token,msg)
+	erro(index,msg)
 	{
+		//let token = {index: Math.max(0,index)};
+		let token = index ? {index: Math.max(0,index)} :
+			this.tokens.length > 0 ? { index: this.tokens[this.tokens.length-1].index } : { index:0 };
 		if(this.enviarErro)
 		this.enviarErro(this.input,token,msg,"sintatico");
 		else
@@ -677,7 +680,7 @@ export class Tokenizer {
 					{
 						if(kc == "\n")
 						{
-							this.erro(this.tokens[this.tokens.length-1],"não fechou as aspas");
+							this.erro(i,"não fechou as aspas");
 						}
 						break;
 					}
@@ -690,7 +693,7 @@ export class Tokenizer {
 				//str = str.replace(/\\"/g,'"');
 				//str = str.replace(/\\'/g,"'");
 				
-				str = removeEscaping(this,str,c);
+				str = removeEscaping(this,str,c,i);
 				
 				if(c == '"')
 				{
@@ -700,7 +703,7 @@ export class Tokenizer {
 				{
 					if(str.length != 1)
 					{
-						this.erro(this.tokens[this.tokens.length-1],"o tipo caracter deve conter apenas uma letra ou número. mude para cadeia");
+						this.erro(i, "o tipo caracter deve conter apenas uma letra ou número. mude para cadeia");
 						if(str.length > 1) str = str.charAt(0);
 					}
 					this.tokens.push({id:T_caracterLiteral,index:i,txt:str});
@@ -930,7 +933,7 @@ export class Tokenizer {
 			}
 			else
 			{
-				this.erro(this.tokens[this.tokens.length-1],"Remova o caracter '"+c+"', isso não deveria estar aqui");
+				this.erro(i,"Remova o caracter '"+c+"', isso não deveria estar aqui");
 			}
 		}
 		return this.tokens;
