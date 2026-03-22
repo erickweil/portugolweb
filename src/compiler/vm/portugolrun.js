@@ -14,13 +14,13 @@ import Teclado from "./libraries/Teclado.js";
 import Texto from "./libraries/Texto.js";
 import Tipos from "./libraries/Tipos.js";
 import Util from "./libraries/Util.js";
-import { escreva, getCurrentTokenIndex, getScopeFromTokenIndex, STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMgetGlobalVar, VMgetVar, VMrun, VMsetup, VMtoString, VM_async_return, VM_b2s, VM_f2s, VM_getCodeMax, VM_getDelay, VM_getExecJS, VM_i2s 
+import { escreva, getCurrentTokenIndex, getScopeFromTokenIndex, STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMgetGlobalVar, VMgetVar, VMrun, VMsetup, VMtoString, VM_async_return, VM_b2s, VM_f2s, VM_getCodeMax, VM_getDelay, VM_getExecJS, VM_i2s, recursiveDeclareArray, limpa, leia, sorteia, VMerro, VM_realbool2s 
 } from "./vm.js";
 import { checkIsMobile } from "../../extras/mobile.js";
 
-function debug_exibe_bytecode() {
+function debug_exibe_bytecode(text) {
 	try{
-		document.getElementById("hidden").innerHTML = VMtoString();
+		document.getElementById("hidden").innerHTML = text;
 	}
 	catch(e){
 		let myStackTrace = e.stack || e.stacktrace || "";
@@ -197,18 +197,103 @@ export default class PortugolRuntime {
 				// Inicia contagem de tempo
 				that.lastvmTime = performance.now();
 
-				// Loop Assíncrono de execução
-				that.promisefn = ()=>{_doExec(that,resolve);};
-				that.promisefn();
+				// Se tem código JS gerado e não é passo a passo, executar direto em JS
+				if(compilado.jsgenerator && compilado.jsgenerator.generatedCode && !passoapasso) {
+					that._executarJS(compilado).then(resolve).catch(reject);
+				} else {
+					// Loop Assíncrono de execução
+					that.promisefn = ()=>{_doExec(that,resolve);};
+					that.promisefn();
+				}
 		});
 		}
 	}
 
+	async _executarJS(compilado)
+	{
+		const that = this;
+		that.lastvmState = STATE_RUNNING;
+		that.lastvmTime = performance.now();
+		
+		const ctx = {
+			libraries: that.libraries,
+			escreva: escreva,
+			limpa: limpa,
+			i2s: VM_i2s,
+			f2s: VM_f2s,
+			b2s: VM_realbool2s,
+			newArray: recursiveDeclareArray,
+			sorteia: sorteia,
+			leia: (tipo) => {
+				return new Promise((resolve, reject) => {
+					that.lastvmState = STATE_WAITINGINPUT;
+					that.promisefn = () => {
+						that.lastvmState = STATE_RUNNING;
+						// Quando receber o input, parsear ele e retornar o valor para o programa
+						let entrada = leia();
+						switch(tipo)
+						{
+							case "inteiro":
+								resolve(parseInt(entrada));
+							break;
+							case "real":
+								resolve(parseFloat(entrada));
+							break;
+							case "caracter":
+								resolve(entrada.charAt(0));
+							break;
+							case "logico":
+								resolve(entrada.trim().toLowerCase() === "verdadeiro");
+							break;
+							case "cadeia":
+							default:
+								resolve(entrada);
+						}
+					};
+					if (typeof window !== 'undefined') {
+						// BROWSER
+						// Vai continuar depois
+						if(typeof that.div_saida.focus === 'function')
+							that.div_saida.focus();
+
+						cursorToEnd(that.div_saida);
+						return;
+					} else {
+						// NODE
+						that.div_saida.leia().then((input) => {
+							that.div_saida.value += input;
+							that.notifyReceiveInput();
+						});
+						return;
+					}
+				});
+			}		
+		};
+		
+		try
+		{
+			// Avaliar o código gerado para obter a async function
+			let asyncFn = (0, eval)(compilado.jsgenerator.generatedCode);
+			
+			// Executar
+			await asyncFn(ctx);
+			this.executarParou("Programa finalizado.");
+			return that.div_saida.value;
+		}
+		catch(e)
+		{
+			console.error("Erro na execução JS:", e);
+			VMerro("Erro durante execução: "+e);			
+			that.executarParou("Programa finalizado com erro.");
+			return that.div_saida.value;
+		}
+	}
+	
 	_prepararMaquina(string_cod,compilado,erroCallback) {
 		// Preparar Máquina
 		VMsetup(
 			compilado.compiler.functions,
-			compilado.jsgenerator.functions,
+			false, // jsfunctions removido — o novo JsGenerator não usa mais per-function JS
 			this.libraries,
 			compilado.compiler.scopeList,
 			compilado.compiler.globalCount,
@@ -218,7 +303,13 @@ export default class PortugolRuntime {
 		);
 			
 		// Para testar compilação se tiver ativado
-		if(this.mostrar_bytecode) debug_exibe_bytecode();
+		if(this.mostrar_bytecode) {
+			if(compilado.jsgenerator && compilado.jsgenerator.generatedCode) {
+				debug_exibe_bytecode(compilado.jsgenerator.generatedCode);
+			} else {
+				debug_exibe_bytecode(VMtoString());
+			}
+		}
 	}
 
 	parar()
@@ -304,7 +395,11 @@ export default class PortugolRuntime {
 			let librariesNames = Object.keys(this.libraries);
 			for(let i =0;i<librariesNames.length;i++)
 			{
-				this.libraries[librariesNames[i]].resetar();
+				const lib = this.libraries[librariesNames[i]];
+				lib.resetar();
+				lib.setTimeout = (fun, delay) => {
+					mySetTimeout("EXEC", fun, delay);
+				};
 			}
 			
 			let compiler = new Compiler(tree,this.libraries,relevantTokens,string_cod,null,erroCounterCallback);
@@ -318,11 +413,11 @@ export default class PortugolRuntime {
 				return {success:false,"tokenizer":tokenizer,"tree":tree,"compiler":compiler};
 			}
 			
-			let jsgenerator = {"functions":false};
+			let jsgenerator = {generatedCode:false};
 			if(mayCompileJS && VM_getExecJS())
 			{
 				try{
-					jsgenerator = new JsGenerator(tree,this.libraries,relevantTokens,string_cod,this.div_saida,erroCounterCallback);
+					jsgenerator = new JsGenerator(compiler, tree,this.libraries,relevantTokens,string_cod,erroCounterCallback);
 					jsgenerator.compile();	
 				}
 				catch(e){
@@ -420,7 +515,6 @@ export default class PortugolRuntime {
 		if(this.lastvmState == STATE_ASYNC_RETURN)
 		{
 			VM_async_return(retValue);
-			//executarVM();
 			this.promisefn();
 		}
 		else

@@ -150,6 +150,7 @@ case B_ASTOREGLOBAL: return "astoreglobal";
 case B_ALOADGLOBAL: return "aloadglobal";
 case B_LIBLOAD: return "libload";
 case B_LIBINVOKE: return "libinvoke";
+default: return "unknown("+c+")";
 }
 }
 
@@ -221,6 +222,8 @@ case B_NEWARRAY:
 case B_NEWARRAYGLOBAL:
 case B_LIBINVOKE:
 	return 3;
+default: 
+	return 0;
 }
 }
 

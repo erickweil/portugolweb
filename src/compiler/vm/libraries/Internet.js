@@ -1,8 +1,11 @@
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../tokenizer.js";
 import { STATE_ASYNC_RETURN, STATE_DELAY_REPEAT, VM_async_return, VM_setDelay } from "../vm.js";
+import { BibliotecaBase } from "./libHelper.js";
 
-export default class Internet {
+export default class Internet extends BibliotecaBase {
 	constructor() {
+		super();
+		
 		this.members = {
 
 		"baixar_imagem":{id:T_parO,parameters:[{name:"endereco",type:T_cadeia},{name:"caminho",type:T_cadeia}],type:T_cadeia,jsSafe:false},

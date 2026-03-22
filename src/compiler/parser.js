@@ -16,18 +16,21 @@ export const STATEMENT_ret = 9;
 export const STATEMENT_escolha = 11;
 export const STATEMENT_caso = 12;
 
-function pmatch(index,tokens)
+/**
+ * Verifica se uma sequência de IDs de tokens corresponde aos tokens a partir de um índice.
+ * * @param {number} index - O índice inicial no array de tokens.
+ * @param {Array<Object>} tokens - O array de objetos de token (cada um deve ter uma propriedade .id).
+ * @param {...number} expectedIds - Uma sequência de IDs esperados para comparação.
+ * @returns {boolean} Retorna true se todos os IDs coincidirem na ordem fornecida.
+ */
+function pmatch(index, tokens, ...expectedIds) 
 {
-	let ti = index;
-	for (let i = 2; i < arguments.length && ti < tokens.length; i++) {
-		if(tokens[ti].id != arguments[i])
-		{
-			return false;
-		}
-		ti++;
-	}
-	return true;
-}
+  // Acabou os tokens antes de verificar todos os IDs esperados
+  if (index + expectedIds.length > tokens.length) return false;
+
+  // Verifica cada ID esperado contra o token correspondente
+  return expectedIds.every((id, i) => tokens[index + i]?.id === id);
+};
 
 
 export function getAllVariableParserDecl(stats,ret)

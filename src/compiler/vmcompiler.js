@@ -15,6 +15,7 @@ export function getDefaultValue(code)
 		case T_real: return 0.0;
 		case T_logico: return B_FALSE; // B_FALSE=1=falso, consistente entre local e global
 		case T_squareO: return [];
+		default: return undefined;
 	}
 }
 
@@ -135,6 +136,8 @@ export function checarCompatibilidadeTipo(tA,tB,op)
 		case T_squareO: // operador de indexagem ?
 			return tB == T_inteiro;
 	}
+
+	return false;
 }
 
 export function getTipoRetorno(tA,tB)
@@ -1049,6 +1052,9 @@ export class Compiler {
 						this.erro("o 'caso' não faz sentido aqui, deve ser colocado em uma estrutura escolha.");
 					}
 				break;
+				default:
+					this.erro("statement desconhecido, id: "+stat.id);
+				break;
 			}
 		}
 	}
@@ -1783,6 +1789,9 @@ export class Compiler {
 					
 				return libObj.members[campo.name].type;
 				}
+				default:
+					this.erro("expressão com operador desconhecido, id: "+expr.op);
+					return T_vazio;
 			}
 		}
 	}

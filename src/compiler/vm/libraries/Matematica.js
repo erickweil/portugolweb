@@ -1,8 +1,11 @@
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../tokenizer.js";
+import { BibliotecaBase } from "./libHelper.js";
 
-export default class Matematica {
+export default class Matematica extends BibliotecaBase {
 
 	constructor() {
+		super();
+		
 		this.PI = 3.141592653589793;
 		
 		this.members = {

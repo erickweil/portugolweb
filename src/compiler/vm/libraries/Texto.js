@@ -1,8 +1,11 @@
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../tokenizer.js";
+import { BibliotecaBase } from "./libHelper.js";
 
 	
-export default class Texto {
+export default class Texto extends BibliotecaBase {
 	constructor() {
+		super();
+		
 		this.members = {
 		"caixa_alta":{id:T_parO,parameters:[{name:"cad",type:T_cadeia}],type:T_cadeia,jsSafe:true},
 		"caixa_baixa":{id:T_parO,parameters:[{name:"cad",type:T_cadeia}],type:T_cadeia,jsSafe:true},

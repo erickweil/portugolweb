@@ -1,8 +1,10 @@
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../tokenizer.js";
 import { STATE_DELAY_REPEAT, VM_setDelay } from "../vm.js";
+import { BibliotecaBase } from "./libHelper.js";
 
-export default class Teclado {
+export default class Teclado extends BibliotecaBase {
 	constructor(canvas) {
+		super();
 		
 		this.canvas = canvas;
 		this.libGraficos = false;

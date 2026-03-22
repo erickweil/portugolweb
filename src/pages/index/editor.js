@@ -24,7 +24,6 @@ export default class EditorManager {
         this.editor.setOptions({
             enableBasicAutocompletion: true,
             enableSnippets: true, // negócio chato demais, tenho que fazer ficar mais intuitivo antes de ativar
-            enableEmmet: false, // oq é Emmet? nem eu sei
             enableLiveAutocompletion: true,
             enableMobileMenu: false, // três pontinhos inúteis
             scrollPastEnd: 0.5

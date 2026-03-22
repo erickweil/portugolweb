@@ -442,9 +442,9 @@ import Hotbar from "./pages/index/hotbar.js";
 		}
 	}
 
-	export function toggleMostrarBytecode() {
-		document.getElementById('hidden').style.display = 'block';
-		mostrar_bytecode = !mostrar_bytecode;
+	export function toggleMostrarBytecode(mostrar) {
+		mostrar_bytecode = mostrar;
+		document.getElementById('hidden').style.display = mostrar ? 'block' : 'none';
 	}
 
 	/**

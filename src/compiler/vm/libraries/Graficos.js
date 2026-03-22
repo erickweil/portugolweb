@@ -1,10 +1,13 @@
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../tokenizer.js";
 import { closeFullscreen, getScreenDimensions, openFullscreen } from "../../../extras/extras.js";
 import { STATE_BREATHING, STATE_DELAY_REPEAT, STATE_ENDED, VM_setCodeMax, VM_setDelay } from "../vm.js";
+import { BibliotecaBase, libBoolArg } from "./libHelper.js";
 
-export default class Graficos {
+export default class Graficos extends BibliotecaBase {
 	constructor(canvas,modal,cwindow,title,divKeys,libTeclado,isMobile)
 	{
+		super();
+		
 		this.isMobile = isMobile;
 		this.canvas = canvas;
 		this.modal = modal;
@@ -139,7 +142,7 @@ export default class Graficos {
 	iniciar_modo_grafico(manter_visivel)
 	{
 		VM_setCodeMax(10000000); // para não dar flickering na tela
-		this.manter_visivel = manter_visivel == 0;
+		this.manter_visivel = libBoolArg(manter_visivel);
 		
 		let screenDim = getScreenDimensions();
 
@@ -235,7 +238,7 @@ export default class Graficos {
 	desenhar_retangulo(x,y,w,h,arredondar,preencher) // lembrar que logico 0 é verdadeiro outra coisa é falso
 	{
 		this.startDraw(x,y,w,h);
-		if(arredondar == 0)
+		if(libBoolArg(arredondar))
 		{
 			let r = 0;
 			if (w <= h) r = w / 10.0;
@@ -249,12 +252,12 @@ export default class Graficos {
 			this.ctx.arcTo(x,   y,   x+w, y,   r);
 			this.ctx.closePath();
 			
-			if(preencher == 0) this.ctx.fill();
+			if(libBoolArg(preencher)) this.ctx.fill();
 			else this.ctx.stroke();
 		}
 		else
 		{
-			if(preencher == 0)
+			if(libBoolArg(preencher))
 			{
 				this.ctx.fillRect(x, y, w, h);
 			}
@@ -349,7 +352,7 @@ export default class Graficos {
 			this.ctx.beginPath();
 			this.ctx.ellipse(x + rx, y+ry, rx, ry, 0, 0, Math.PI*2);
 			//ctx.strokeStyle=style;
-			if(preencher == 0) this.ctx.fill();
+			if(libBoolArg(preencher)) this.ctx.fill();
 			else this.ctx.stroke();
 			//ctx.restore();
         }
@@ -370,7 +373,7 @@ export default class Graficos {
 			this.ctx.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
 			this.ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
 
-			if(preencher == 0) this.ctx.fill();
+			if(libBoolArg(preencher)) this.ctx.fill();
 			else this.ctx.stroke();
 			
 		}
@@ -426,7 +429,7 @@ export default class Graficos {
 			this.ctx.lineTo(ponto[0],ponto[1]);
 		}
 		this.ctx.closePath();
-		if(preencher == 0) this.ctx.fill();
+		if(libBoolArg(preencher)) this.ctx.fill();
 		else this.ctx.stroke();
 	}
 	
@@ -618,9 +621,9 @@ export default class Graficos {
 	
 	definir_estilo_texto(italico,negrito,sublinhado)
 	{
-		this.textoItalico = italico == 0;
-		this.textoNegrito = negrito == 0;
-		this.textoSublinhado = sublinhado == 0;
+		this.textoItalico = libBoolArg(italico);
+		this.textoNegrito = libBoolArg(negrito);
+		this.textoSublinhado = libBoolArg(sublinhado);
 		
 		this.updateText();
 	}

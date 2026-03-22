@@ -1,7 +1,10 @@
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../tokenizer.js";
+import { BibliotecaBase, libBoolArg } from "./libHelper.js";
 
-export default class Tipos {
+export default class Tipos extends BibliotecaBase {
 	constructor() {
+		super();
+		
 		this.members = {
 		"cadeia_e_caracter":{id:T_parO,parameters:[{name:"cad",type:T_cadeia}],type:T_logico,jsSafe:true},
 		"cadeia_e_inteiro":{id:T_parO,parameters:[{name:"cad",type:T_cadeia},{name:"base",type:T_inteiro}],type:T_logico,jsSafe:true},
@@ -158,17 +161,17 @@ export default class Tipos {
 	
 	logico_para_cadeia(log)
 	{
-		return {value:log == 0 ? "verdadeiro" : "falso"};
+		return {value: libBoolArg(log) ? "verdadeiro" : "falso"};
 	}
 	
 	logico_para_caracter(log)
 	{
-		return {value:log == 0 ? "s" : "n"};
+		return {value: libBoolArg(log) ? "s" : "n"};
 	}
 	
 	logico_para_inteiro(log)
 	{
-		return {value:log == 0 ? 1 : 0};
+		return {value: libBoolArg(log) ? 1 : 0};
 	}
 	
 	real_para_cadeia(rea)

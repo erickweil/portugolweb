@@ -1,8 +1,11 @@
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro, T_Vetor, T_Matriz } from "../../tokenizer.js";
 import { STATE_DELAY, VM_setDelay } from "../vm.js";
+import { BibliotecaBase } from "./libHelper.js";
 
-export default class Util {
+export default class Util extends BibliotecaBase {
 	constructor() {
+		super();
+		
 		this.members = {
 		"aguarde":{id:T_parO,parameters:[{name:"intervalo",type:T_inteiro}],type:T_vazio,jsSafe:false},
 		

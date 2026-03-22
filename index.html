@@ -82,6 +82,10 @@
     <input id="check-modo-turbo-menu" type="checkbox" onchange="index.setModoTurbo(this.checked)"/>
     <span>Modo turbo</span>
   </label>
+  <label class="settingsMenuOption" for="check-mostrar-bytecode-menu" title="Mostra o código intermediário gerado pela compilação, útil para entender como o código é interpretado e para depurar erros">
+    <input id="check-mostrar-bytecode-menu" type="checkbox" onchange="index.toggleMostrarBytecode(this.checked)"/>
+    <span>Mostrar compilação</span>
+  </label>
 
 </div>
 
