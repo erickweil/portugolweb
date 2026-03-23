@@ -84,7 +84,7 @@ ace.define("ace/theme/portugol_dark",["require","exports","module","ace/lib/dom"
     border-color: #F8F8F8\
     }\
     .ace-portugoldark .ace_support.ace_function {\
-    color: #DAD085\
+    color: #fcfaa3\
     }\
     .ace-portugoldark .ace_list,\
     .ace-portugoldark .ace_markup.ace_list,\
@@ -127,6 +127,10 @@ ace.define("ace/theme/portugol_dark",["require","exports","module","ace/lib/dom"
        position: absolute; /* without this positions will be erong */\
        background-color: #7B6A22;\
        z-index: 0; /* back of all other markers */ \
+    }\
+    .ace_editor.ace_autocomplete {\
+        width: 24em;\
+        max-width: 90%;\
     }\
     ";
     

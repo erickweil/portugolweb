@@ -31,7 +31,7 @@ export default class EditorManager {
 
         this.myPortugolCompleter = new portugolCompleter(libraries);
         this.aceLangTools = ace.require('ace/ext/language_tools');
-        this.aceLangTools.setCompleters();		
+        //this.aceLangTools.setCompleters();		
         this.aceLangTools.addCompleter(this.myPortugolCompleter);
         
         
