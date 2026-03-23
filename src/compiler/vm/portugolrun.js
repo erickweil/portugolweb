@@ -593,6 +593,7 @@ export default class PortugolRuntime {
 		if(this.escrever_tempo)
 		escreva("\n\n"+msg+" Tempo de execução:"+Math.trunc(performance.now()-this.lastvmTime)+" milissegundos");
 
+		flushEscreva();
 		this.promisefn = false;
 		this.lastvmState = STATE_ENDED;
 		if(this.libraries["Graficos"])

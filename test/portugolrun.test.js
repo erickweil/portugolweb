@@ -77,4 +77,8 @@ describe("PortugolRuntime",() => {
     testExemplo("byref_retorno.por");
     testExemplo("bibli_tipos.por");
     testExemplo("logico_array_default.por");
+
+    testExemplo("faca_enquanto.por");       // STATEMENT_facaEnquanto (do-while)
+    testExemplo("matriz_literal.por");      // compileDeclArray fix: [[a,b],[c,d]]
+    testExemplo("variaveis_globais.por");   // globais via closure
 });

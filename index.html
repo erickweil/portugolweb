@@ -204,13 +204,11 @@ title="Executa o código mostando linha a linha a cada clique"
 
 </div>
 <div id="myOutput" style="position:relative;">
-<div class="saida" id="saida"><div id="errorArea"></div><div class="saida" id="hidden"></div><textarea spellcheck="false" id="textAreaSaida" onclick="index.cursorToEnd(this)" onkeyup="index.cursorToEnd(this)" oninput="index.receiveInput(this)">??</textarea><div id="divariaveis" class="divariaveis"></div>
-
+<div class="saida" id="saida"><div id="errorArea"></div><textarea spellcheck="false" id="textAreaSaida" onclick="index.cursorToEnd(this)" onkeyup="index.cursorToEnd(this)" oninput="index.receiveInput(this)">??</textarea><div id="divariaveis" class="divariaveis"></div>
+<details class="compilacao" id="hidden">
+  <summary style="display: none;">.</summary>
+</details>
 </div>
-
-<!--
-<input type="button" value="mostrar bytecode" style="position:absolute;top:0px;right:0px;background:transparent;z-index: 5;border:none" onclick="index.toggleMostrarBytecode()"/> 
--->
 </div>
 </div>
 

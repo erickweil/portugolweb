@@ -16,9 +16,6 @@ body {
 
 #hidden{
 	display:none;
-	overflow-y: auto;
-	
-	max-height: 400px;
 }
 
 #errorArea{
@@ -230,6 +227,16 @@ body.mobile .mobileHidden{
 
 .paragrafo{
 white-space: pre-wrap;
+}
+
+details.compilacao{
+	position: absolute;
+	top: 0;
+	max-height: calc(100vh - 80px);
+	width: 100%;
+	overflow-y: auto;
+	padding: 8px;
+	background: #000000;
 }
 
 div.saida {
