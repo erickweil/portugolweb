@@ -68,4 +68,10 @@ describe("JsGenerator - Modo Turbo",() => {
     testExemploJS("tabuada.por");
     testExemploJS("byref_retorno.por");
     testExemploJS("bibli_calendario.por");
+
+    testExemploJS("faca_enquanto.por");       // STATEMENT_facaEnquanto (do-while)
+    testExemploJS("matriz_literal.por");      // compileDeclArray fix: [[a,b],[c,d]]
+    testExemploJS("variaveis_globais.por");   // globais via closure no novo escopo
+    testExemploJS("aguarde.por");             // biblioteca nao-jsSafe via promisify
+    testExemploJS("sobrecarga_tipo.por");     // getJsSafe fix: sobrecargas mesmo num. params
 });

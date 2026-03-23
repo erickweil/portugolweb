@@ -14,7 +14,7 @@ import Teclado from "./libraries/Teclado.js";
 import Texto from "./libraries/Texto.js";
 import Tipos from "./libraries/Tipos.js";
 import Util from "./libraries/Util.js";
-import { escreva, getCurrentTokenIndex, getScopeFromTokenIndex, STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMgetGlobalVar, VMgetVar, VMrun, VMsetup, VMtoString, VM_async_return, VM_b2s, VM_f2s, VM_getCodeMax, VM_getDelay, VM_getExecJS, VM_i2s, recursiveDeclareArray, limpa, leia, sorteia, VMerro, VM_realbool2s 
+import { escreva, flushEscreva, getCurrentTokenIndex, getScopeFromTokenIndex, STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMgetGlobalVar, VMgetVar, VMrun, VMsetup, VMtoString, VM_async_return, VM_b2s, VM_f2s, VM_getCodeMax, VM_getDelay, VM_getExecJS, VM_i2s, recursiveDeclareArray, limpa, leia, sorteia, VMerro, VM_realbool2s 
 } from "./vm.js";
 import { checkIsMobile } from "../../extras/mobile.js";
 
@@ -76,6 +76,13 @@ function _doExec(that,resolve)
 	}
 }
 
+class PararExecucaoError extends Error {
+	constructor(message) {
+		super(message);
+		this.name = "PararExecucaoError";
+	}
+}
+
 export default class PortugolRuntime {
     constructor(div_saida) {
 		this.lastvmState = STATE_ENDED;
@@ -91,6 +98,8 @@ export default class PortugolRuntime {
 
 		this.libraries = {};
 		this.promisefn = false;
+		this.isJsRunning = false;
+		this._jsStopReject = null;
     }
 
 	getErroMiddleCallback(erroCallback) {
@@ -214,9 +223,32 @@ export default class PortugolRuntime {
 		const that = this;
 		that.lastvmState = STATE_RUNNING;
 		that.lastvmTime = performance.now();
+
+		// Sinal de parada único: ao rejeitar, cancela leia, promisify e asyncReturn pendentes
+		const stopPromise = new Promise((_, reject) => { that._jsStopReject = reject; });
+		stopPromise.catch(() => {}); // evitar unhandled rejection quando o programa terminar normalmente
+		for(let libName in this.libraries) {
+			const lib = this.libraries[libName];
+			lib.stopPromise = stopPromise;
+			lib.setTimeout = (fun, delay) => {
+				flushEscreva();
+				mySetTimeout("EXEC", fun, delay);
+			};
+			lib.asyncReturn = () => {
+				flushEscreva();
+				this.lastvmState = STATE_ASYNC_RETURN;
+				const asyncReturnPromise = new Promise((resolve, reject) => {
+					this.promisefn = (retValue) => {
+						this.lastvmState = STATE_RUNNING;
+						resolve(retValue);
+					};
+				});
+				return Promise.race([asyncReturnPromise, stopPromise]);
+			};
+		}
 		
 		const ctx = {
-			libraries: that.libraries,
+			libraries: this.libraries,
 			escreva: escreva,
 			limpa: limpa,
 			i2s: VM_i2s,
@@ -225,7 +257,8 @@ export default class PortugolRuntime {
 			newArray: recursiveDeclareArray,
 			sorteia: sorteia,
 			leia: (tipo) => {
-				return new Promise((resolve, reject) => {
+				const leiaPromise = new Promise((resolve, reject) => {
+					flushEscreva();
 					that.lastvmState = STATE_WAITINGINPUT;
 					that.promisefn = () => {
 						that.lastvmState = STATE_RUNNING;
@@ -267,6 +300,7 @@ export default class PortugolRuntime {
 						return;
 					}
 				});
+				return Promise.race([leiaPromise, stopPromise]);
 			}		
 		};
 		
@@ -276,16 +310,34 @@ export default class PortugolRuntime {
 			let asyncFn = (0, eval)(compilado.jsgenerator.generatedCode);
 			
 			// Executar
+			this.isJsRunning = true;
 			await asyncFn(ctx);
+			this.isJsRunning = false;
+			flushEscreva();
 			this.executarParou("Programa finalizado.");
-			return that.div_saida.value;
+			return this.div_saida.value;
 		}
 		catch(e)
 		{
-			console.error("Erro na execução JS:", e);
-			VMerro("Erro durante execução: "+e);			
-			that.executarParou("Programa finalizado com erro.");
-			return that.div_saida.value;
+			this.isJsRunning = false;
+			flushEscreva();
+			if(e instanceof PararExecucaoError) {
+				// Programa foi interrompido, não é um erro real
+				this.executarParou("Programa interrompido pelo usuário.");
+			} else {
+				console.error("Erro na execução JS:", e);
+				VMerro("Erro durante execução: "+e);
+				this.executarParou("Programa finalizado com erro.");
+			}
+			return this.div_saida.value;
+		}
+		finally
+		{
+			// Limpar referências do sinal de parada nas bibliotecas
+			for(let libName in this.libraries) {
+				this.libraries[libName].stopPromise = null;
+			}
+			this._jsStopReject = null;
 		}
 	}
 	
@@ -314,6 +366,18 @@ export default class PortugolRuntime {
 
 	parar()
 	{
+		// Modo JS (turbo): independente do estado, rejeita a stopPromise via Promise.race.
+		// O catch de _executarJS captura o PararExecucaoError e chama executarParou para limpeza.
+		if(this.isJsRunning) {
+			myClearTimeout("EXEC");
+			if(this._jsStopReject) {
+				const rej = this._jsStopReject;
+				this._jsStopReject = null;
+				rej(new PararExecucaoError("Programa interrompido pelo usuário."));
+			}
+			return true;
+		}
+
 		if(this.lastvmState == STATE_RUNNING || this.lastvmState == STATE_WAITINGINPUT || this.lastvmState == STATE_BREATHING || this.lastvmState == STATE_DELAY || this.lastvmState == STATE_DELAY_REPEAT || this.lastvmState == STATE_STEP || this.lastvmState == STATE_ASYNC_RETURN)
 		{
 			if(this.lastvmState == STATE_WAITINGINPUT || this.lastvmState == STATE_STEP || this.lastvmState == STATE_ASYNC_RETURN || this.lastvmState == STATE_DELAY || this.lastvmState == STATE_DELAY_REPEAT)
@@ -397,9 +461,6 @@ export default class PortugolRuntime {
 			{
 				const lib = this.libraries[librariesNames[i]];
 				lib.resetar();
-				lib.setTimeout = (fun, delay) => {
-					mySetTimeout("EXEC", fun, delay);
-				};
 			}
 			
 			let compiler = new Compiler(tree,this.libraries,relevantTokens,string_cod,null,erroCounterCallback);
@@ -514,8 +575,12 @@ export default class PortugolRuntime {
 	{
 		if(this.lastvmState == STATE_ASYNC_RETURN)
 		{
-			VM_async_return(retValue);
-			this.promisefn();
+			if(this.isJsRunning) {
+				this.promisefn(retValue);
+			} else {
+				VM_async_return(retValue);
+				this.promisefn();
+			}
 		}
 		else
 		{

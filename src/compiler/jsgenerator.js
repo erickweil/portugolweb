@@ -191,10 +191,16 @@ export default class JsGenerator {
 	}
 
 	getJsSafe(func) {
+		// Usa igualdade de referência: tanto o JsGenerator quanto o vmcompiler
+		// recebem funcoes[i].parameters do mesmo objeto da AST, então podemos
+		// identificar a sobrecarga exata sem ambiguidade de tipo.
 		const matchFn = this.compiler.functions.find(
-			(f) => f.name === func.name && f.parameters.length === func.parameters.length
+			(f) => f.name === func.name && f.parameters === func.parameters
 		);
-		if (!matchFn) return true;
+		if (!matchFn) {
+			throw new Error("Função não encontrada: " + func.name);
+		}
+
 		return matchFn.jsSafe === true;
 	}
 	

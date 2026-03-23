@@ -278,6 +278,7 @@ export function VM_getSaida() {
 	return	VM_saida;
 }
 let VM_saidaDiv = false;
+let VM_saidaDirty = false; // true quando VM_saida foi modificado mas o DOM ainda não foi atualizado
 let VM_textInput = false;
 export function VM_getTextInput() {
 	return	VM_textInput;
@@ -293,7 +294,7 @@ export function VM_getCodeMax() {
 }
 
 let VM_escrevaCount = 0;
-let VM_escrevaMax = 1000;
+let VM_escrevaMax = 10000;
 let enviarErro = false;
 
 export function recursiveDeclareArray(sizes,defaultValue,i)
@@ -335,16 +336,27 @@ export function escreva(...txt)
 	}
 	for(let i=0;i<txt.length;i++)
 		VM_saida += txt[i];
-	
-	VM_saidaDiv.value = VM_saida;
-	VM_saidaDiv.scrollTop = VM_saidaDiv.scrollHeight;
+
+	VM_saidaDirty = true; // acumula no buffer; o DOM será atualizado no próximo flush
 	VM_escrevaCount++;
+}
+
+// Aplica o buffer acumulado ao DOM. Chamado quando a VM cede controle ao navegador.
+export function flushEscreva()
+{
+	if(VM_saidaDirty && VM_saidaDiv)
+	{
+		VM_saidaDirty = false;
+		VM_saidaDiv.value = VM_saida;
+		VM_saidaDiv.scrollTop = VM_saidaDiv.scrollHeight;
+	}
 }
 
 export function limpa()
 {
 	VM_saida = "";
 	VM_escrevaCount = 0;
+	VM_saidaDirty = false; // DOM será atualizado diretamente abaixo
 
 	if(!VM_saidaDiv) return;
 	VM_saidaDiv.value = VM_saida;
@@ -567,7 +579,6 @@ export function VMsetup(functions,jsfunctions,libraries,scopeList,globalCount,te
 	
 }
 
-// testando performance
 export function VMrun(execMax)
 {
 	try {
@@ -575,7 +586,9 @@ export function VMrun(execMax)
 	while(true)
 	{
 		VM_codeCount++; // para parar o programa e atualizar a saida em loops muito demorados
-		if(VM_codeCount > execMax) return STATE_BREATHING;
+		if(VM_codeCount > execMax) { 
+			return STATE_BREATHING; 
+		}
 		//let code = this.next();
 		
 		
@@ -945,12 +958,13 @@ export function VMrun(execMax)
 			}
 			break;
 			
-			case B_WRITE: 
+			case B_WRITE:
 				escreva(VM_stack[--VM_si]);
-				return STATE_BREATHING; // para n travar tudo com muitos escrevas.
+				VM_codeCount += 100; // Não é lançado breathing a cada escreva, mas cada escreva aumenta as chances de acontecer um breathing
+				break; // acumula no buffer; flush ocorre no próximo yield por codeCount
 			case B_CLEAR:
-				limpa();
-				return STATE_BREATHING; // para n travar tudo com muitos escrevas.
+				limpa(); // limpa() já atualiza o DOM diretamente
+				return STATE_BREATHING;
 			case B_WAITINPUT: 
 				return STATE_WAITINGINPUT;
 			case B_READ_INT:
@@ -1034,6 +1048,9 @@ export function VMrun(execMax)
 		console.error(err);
 		VMerro(err);
 		return STATE_ENDED;
+	}
+	finally {
+		flushEscreva(); // idempotente: apenas atualiza o DOM se houver conteúdo pendente
 	}
 }
 

@@ -1,4 +1,4 @@
-import { STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, VM_getDelay } from "../vm.js";
+import { STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, VM_getDelay } from "../vm.js";
 
 export const libBoolArg = (arg) => {
     if (typeof arg === "number") {
@@ -11,6 +11,8 @@ export const libBoolArg = (arg) => {
 export class BibliotecaBase {
     constructor() {
         this.setTimeout = setTimeout;
+        this.asyncReturn = null;
+        this.stopPromise = null;
         this.members = {};
     }
 
@@ -26,7 +28,7 @@ export class BibliotecaBase {
                 return result?.value;
             }
 
-            return new Promise((resolve, reject) => {
+            const pending = new Promise((resolve, reject) => {
                 if(result.state === STATE_DELAY) {
                     this.setTimeout(() => resolve(result.value), VM_getDelay());
                 } else if(result.state === STATE_BREATHING) {
@@ -37,10 +39,18 @@ export class BibliotecaBase {
                     }, VM_getDelay());
                 } else if(result.state === STATE_ENDED) {
                     reject(new Error("O programa foi finalizado!"));
+                } else if(result.state === STATE_ASYNC_RETURN) {
+                    // Tarefa assíncrona nativa (Android): aguarda android_async_return() resolver esta Promise
+                    if (!this.asyncReturn) {
+                        reject(new Error("Erro crítico ao chamar biblioteca: asyncReturn não suportado (Experimente desativar o modo turbo)"));
+                    } else {
+                        this.asyncReturn().then(resolve).catch(reject);
+                    }
                 } else {
                     reject(new Error("Erro crítico ao chamar biblioteca (Experimente desativar o modo turbo): "+JSON.stringify(result)));
                 }
             });
+            return this.stopPromise ? Promise.race([pending, this.stopPromise]) : pending;
         };
         return retFn;
     }
