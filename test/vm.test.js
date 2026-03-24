@@ -56,7 +56,7 @@ describe("Testando VM", () => {
                 type:T_vazio,
                 jsSafe:true
             },
-        ],false,false,false,10,"",saida,false);
+        ],false,false,10,"",saida,false);
 
         vm.VMrun(10000);
 
@@ -104,7 +104,7 @@ describe("Testando VM", () => {
                 type:T_vazio,
                 jsSafe:true
             },
-        ],false,false,false,10,"",saida,false);
+        ],false,false,10,"",saida,false);
 
         vm.VMrun(10000);
 
@@ -127,7 +127,7 @@ describe("Testando VM", () => {
                 type:T_vazio,
                 jsSafe:true
             }
-        ],false,false,false,10,"",saida,erroCallback);
+        ],false,false,10,"",saida,erroCallback);
 
         saida.value = "12abc\n";
         vm.VMrun(10000);
@@ -151,7 +151,7 @@ describe("Testando VM", () => {
                 type:T_vazio,
                 jsSafe:true
             }
-        ],false,false,false,10,"",saida,erroCallback);
+        ],false,false,10,"",saida,erroCallback);
 
         saida.value = "1e309\n";
         vm.VMrun(10000);
@@ -176,7 +176,7 @@ describe("Testando VM", () => {
                 type:T_vazio,
                 jsSafe:true
             }
-        ],false,false,false,10,"",saida,erroCallback);
+        ],false,false,10,"",saida,erroCallback);
 
         vm.VMrun(10000);
 
@@ -202,7 +202,7 @@ describe("Testando VM", () => {
                 type:T_vazio,
                 jsSafe:true
             }
-        ],false,false,false,10,"",saida,false);
+        ],false,false,10,"",saida,false);
 
         vm.VMrun(10000);
 
@@ -229,7 +229,7 @@ describe("Testando VM", () => {
                 type:T_vazio,
                 jsSafe:true
             }
-        ],false,false,false,10,"",saida,false);
+        ],false,false,10,"",saida,false);
 
         // Com execMax alto, o programa deve terminar sem precisar de breathing
         let state = vm.VMrun(10000);
@@ -252,7 +252,7 @@ describe("Testando VM", () => {
                 type:T_vazio,
                 jsSafe:true
             }
-        ],false,false,false,10,"",saida,false);
+        ],false,false,10,"",saida,false);
 
         vm.VMrun(10000);
         expect(saida.value).toBe("test");
@@ -282,7 +282,7 @@ describe("Testando VM", () => {
                 type:T_vazio,
                 jsSafe:true
             }
-        ],false,false,false,10,"",saida,false);
+        ],false,false,10,"",saida,false);
 
         // B_CLEAR retorna STATE_BREATHING, então precisamos chamar mais uma vez
         let state = vm.VMrun(10000);

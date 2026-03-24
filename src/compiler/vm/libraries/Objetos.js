@@ -66,7 +66,7 @@ export default class Objetos extends BibliotecaBase {
 	{
 		let obj = this.objs[endereco];
 		if(obj) return obj;
-		throw "Nenhum objeto encontrado no endereco "+endereco;
+		throw new Error("Nenhum objeto encontrado no endereco "+endereco);
 	}
 
 	obter_valor_propriedade(endereco,propriedade)
@@ -77,7 +77,7 @@ export default class Objetos extends BibliotecaBase {
 			return obj[propriedade];
 		}
 
-		throw "Não pôde acessar a propriedade '"+propriedade+"' no endereco "+endereco;
+		throw new Error("Não pôde acessar a propriedade '"+propriedade+"' no endereco "+endereco);
 	}
 	
 	atribuir_propriedade(endereco,propriedade,valor)
@@ -111,7 +111,7 @@ export default class Objetos extends BibliotecaBase {
 		
 	criar_objeto_via_xml(xml)
 	{
-		throw "JSON é melhor que XML, use criar_objeto_via_json";
+		throw new Error("JSON é melhor que XML, use criar_objeto_via_json");
 	}
 	
 	liberar()
@@ -137,14 +137,14 @@ export default class Objetos extends BibliotecaBase {
 	obter_propriedade_tipo_danese_em_vetor(endereco,propriedade,indice)
 	{
 		let arr = this.obter_valor_propriedade(endereco,propriedade);
-		if(!Array.isArray(arr)) throw "A propriedade '"+propriedade+"' não é um vetor";
+		if(!Array.isArray(arr)) throw new Error("A propriedade '"+propriedade+"' não é um vetor");
 		return {value:arr[indice]};
 	}
 	
 	obter_tamanho_vetor_propriedade(endereco,propriedade)
 	{
 		let arr = this.obter_valor_propriedade(endereco,propriedade);
-		if(!Array.isArray(arr)) throw "A propriedade '"+propriedade+"' não é um vetor";
+		if(!Array.isArray(arr)) throw new Error("A propriedade '"+propriedade+"' não é um vetor");
 		return {value:arr.length};
 	}
 	
@@ -157,7 +157,7 @@ export default class Objetos extends BibliotecaBase {
 			if(Array.isArray(prop))
 				return {value:this.TIPO_VETOR};
 			else if(prop === null)
-				throw "Tipo desconhecido 'null'";
+				throw new Error("Tipo desconhecido 'null'");
 			else
 				return {value:this.TIPO_OBJETO};
 		}
@@ -167,7 +167,7 @@ export default class Objetos extends BibliotecaBase {
 		return {value:this.TIPO_CADEIA};
 		else if(typeof prop === "number")
 		return {value:this.TIPO_REAL};
-		else throw "Tipo desconhecido '"+(typeof prop)+"'";
+		else throw new Error("Tipo desconhecido '"+(typeof prop)+"'");
 	}
 
 }

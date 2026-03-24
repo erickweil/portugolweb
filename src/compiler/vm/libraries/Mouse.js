@@ -126,7 +126,7 @@ export default class Mouse extends BibliotecaBase {
 		if(botao == this.BOTAO_DIREITO) return {value:this.pressionado[2]};
 		else if(botao == this.BOTAO_ESQUERDO) return {value:this.pressionado[0]};
 		else if(botao == this.BOTAO_MEIO) return {value:this.pressionado[1]};
-		else throw "O Botão deve ser 0, 1 ou 2";
+		else throw new Error("O Botão deve ser 0, 1 ou 2");
 	}
 	
 	algum_botao_pressionado()

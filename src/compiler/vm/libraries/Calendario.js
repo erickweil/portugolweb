@@ -99,7 +99,7 @@ export default class Calendario extends BibliotecaBase {
 	dia_semana_completo(dia,maiusculas,minusculas)
 	{
 		if(dia <= 0 || dia > this.diasCompleto.length) {
-			throw "Deve estar entre 1 e 7 para ser um dia válido, recebeu:"+dia;
+			throw new Error("Deve estar entre 1 e 7 para ser um dia válido, recebeu:"+dia);
 		}
 
 		return {value: libBoolArg(maiusculas) ? this.diasCompleto[dia-1].toUpperCase() : ( 
@@ -110,7 +110,7 @@ export default class Calendario extends BibliotecaBase {
 	dia_semana_curto(dia,maiusculas,minusculas)
 	{
 		if(dia <= 0 || dia > this.diasCurto.length) {
-			throw "Deve estar entre 1 e 7 para ser um dia válido, recebeu:"+dia;
+			throw new Error("Deve estar entre 1 e 7 para ser um dia válido, recebeu:"+dia);
 		}
 
 		return {value:libBoolArg(maiusculas) ? this.diasCurto[dia-1].toUpperCase() : ( 
@@ -121,7 +121,7 @@ export default class Calendario extends BibliotecaBase {
 	dia_semana_abreviado(dia,maiusculas,minusculas)
 	{
 		if(dia <= 0 || dia > this.diasAbr.length) {
-			throw "Deve estar entre 1 e 7 para ser um dia válido, recebeu:"+dia;
+			throw new Error("Deve estar entre 1 e 7 para ser um dia válido, recebeu:"+dia);
 		}
 
 		return {value:libBoolArg(maiusculas) ? this.diasAbr[dia-1].toUpperCase() : ( 

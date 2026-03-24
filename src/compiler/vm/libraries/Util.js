@@ -62,7 +62,7 @@ export default class Util extends BibliotecaBase {
 	
 	sorteia(minimo,maximo)
 	{
-		if(maximo < minimo) throw "O valor máximo deve ser maior ou igual ao mínimo";
+		if(maximo < minimo) throw new Error("O valor máximo deve ser maior ou igual ao mínimo");
 		return {value:Math.floor(Math.random() * ((maximo-minimo) + 1)) + minimo};
 	}
 	

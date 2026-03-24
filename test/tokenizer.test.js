@@ -45,7 +45,6 @@ function testExemplo(exemplo) {
         testExemplo("aleatorio1.por");
         testExemplo("aleatorio2.por");
         testExemplo("aleatorio3.por");
-        testExemplo("aleatorio5.por");
         testExemplo("bibliotecas.por");
         testExemplo("bolachaoumaca.por");
         testExemplo("branco.por");

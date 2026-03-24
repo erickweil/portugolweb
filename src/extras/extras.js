@@ -87,8 +87,7 @@ function openFullscreen(elem) {
 
 /* Close fullscreen */
 function closeFullscreen() {
-	try{
-		
+	try {
 		if (document.fullscreenElement || 
 		document.webkitFullscreenElement || 
 		document.mozFullScreenElement) {
@@ -104,11 +103,9 @@ function closeFullscreen() {
 			document.msExitFullscreen();
 			}
 		}
-	}catch (e) {
-		let myStackTrace = e.stack || e.stacktrace || "";
-
-			console.log(myStackTrace);
-		}
+	} catch (e) {
+		console.error(e);
+	}
 }
 
 function getScreenDimensions()

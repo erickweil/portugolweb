@@ -80,7 +80,7 @@ export default class Graficos extends BibliotecaBase {
 		"altura_texto":{id:T_parO,parameters:[{name:"texto",type:T_cadeia}],type:T_inteiro,jsSafe:true},
 		"desenhar_elipse":{id:T_parO,parameters:[{name:"pX",type:T_inteiro},{name:"pY",type:T_inteiro},{name:"largura",type:T_inteiro},{name:"altura",type:T_inteiro},{name:"preencher",type:T_logico}],type:T_vazio,jsSafe:true},
 		"entrar_modo_tela_cheia":{id:T_parO,parameters:[],type:T_vazio,jsSafe:true},
-		"desenhar_poligono":{id:T_parO,parameters:[{name:"matriz_pontos",type:T_Minteiro},{name:"preenchar",type:T_logico}],type:T_vazio,jsSafe:true},
+		"desenhar_poligono":{id:T_parO,parameters:[{name:"matriz_pontos",type:T_Minteiro},{name:"preencher",type:T_logico}],type:T_vazio,jsSafe:true},
 		"desenhar_ponto":{id:T_parO,parameters:[{name:"pX",type:T_inteiro},{name:"pY",type:T_inteiro}],type:T_vazio,jsSafe:true},
 		"carregar_imagem":{id:T_parO,parameters:[{name:"caminho",type:T_cadeia}],type:T_inteiro,jsSafe:false},
 		"liberar_imagem":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro}],type:T_vazio,jsSafe:true},
@@ -450,7 +450,7 @@ export default class Graficos extends BibliotecaBase {
 			}
 			else if(imgObject.error)
 			{
-				throw "Erro ao carregar a imagem \""+url+"\",\n só é permitido carregar imagens usando um endereço web, por exemplo: \"https://upload.wikimedia.org/wikipedia/commons/0/0f/Exemplo.jpg\"";
+				throw new Error("Erro ao carregar a imagem \""+url+"\",\n só é permitido carregar imagens usando um endereço web, por exemplo: \"https://upload.wikimedia.org/wikipedia/commons/0/0f/Exemplo.jpg\"");
 			}
 			else
 			{
@@ -502,7 +502,7 @@ export default class Graficos extends BibliotecaBase {
 		}
 		else
 		{
-			throw "Imagem "+endereco+" não existe ou não foi carregada";
+			throw new Error("Imagem "+endereco+" não existe ou não foi carregada");
 		}
 	}
 	
@@ -527,7 +527,7 @@ export default class Graficos extends BibliotecaBase {
 		}
 		else
 		{
-			throw "Imagem "+endereco+" não existe ou não foi carregada";
+			throw new Error("Imagem "+endereco+" não existe ou não foi carregada");
 		}
 	}
 	
@@ -560,7 +560,7 @@ export default class Graficos extends BibliotecaBase {
 		}
 		else
 		{
-			throw "Imagem "+endereco+" não existe ou não foi carregada";
+			throw new Error("Imagem "+endereco+" não existe ou não foi carregada");
 		}
 	}
 
@@ -573,7 +573,7 @@ export default class Graficos extends BibliotecaBase {
 		}
 		else
 		{
-			throw "Imagem "+endereco+" não existe ou não foi carregada";
+			throw new Error("Imagem "+endereco+" não existe ou não foi carregada");
 		}
 	}
 	
@@ -586,7 +586,7 @@ export default class Graficos extends BibliotecaBase {
 		}
 		else
 		{
-			throw "Imagem "+endereco+" não existe ou não foi carregada";
+			throw new Error("Imagem "+endereco+" não existe ou não foi carregada");
 		}
 	}
 	
@@ -605,7 +605,7 @@ export default class Graficos extends BibliotecaBase {
 		return {value: (rgb>>8) & 0xFF};
 		else if(canal == this.CANAL_B)
 		return {value: (rgb) & 0xFF};
-		else throw "canal deve ser CANAL_R, CANAL_G ou CANAL_B";
+		else throw new Error("canal deve ser CANAL_R, CANAL_G ou CANAL_B");
 	}
 	
 	obter_cor(rgb,canal)
@@ -616,7 +616,7 @@ export default class Graficos extends BibliotecaBase {
 		return {value: (rgb>>8) & 0xFF};
 		else if(canal == this.CANAL_B)
 		return {value: (rgb) & 0xFF};
-		else throw "canal deve ser CANAL_R, CANAL_G ou CANAL_B";
+		else throw new Error("canal deve ser CANAL_R, CANAL_G ou CANAL_B");
 	}
 	
 	definir_estilo_texto(italico,negrito,sublinhado)

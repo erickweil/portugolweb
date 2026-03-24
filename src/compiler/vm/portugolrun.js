@@ -23,8 +23,7 @@ function debug_exibe_bytecode(text) {
 		document.getElementById("hidden").innerHTML = text;
 	}
 	catch(e){
-		let myStackTrace = e.stack || e.stacktrace || "";
-		console.log(myStackTrace);
+		console.error(e);
 	}
 }
 
@@ -72,7 +71,7 @@ function _doExec(that,resolve)
 	}
 	else
 	{
-		throw "Estado desconhecido:"+state;
+		throw new Error("Estado desconhecido:"+state);
 	}
 }
 
@@ -113,14 +112,7 @@ export default class PortugolRuntime {
 			
 			that.errosCount++;
 			if(that.escrever_erros) {
-				try {
-					let obj = {};
-					console.log(obj.erro.erromesmo);
-				} catch (e) {
-					let myStackTrace = e.stack || e.stacktrace || "";
-					
-					console.log(myStackTrace);
-				}
+				console.error("Linha " + lineNumber + ":" + colNumber + " [" + tipoErro + "] -> " + msg);
 			}
 			
 			// manter no formato de erro esperado pelo Ace Editor
@@ -183,7 +175,7 @@ export default class PortugolRuntime {
 	{		
 		if(!compilado || !compilado.success)
 		{
-			throw "Tentou executar mas havia erros na compilação";
+			throw new Error("Tentou executar mas havia erros na compilação");
 		}
 		
 		const that = this;
@@ -196,8 +188,7 @@ export default class PortugolRuntime {
 				}
 				catch(e)
 				{
-					let myStackTrace = e.stack || e.stacktrace || "";
-					console.log(myStackTrace);
+					console.error(e);
 
 					reject("Erro ao preparar a máquina");
 					return;
@@ -306,8 +297,10 @@ export default class PortugolRuntime {
 		
 		try
 		{
-			// Avaliar o código gerado para obter a async function
-			let asyncFn = (0, eval)(compilado.jsgenerator.generatedCode);
+			//let asyncFn = (0, eval)(compilado.jsgenerator.generatedCode);
+			// unlike eval(), the Function constructor creates functions that execute in the global scope only.
+			const fnGen = new Function(compilado.jsgenerator.generatedCode);
+			const asyncFn = fnGen();
 			
 			// Executar
 			this.isJsRunning = true;
@@ -345,7 +338,6 @@ export default class PortugolRuntime {
 		// Preparar Máquina
 		VMsetup(
 			compilado.compiler.functions,
-			false, // jsfunctions removido — o novo JsGenerator não usa mais per-function JS
 			this.libraries,
 			compilado.compiler.scopeList,
 			compilado.compiler.globalCount,
@@ -482,8 +474,7 @@ export default class PortugolRuntime {
 					jsgenerator.compile();	
 				}
 				catch(e){
-					let myStackTrace = e.stack || e.stacktrace || "";
-					console.log(myStackTrace);
+					console.error(e);
 				}
 			}
 			
@@ -567,7 +558,7 @@ export default class PortugolRuntime {
 		}
 		else
 		{
-			throw "Não estava esperando input";
+			throw new Error("Não estava esperando input");
 		}
 	}
 
@@ -584,7 +575,7 @@ export default class PortugolRuntime {
 		}
 		else
 		{
-			throw "Não estava esperando async return";
+			throw new Error("Não estava esperando async return");
 		}
 	}
 

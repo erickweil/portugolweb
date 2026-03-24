@@ -126,18 +126,14 @@ import Hotbar from "./pages/index/hotbar.js";
 					btn.value = "Executar";
 				})
 				.catch((err) => {
-					let myStackTrace = err.stack || err.stacktrace || "";
-
-					console.log(myStackTrace);
+					console.error(err);
 
 					btn.value = "Executar";
 				});
 			}
 			catch(e)
 			{
-				let myStackTrace = e.stack || e.stacktrace || "";
-
-				console.log(myStackTrace);
+				console.error(e);
 			
 				enviarErro({
 					row: 0,
@@ -171,10 +167,6 @@ import Hotbar from "./pages/index/hotbar.js";
 
 	export function exemplo(nome)
 	{
-		if(nome == "aleatorio")
-		{
-			nome+=  Math.floor(Math.random() * 4);
-		}
 		httpGetAsync("exemplos/"+nome+".por",
 		function(code)
 		{
@@ -468,7 +460,6 @@ import Hotbar from "./pages/index/hotbar.js";
 	
 	function limparErros(tipoErros)
 	{
-		console.log("limpando erros");
 		editorManager.removeMarkers();
 		errosSaida.innerHTML = "";
 		if(tipoErros)
@@ -545,9 +536,7 @@ import Hotbar from "./pages/index/hotbar.js";
 			persistentStoreValue("tamanhoFonte",tamanhoFonte);
 			
 		} catch (e) {
-			let myStackTrace = e.stack || e.stacktrace || "";
-
-			console.log(myStackTrace);
+			console.error(e);
 		}
 	}
 	
@@ -660,9 +649,7 @@ import Hotbar from "./pages/index/hotbar.js";
 				//console.log("Compilou:"+compilado.success+" Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
 			}
 		} catch (e) {
-			let myStackTrace = e.stack || e.stacktrace || "";
-
-			console.log(myStackTrace);
+			console.error(e);
 		}
 	}
 	

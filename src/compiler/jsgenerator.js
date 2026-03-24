@@ -246,7 +246,7 @@ export default class JsGenerator {
 		}
 		
 		// --- Início da geração de código ---
-		this.genln("(async function($ctx) {");
+		this.genln("return async function($ctx) {");
 		this.increaseTabLevel();
 		
 		// Funções helper inline
@@ -316,7 +316,7 @@ export default class JsGenerator {
 		this.genln("await inicio();");
 		
 		this.decreaseTabLevel();
-		this.genln("})");
+		this.genln("};");
 		
 		this.scope = this.scope.parentScope;
 		

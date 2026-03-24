@@ -633,34 +633,6 @@ export class Tokenizer {
 		return last;
 	}
 	
-	getTokenIndexAtRowCol(row,col)
-	{
-		let last = 0;
-		let firstIndex = -1;
-		for(let i =0; i< this.tokens.length;i++)
-		{
-			let tokenindex = this.tokens[i].index;
-			let tokenrow = numberOfLinesUntil(tokenindex,this.input);
-			
-			if(tokenrow == row && firstIndex == -1)
-			{
-				firstIndex = tokenindex;
-			}
-			
-			if(firstIndex != -1)
-			{
-				if(tokenindex - firstIndex > col)
-				{
-					return last;
-				}
-				
-				last = i;
-			}
-		}
-		return last;
-	}
-	
-	
 	// Adding a method to the constructor
 	tokenize()
 	{

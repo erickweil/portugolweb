@@ -271,7 +271,6 @@ export function VM_getGlobals() {
 }
 let VM_scopeList = false; // Para encontrar variáveis
 let VM_functions = false;
-let VM_jsfunctions = false;
 let VM_libraries = false;
 let VM_saida = false;
 export function VM_getSaida() {
@@ -327,7 +326,7 @@ export function recursiveDeclareArray(sizes,defaultValue,i)
 
 export function escreva(...txt)
 {
-	if(!VM_saidaDiv) throw "Desconfigurado escreva() não pode executar";
+	if(!VM_saidaDiv) throw new Error("Desconfigurado escreva() não pode executar");
 
 	if(VM_escrevaCount > VM_escrevaMax)
 	{
@@ -365,7 +364,7 @@ export function limpa()
 
 export function leia()
 {
-	if(!VM_saidaDiv) throw "Desconfigurado leia() não pode executar";
+	if(!VM_saidaDiv) throw new Error("Desconfigurado leia() não pode executar");
 
 	let saidadiv = VM_saidaDiv.value;
 	saidadiv = saidadiv.replace(/\r\n/g,"\n");
@@ -542,10 +541,9 @@ export function VMerro(msg)
 	console.log("ERRO NA VM:",msg);
 }
 
-export function VMsetup(functions,jsfunctions,libraries,scopeList,globalCount,textInput,saida_div,erroCallback) 
+export function VMsetup(functions,libraries,scopeList,globalCount,textInput,saida_div,erroCallback) 
 {
 	VM_functions = functions;
-	VM_jsfunctions = jsfunctions;
 	VM_textInput = textInput;
 	VM_libraries = libraries;
 	VM_scopeList = scopeList;
@@ -728,7 +726,7 @@ export function VMrun(execMax)
 				{
 					VMerro("Function '"+methIndex+"' not found");
 				}
-				else if(!VM_execJS || !VM_functions[methIndex].jsSafe)
+				else
 				{
 					// precisa criar um stackFrame
 					
@@ -752,35 +750,6 @@ export function VMrun(execMax)
 					if(methArgs) for(let i=0;i<methArgs.length;i++)
 					{
 						VM_vars[i] = methArgs[i];
-					}
-				}
-				else
-				{
-					let jsfuncName = VM_jsfunctions[methIndex].jsName;
-					if(!jsfuncName)
-					{
-						VMerro("Function '"+methIndex+"' has no name");
-					}
-					
-					
-					let jsfunc = window[jsfuncName];
-					
-					if(!jsfunc)
-					{
-						VMerro("Function '"+jsfuncName+"' not found");
-					}
-					else
-					{
-						//console.log("chamou "+jsfuncName);
-						let ret = jsfunc.apply(null,methArgs);
-						if(typeof ret !== "undefined")
-						{
-							if(typeof ret == "boolean")
-							{
-								ret = ret ? B_TRUE : B_FALSE;
-							}
-							VM_stack[VM_si++] = ret;
-						}
 					}
 				}
 			}

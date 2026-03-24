@@ -8,8 +8,8 @@ export default class Hotbar {
         this.errosSaida = errosSaida;
 		this.div_tabelavariaveis = div_tabelavariaveis;
         this.resizeEditorCallback = resizeEditorCallback;
-        this.hotbar_currentY;
-        this.hotbar_initialY;
+        this.hotbar_currentY = 0;
+        this.hotbar_initialY = 0;
         this.hotbar_clickY;
         // se mexer nesses numeros tudo para de funcionar deixa assim.
         this.hotbar_initialHeight = 200;
@@ -207,7 +207,6 @@ export default class Hotbar {
 			this.hotbar.style.cursor = "grabbing";
 		}
 		
-		let hotbar_lastY = this.hotbar_currentY;
 		this.hotbar_currentY = yValue - this.hotbar_initialY;
 		let yOff = Math.abs(this.hotbar_clickY - yValue);
 		//console.log("drag:"+hotbar_initialY);
