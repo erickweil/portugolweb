@@ -17,6 +17,7 @@ import Util from "./libraries/Util.js";
 import { escreva, flushEscreva, getCurrentTokenIndex, getScopeFromTokenIndex, STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMgetGlobalVar, VMgetVar, VMrun, VMsetup, VMtoString, VM_async_return, VM_b2s, VM_f2s, VM_getCodeMax, VM_getDelay, VM_getExecJS, VM_i2s, recursiveDeclareArray, limpa, leia, sorteia, VMerro, VM_realbool2s 
 } from "./vm.js";
 import { checkIsMobile } from "../../extras/mobile.js";
+import ServicosWeb from "./libraries/ServicosWeb.js";
 
 function debug_exibe_bytecode(text) {
 	try{
@@ -152,6 +153,7 @@ export default class PortugolRuntime {
 		this.libraries["Objetos"] = new Objetos();
 		this.libraries["Tipos"] = new Tipos();
 		this.libraries["Internet"] = new Internet();
+		this.libraries["ServicosWeb"] = new ServicosWeb(this.libraries["Internet"]);
 
 		// Dependem de graficos
 		if(myCanvas && myCanvasModal && myCanvasWindow && myCanvasWindowTitle && myCanvasKeys)

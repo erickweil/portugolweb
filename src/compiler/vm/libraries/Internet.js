@@ -52,7 +52,7 @@ export default class Internet extends BibliotecaBase {
 			Android.httpgetcheck(endereco,this.tempo_limite); // eslint-disable-line
 			return {state:STATE_ASYNC_RETURN}; 
 		}
-		else //return {value:"Obter páginas da internet apenas funciona no aplicativo Android, pelo navegador não é possível devido a limitações de segurança que grande parte dos navegadores aplicam."};
+		else
 		{
 			let ret = this.obter_texto(endereco);
 			if(ret.state == STATE_DELAY_REPEAT) {
@@ -62,15 +62,32 @@ export default class Internet extends BibliotecaBase {
 			return {value:ret.__sucess};
 		}
 	}
-	
+
 	obter_texto(endereco)
+	{
+		return this._fazer_requisicao(endereco, "GET", {
+			credentials: 'same-origin' // Mantendo o comportamento anterior, só com ServicosWeb que vai incluir cookies
+		});
+	}
+	
+	/**
+	 * 
+	 * @param {string} endereco 
+	 * @param {"GET"|"PATCH"|"POST"|"PUT"|"DELETE"} metodoHttp 
+	 * @param {RequestInit} [opcoes]
+	 */
+	_fazer_requisicao(endereco, metodoHttp, opcoes)
 	{
 		if(typeof Android !== 'undefined')
 		{
+			if(metodoHttp != "GET")
+			{
+				throw new Error("Apenas o método GET é suportado no momento para requisições feitas pelo aplicativo Android.");
+			}
 			Android.httpget(endereco,this.tempo_limite); // eslint-disable-line
 			return {state:STATE_ASYNC_RETURN}; 
 		}
-		else// return {value:"Obter páginas da internet apenas funciona no aplicativo Android, pelo navegador não é possível devido a limitações de segurança que grande parte dos navegadores aplicam."};
+		else
 		{
 			if(this.ocupado)
 			{
@@ -104,20 +121,26 @@ export default class Internet extends BibliotecaBase {
 				
 				try{
 					let that = this;
-					fetch(endereco, {method:"GET",  signal: that.abortador.signal})
+					fetch(endereco, {
+						method: metodoHttp, 
+						signal: that.abortador.signal,
+						cache: 'no-cache',
+						redirect: 'follow',
+						...(opcoes || {})
+					})
 					.then((response) => {
 						// check for error response
 						if (!response.ok) {
 							// get error message from body or default to response status
 							const error = response.status;
-							return Promise.reject(error);
+							return Promise.reject(new Error(response.status + " " + response.statusText));
 						}
 				
 						return response.text();
 					})
 					.then((text) => {
 						if(!text) {
-							return Promise.reject("Resposta Vazia");
+							return Promise.reject(new Error("Resposta Vazia"));
 						}
 				
 						that.retorno = {value:""+text,__sucess:true};
