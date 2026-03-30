@@ -579,7 +579,7 @@ import Hotbar from "./pages/index/hotbar.js";
 		else 
 		{
 			// Padrão mostrar hotbar no mobile, esconder no pc
-			toggleHotbar(isMobile);
+			toggleHotbar(false);
 		}
 
 		if(typeof(tamanhoFonte) == "string")

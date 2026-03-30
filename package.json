@@ -9,8 +9,7 @@
     "lint": "npx eslint ./",
     "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js --verbose",
     "build": "vite build",
-    "preview": "vite preview",
-    "buildversion": "node src-dev/version.js"
+    "preview": "vite preview"
   },
   "repository": {
     "type": "git",
@@ -31,12 +30,12 @@
     "@eslint/js": "^10.0.1",
     "@types/ace": "^0.0.52",
     "eslint": "^10",
-    "glob": "^13.0.6",
     "globals": "^17.4.0",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.3.0",
     "node-fetch": "^3.3.2",
     "prettier": "^3.8.1",
+    "terser": "^5.46.1",
     "vite": "^8.0.0"
   }
 }

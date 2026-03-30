@@ -23,7 +23,7 @@ export default class EditorManager {
 
         this.editor.setOptions({
             enableBasicAutocompletion: true,
-            enableSnippets: true, // negócio chato demais, tenho que fazer ficar mais intuitivo antes de ativar
+            enableSnippets: false, // negócio chato demais, tenho que fazer ficar mais intuitivo antes de ativar
             enableLiveAutocompletion: true,
             enableMobileMenu: false, // três pontinhos inúteis
             scrollPastEnd: 0.5
@@ -66,6 +66,7 @@ export default class EditorManager {
 	}
 
     getValue() {
+        if (!this.editor) return "";
         return this.editor.getValue();
     }
 
