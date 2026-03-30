@@ -65,9 +65,18 @@ export default class Internet extends BibliotecaBase {
 
 	obter_texto(endereco)
 	{
-		return this._fazer_requisicao(endereco, "GET", {
-			credentials: 'same-origin' // Mantendo o comportamento anterior, só com ServicosWeb que vai incluir cookies
-		});
+		// Manter comportamento antigo.
+		if(typeof Android !== 'undefined')
+		{
+			Android.httpget(endereco,this.tempo_limite); // eslint-disable-line
+			return {state:STATE_ASYNC_RETURN}; 
+		}
+		else
+		{
+			return this._fazer_requisicao(endereco, "GET", {
+				credentials: 'same-origin' // Mantendo o comportamento anterior, só com ServicosWeb que vai incluir cookies
+			});
+		}
 	}
 	
 	/**
@@ -78,91 +87,84 @@ export default class Internet extends BibliotecaBase {
 	 */
 	_fazer_requisicao(endereco, metodoHttp, opcoes)
 	{
-		if(typeof Android !== 'undefined')
-		{
-			if(metodoHttp != "GET")
-			{
-				throw new Error("Apenas o método GET é suportado no momento para requisições feitas pelo aplicativo Android.");
-			}
-			Android.httpget(endereco,this.tempo_limite); // eslint-disable-line
-			return {state:STATE_ASYNC_RETURN}; 
+		if(opcoes.body && opcoes.body === "") {
+			opcoes.body = undefined; // Evitar enviar body de texto vazio, o que pode causar problemas em algumas APIs
 		}
-		else
+		
+		if(this.ocupado)
 		{
-			if(this.ocupado)
+			if(this.retorno !== false)
 			{
-				if(this.retorno !== false)
-				{
-					let ret = this.retorno;
-					this.finalizarRequisicao();
-					return ret;
-				}
-				else
-				{
-					if((Date.now() - this.tempo) > this.tempo_limite)
-					{
-						if(this.abortador) this.abortador.abort();
-						this.finalizarRequisicao();
-						return {value:"Tempo limite atingido",__sucess:false};
-					}
-					else 
-					{
-						VM_setDelay(1);
-						return {state:STATE_DELAY_REPEAT};
-					}
-				}
+				let ret = this.retorno;
+				this.finalizarRequisicao();
+				return ret;
 			}
 			else
 			{
-				this.ocupado = true;
-				this.tempo = Date.now();
-				this.retorno = false;
-				this.abortador = new AbortController();
-				
-				try{
-					let that = this;
-					fetch(endereco, {
-						method: metodoHttp, 
-						signal: that.abortador.signal,
-						cache: 'no-cache',
-						redirect: 'follow',
-						...(opcoes || {})
-					})
-					.then((response) => {
-						// check for error response
-						if (!response.ok) {
-							// get error message from body or default to response status
-							const error = response.status;
-							return Promise.reject(new Error(response.status + " " + response.statusText));
-						}
-				
-						return response.text();
-					})
-					.then((text) => {
-						if(!text) {
-							return Promise.reject(new Error("Resposta Vazia"));
-						}
-				
-						that.retorno = {value:""+text,__sucess:true};
-					})
-					.catch( (reason) => {
-						console.error(reason);
-						if (reason.name === 'AbortError') {
-							return;
-						} else {
-							that.retorno = {value:""+reason,__sucess:false};
-						}
-					});
-				}
-				catch(e) {
-					console.error(e);
+				if((Date.now() - this.tempo) > this.tempo_limite)
+				{
+					if(this.abortador) this.abortador.abort();
 					this.finalizarRequisicao();
-					return {value:""+e,__sucess:false};
+					return {value:"Tempo limite atingido",__sucess:false};
 				}
-
-				VM_setDelay(1);
-				return {state:STATE_DELAY_REPEAT};
+				else 
+				{
+					VM_setDelay(1);
+					return {state:STATE_DELAY_REPEAT};
+				}
 			}
+		}
+		else
+		{
+			this.ocupado = true;
+			this.tempo = Date.now();
+			this.retorno = false;
+			this.abortador = new AbortController();
+			
+			try{
+				let that = this;
+				fetch(endereco, {
+					method: metodoHttp, 
+					signal: that.abortador.signal,
+					cache: 'no-cache',
+					redirect: 'follow',
+					...(opcoes || {})
+				})
+				.then((response) => {
+					// check for error response
+					if (!response.ok) {
+						// get error message from body or default to response status
+						return response.text().then((text) => {
+							return Promise.reject(new Error(response.status + " " + response.statusText + ";" + text));
+						});
+					}
+			
+					return response.text();
+				})
+				.then((text) => {
+					if(!text) {
+						return Promise.reject(new Error("Resposta Vazia"));
+					}
+			
+					that.retorno = {value:""+text,__sucess:true};
+				})
+				.catch( (reason) => {
+					console.error(reason);
+					if (reason.name === 'AbortError') {
+						return;
+					} else {
+						that.retorno = {value:""+reason,__sucess:false};
+					}
+				});
+			}
+			catch(e) {
+				console.error(e);
+				this.finalizarRequisicao();
+				return {value:""+e,__sucess:false};
+			}
+
+			VM_setDelay(1);
+			return {state:STATE_DELAY_REPEAT};
 		}
 	}
 }

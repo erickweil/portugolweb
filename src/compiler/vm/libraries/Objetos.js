@@ -49,24 +49,34 @@ export default class Objetos extends BibliotecaBase {
 		this.obter_propriedade_tipo_caracter = this.obter_propriedade_tipo_danese;
 		this.obter_propriedade_tipo_inteiro = this.obter_propriedade_tipo_danese;
 		this.obter_propriedade_tipo_logico = this.obter_propriedade_tipo_danese;
-		this.obter_propriedade_tipo_objeto = this.obter_propriedade_tipo_danese;
 		this.obter_propriedade_tipo_real = this.obter_propriedade_tipo_danese;
 
 		this.obter_propriedade_tipo_cadeia_em_vetor = this.obter_propriedade_tipo_danese_em_vetor;
 		this.obter_propriedade_tipo_caracter_em_vetor = this.obter_propriedade_tipo_danese_em_vetor;
 		this.obter_propriedade_tipo_inteiro_em_vetor = this.obter_propriedade_tipo_danese_em_vetor;
 		this.obter_propriedade_tipo_logico_em_vetor = this.obter_propriedade_tipo_danese_em_vetor;
-		this.obter_propriedade_tipo_objeto_em_vetor = this.obter_propriedade_tipo_danese_em_vetor;
 		this.obter_propriedade_tipo_real_em_vetor = this.obter_propriedade_tipo_danese_em_vetor;
 
+		this.objs = new Map();
+		this.objs_contador = 1;
 		this.resetar();
 	}
 
 	obter_objeto(endereco)
 	{
-		let obj = this.objs[endereco];
+		let obj = this.objs.get(endereco);
 		if(obj) return obj;
 		throw new Error("Nenhum objeto encontrado no endereco "+endereco);
+	}
+
+	encontra_endereco(obj)
+	{
+		for(let [key, value] of this.objs.entries()) {
+			if(value === obj) {
+				return key;
+			}
+		}
+		return -1;
 	}
 
 	obter_valor_propriedade(endereco,propriedade)
@@ -94,19 +104,22 @@ export default class Objetos extends BibliotecaBase {
 
 	resetar()
 	{
-		this.objs = [];
+		this.objs = new Map();
+		this.objs_contador = 1;
 	}
 	
 	criar_objeto()
 	{
-		this.objs.push( {} );
-		return {value: this.objs.length-1};
+		const endereco = this.objs_contador++;
+		this.objs.set(endereco, {});
+		return {value: endereco};
 	}
 	
 	criar_objeto_via_json(json)
 	{
-		this.objs.push(JSON.parse(json));
-		return {value: this.objs.length-1};
+		const endereco = this.objs_contador++;
+		this.objs.set(endereco, JSON.parse(json));
+		return {value: endereco};
 	}
 		
 	criar_objeto_via_xml(xml)
@@ -116,12 +129,13 @@ export default class Objetos extends BibliotecaBase {
 	
 	liberar()
 	{
-		this.objs = [];
+		this.objs = new Map();
+		this.objs_contador = 1;
 	}
 	
 	liberar_objeto(endereco)
 	{
-		this.objs[endereco] = false;
+		this.objs.delete(endereco);
 	}
 	
 	obter_json(endereco)
@@ -139,6 +153,36 @@ export default class Objetos extends BibliotecaBase {
 		let arr = this.obter_valor_propriedade(endereco,propriedade);
 		if(!Array.isArray(arr)) throw new Error("A propriedade '"+propriedade+"' não é um vetor");
 		return {value:arr[indice]};
+	}
+
+	obter_propriedade_tipo_objeto(endereco,propriedade)
+	{
+		const obj = this.obter_valor_propriedade(endereco,propriedade);
+		if(typeof obj !== "object" || obj === null) throw new Error("A propriedade '"+propriedade+"' não é um objeto");
+		let enderecoObj = this.encontra_endereco(obj);
+		if(enderecoObj !== -1) {
+			return {value: enderecoObj};
+		} else {
+			enderecoObj = this.objs_contador++;
+			this.objs.set(enderecoObj, obj);
+			return {value: enderecoObj};
+		}
+	}
+	
+	obter_propriedade_tipo_objeto_em_vetor(endereco,propriedade,indice)
+	{
+		let arr = this.obter_valor_propriedade(endereco,propriedade);
+		if(!Array.isArray(arr)) throw new Error("A propriedade '"+propriedade+"' não é um vetor");
+		const obj = arr[indice];
+		if(typeof obj !== "object" || obj === null) throw new Error("O elemento no indice "+indice+" da propriedade '"+propriedade+"' não é um objeto");
+		let enderecoObj = this.encontra_endereco(obj);
+		if(enderecoObj !== -1) {
+			return {value: enderecoObj};
+		} else {
+			enderecoObj = this.objs_contador++;
+			this.objs.set(enderecoObj, obj);
+			return {value: enderecoObj};
+		}
 	}
 	
 	obter_tamanho_vetor_propriedade(endereco,propriedade)
