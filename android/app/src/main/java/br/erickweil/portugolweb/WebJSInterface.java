@@ -1,6 +1,5 @@
 package br.erickweil.portugolweb;
 
-import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
@@ -14,11 +13,6 @@ import java.io.IOException;
 
 
 public class WebJSInterface {
-    public static final int CODE_SAVE = 666;
-    public static final int CODE_LOAD = 999;
-
-    public static final int CODE_HTTPGET = 537;
-
     Inicio context;
     public String file_to_save;
     WebJSInterface(Inicio c){
@@ -26,24 +20,13 @@ public class WebJSInterface {
     }
 
     @JavascriptInterface
-    public void save(String file)
-    {
+    public void save(String file) {
         file_to_save = file;
-        //send an ACTION_CREATE_DOCUMENT intent to the system. It will open a dialog where the user can choose a location and a filename
-
-        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("text/plain"); //isso faz com que seja possível abrir o arquivo depois
-        intent.putExtra(Intent.EXTRA_TITLE, "programa.por.txt"); // .txt para que o android reconheça e seja mais fácil achar
-        context.startActivityForResult(intent, CODE_SAVE);
+        context.runOnUiThread(() -> context.saveFileLauncher.launch("programa.por.txt"));
     }
     @JavascriptInterface
-    public void load()
-    {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*"); //not needed, but maybe usefull
-        context.startActivityForResult(intent, CODE_LOAD);
+    public void load() {
+        context.runOnUiThread(() -> context.loadFileLauncher.launch("*/*"));
     }
 
     @JavascriptInterface
@@ -106,7 +89,7 @@ public class WebJSInterface {
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Log.e("WEBJSINTERFACE", "Erro: " + e, e);
             return false;
         }
     }
@@ -152,7 +135,7 @@ public class WebJSInterface {
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Log.e("WEBJSINTERFACE", "Erro: " + e, e);
             return null;
         }
     }
@@ -186,7 +169,7 @@ public class WebJSInterface {
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Log.e("WEBJSINTERFACE", "Erro: " + e, e);
             return "";
         }
     }
@@ -199,7 +182,7 @@ public class WebJSInterface {
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Log.e("WEBJSINTERFACE", "Erro: " + e, e);
         }
     }
 }

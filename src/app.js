@@ -667,28 +667,6 @@ import Hotbar from "./pages/index/hotbar.js";
 		}
 	}
 
-	function syncBodyToViewport()
-	{
-		if(!isMobile) return;
-
-		const visualViewport = window.visualViewport;
-		const viewportHeight = visualViewport
-			? Math.round(visualViewport.height)
-			: Math.round(window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
-
-		document.documentElement.style.height = viewportHeight + "px";
-		document.documentElement.style.minHeight = viewportHeight + "px";
-		document.documentElement.style.maxHeight = viewportHeight + "px";
-		document.body.style.height = viewportHeight + "px";
-		document.body.style.minHeight = viewportHeight + "px";
-		document.body.style.maxHeight = viewportHeight + "px";
-
-		if(visualViewport)
-		{
-			document.body.classList.toggle("keyboard-open", visualViewport.height < window.innerHeight - 80);
-		}
-	}
-
 	/**
 	 * Finalizado declarações...
 	 * Iniciando o editor e a interface
@@ -721,13 +699,6 @@ import Hotbar from "./pages/index/hotbar.js";
 		document.addEventListener('webkitfullscreenchange', exitHandler, false);
 	}
 
-	window.addEventListener("resize", syncBodyToViewport, false);
-	if(window.visualViewport)
-	{
-		window.visualViewport.addEventListener("resize", syncBodyToViewport, false);
-		window.visualViewport.addEventListener("scroll", syncBodyToViewport, false);
-	}
-
 	async function initEditor() {
 		await editorManager.initEditor("myEditor",fontSize,portugolRun.libraries,isMobile,() => {
 			if(isMobile)
@@ -755,7 +726,6 @@ import Hotbar from "./pages/index/hotbar.js";
 		if(isMobile)
 		{
 			document.body.classList.add('mobile');
-			syncBodyToViewport();
 		}
 	}
 

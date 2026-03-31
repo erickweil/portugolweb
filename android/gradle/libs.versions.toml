@@ -1,0 +1,33 @@
+[versions]
+agp                     = "8.13.2"
+googleServices          = "4.4.2"
+
+compileSdk              = "35"
+minSdk                  = "21"
+targetSdk               = "35"
+
+appcompat               = "1.7.0"
+material                = "1.12.0"
+constraintlayout        = "2.1.4"
+firebaseBom             = "33.1.2"
+
+junit                   = "4.13.2"
+androidxTestRunner      = "1.6.2"
+espressoCore            = "3.6.1"
+
+[libraries]
+androidx-appcompat          = { group = "androidx.appcompat",            name = "appcompat",          version.ref = "appcompat"        }
+androidx-constraintlayout   = { group = "androidx.constraintlayout",     name = "constraintlayout",   version.ref = "constraintlayout" }
+material                    = { group = "com.google.android.material",   name = "material",           version.ref = "material"         }
+
+firebase-bom                = { group = "com.google.firebase",           name = "firebase-bom",       version.ref = "firebaseBom"      }
+firebase-analytics          = { group = "com.google.firebase",           name = "firebase-analytics"                                  }
+firebase-messaging          = { group = "com.google.firebase",           name = "firebase-messaging"                                  }
+
+junit                       = { group = "junit",                         name = "junit",              version.ref = "junit"            }
+androidx-test-runner        = { group = "androidx.test",                 name = "runner",             version.ref = "androidxTestRunner" }
+espresso-core               = { group = "androidx.test.espresso",        name = "espresso-core",      version.ref = "espressoCore"     }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+google-services     = { id = "com.google.gms.google-services",          version.ref = "googleServices" }

@@ -216,7 +216,7 @@ public class HttpGetTask<T extends HttpGetTask.TaskStatus> extends AsyncTask<T,I
                     taskNext = taskNow.next;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e("HTTPGETTASK", "Erro: " + e, e);
                 ret.closeStream();
                 t.acao_sucesso = false;
             }
@@ -234,19 +234,19 @@ public class HttpGetTask<T extends HttpGetTask.TaskStatus> extends AsyncTask<T,I
 
             return web_response;
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            Log.e("HTTPGETTASK", "Erro: " + e, e);
             msg = "URL com problemas:" + e.getMessage();
         } catch (UnknownHostException e) // Sem Internet
         {
-            e.printStackTrace();
+            Log.e("HTTPGETTASK", "Erro: " + e, e);
             msg = "Não foi possível se conectar ao servidor:" + e.getMessage();
         } catch (SocketException e) // Caiu a Internet
         {
-            e.printStackTrace();
+            Log.e("HTTPGETTASK", "Erro: " + e, e);
             if (attempt + 1 < SEND_RETRY) return null;
             msg = "A conexão foi interrompida:" + e.getMessage();
         } catch (IOException e) { // Qualquer outro erro
-            e.printStackTrace();
+            Log.e("HTTPGETTASK", "Erro: " + e, e);
             if (attempt + 1 < SEND_RETRY) return null;
             msg = e.getMessage() + e.getCause();
             if (msg.startsWith("unexpected end of stream")) {
@@ -262,7 +262,7 @@ public class HttpGetTask<T extends HttpGetTask.TaskStatus> extends AsyncTask<T,I
         try {
             onResponse.resposta(resposta);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("HTTPGETTASK", "Erro: " + e, e);
         }
     }
 }

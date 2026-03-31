@@ -1,6 +1,5 @@
 package br.erickweil.portugolweb;
 
-import static br.erickweil.portugolweb.Utilidades.readAllBytes;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
@@ -16,7 +15,6 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
-import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -41,7 +39,7 @@ public class InterceptorWebViewClient extends WebViewClient {
     }
 
     public static final boolean estaDentro(Uri uri, String dominio, String parentPath) {
-        if(!uri.getHost().equals(dominio)) return false;
+        if(uri.getHost() == null || !uri.getHost().equals(dominio)) return false;
 
         String path = uri.getPath();
         if(path == null && parentPath == null) return false;
@@ -152,16 +150,13 @@ public class InterceptorWebViewClient extends WebViewClient {
 
                     Uri resultUri = Uri.parse(novoUrl);
                     InputStream fileToRead = null;
-                    //boolean isAsset = false;
                     if (resultUri.getScheme().equals("file") && resultUri.getPath().startsWith("/android_asset/")) {
                         String path = resultUri.getPath().replace("/android_asset/", ""); // TODO: should be at start only
                         fileToRead = context.getAssets().open(path);
-                        //isAsset = true;
                     }
                     else {
                         // E se for /../../../com.whatsapp/ ?
                         fileToRead = context.getContentResolver().openInputStream(resultUri);
-                        //isAsset = false;
                     }
 
                     if (fileToRead == null) throw new IOException("Erro ao ler arquivo do cache, InputStream null");
@@ -200,7 +195,7 @@ public class InterceptorWebViewClient extends WebViewClient {
             }
             else return null;
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("INTERCEPTORWEBVIEWCLIENT", "Erro: " + e, e);
 
             // Precisa invalidar o cache pq falhou na abertura de um arquivo
             // Irá no próximo reinício abrir dos Assets que não tem como falhar

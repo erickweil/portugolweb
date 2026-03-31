@@ -74,7 +74,7 @@ export default class Internet extends BibliotecaBase {
 		else
 		{
 			return this._fazer_requisicao(endereco, "GET", {
-				credentials: 'same-origin' // Mantendo o comportamento anterior, só com ServicosWeb que vai incluir cookies
+				credentials: 'same-origin' // Mantendo o comportamento anterior, não enviar cookies
 			});
 		}
 	}

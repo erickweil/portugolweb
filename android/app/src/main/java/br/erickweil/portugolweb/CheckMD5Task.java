@@ -53,7 +53,7 @@ public class CheckMD5Task extends AsyncTask<CheckMD5Task.FileHashEntry,Integer, 
                 t.sucess = checkMD5(t);
             }
             catch (Exception e) {
-                e.printStackTrace();
+                Log.e("CHECKMD5TASK", "Erro: " + e, e);
                 t.sucess = false;
             }
         }

@@ -101,14 +101,14 @@ export default class ServicosWeb extends BibliotecaBase {
 
     obter_dados(endereco) {
 		return this.internet._fazer_requisicao(endereco, "GET", {
-            credentials: 'include', // Incluir cookies e credenciais na requisição
+            credentials: 'same-origin' // Mantendo o comportamento anterior, não enviar cookies
         });
     }
 
     publicar_dados(endereco, objeto) {
         return this.internet._fazer_requisicao(endereco, "POST", {
             body: objeto,
-            credentials: 'include',
+            credentials: 'same-origin', // Mantendo o comportamento anterior, não enviar cookies
             headers: {
                 "Content-Type": "application/json"
             }
@@ -118,7 +118,7 @@ export default class ServicosWeb extends BibliotecaBase {
     modificar_dados(endereco, objeto) {
         return this.internet._fazer_requisicao(endereco, "PATCH", {
             body: objeto,
-            credentials: 'include',
+            credentials: 'same-origin', // Mantendo o comportamento anterior, não enviar cookies
             headers: {
                 "Content-Type": "application/json"
             }
@@ -128,7 +128,7 @@ export default class ServicosWeb extends BibliotecaBase {
     atualizar_dados(endereco, objeto) {
         return this.internet._fazer_requisicao(endereco, "PUT", {
             body: objeto,
-            credentials: 'include',
+            credentials: 'same-origin', // Mantendo o comportamento anterior, não enviar cookies
             headers: {
                 "Content-Type": "application/json"
             }
@@ -137,7 +137,7 @@ export default class ServicosWeb extends BibliotecaBase {
 
     deletar_dados(endereco) {
         return this.internet._fazer_requisicao(endereco, "DELETE", {
-            credentials: 'include'
+            credentials: 'same-origin', // Mantendo o comportamento anterior, não enviar cookies
         });
     }
 }

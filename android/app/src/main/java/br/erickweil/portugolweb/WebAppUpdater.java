@@ -86,7 +86,7 @@ public class WebAppUpdater {
                 );
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e("WEBAPPUPDATER", "Erro: " + e, e);
             Log.e("UPDATER","Não foi possível atualizar, erro ao iniciar as tarefas. json malformado");
             return;
         }
@@ -167,7 +167,7 @@ public class WebAppUpdater {
                 ));
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e("WEBAPPUPDATER", "Erro: " + e, e);
             Log.e("UPDATER","NÃO É POSSÍVEL VERIFICAR INTEGRIDADE. JSON MALFORMADO");
             return;
         }

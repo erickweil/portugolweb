@@ -172,7 +172,7 @@ public class Utilidades {
                 return byteswrited;
             }
             catch (Exception e) {
-                e.printStackTrace();
+                Log.e("UTILIDADES", "Erro: " + e, e);
                 return byteswrited;
             }
             finally {
@@ -187,7 +187,7 @@ public class Utilidades {
                     closeStream();
                 }
                 catch ( IOException e ) {
-                    e.printStackTrace();
+                    Log.e("UTILIDADES", "Erro: " + e, e);
                 }
             }
         }
@@ -203,7 +203,7 @@ public class Utilidades {
                 this.fechouStream = true;
             }
             catch ( IOException e ) {
-                e.printStackTrace();
+                Log.e("UTILIDADES", "Erro: " + e, e);
             }
         }
     }
@@ -304,7 +304,7 @@ public class Utilidades {
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Log.e("UTILIDADES", "Erro: " + e, e);
         }
         return  dir;
     }
@@ -326,7 +326,7 @@ public class Utilidades {
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Log.e("UTILIDADES", "Erro: " + e, e);
         }
     }
 
@@ -352,7 +352,7 @@ public class Utilidades {
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Log.e("UTILIDADES", "Erro: " + e, e);
         }
         return object;
     }

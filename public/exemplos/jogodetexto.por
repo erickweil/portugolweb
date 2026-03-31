@@ -10,6 +10,7 @@ programa
 
 	inteiro obj_jogo_info = -1
 	inteiro obj_jogador = -1
+	cadeia token_acesso = ""
 	logico exibir_banner_ola = verdadeiro
 	funcao inicio ()
 	{
@@ -42,7 +43,9 @@ programa
 	{
 		se(obj_jogo_info == -1 ou obj_jogador == -1) 
 		{
-			obj_jogo_info = json_parse(www.obter_dados(URL+"/auth/info"))
+			www.abrir_conexao(URL+"/auth/info")
+			www.adicionar_cabecalho("Authorization", "Bearer "+token_acesso)
+			obj_jogo_info = json_parse(www.fazer_requisicao(www.OBTER))
 			obj_jogador = _obj(obj_jogo_info, "jogador")
 			se(obj_jogo_info == -1 ou obj_jogador == -1)
 			{
@@ -67,7 +70,10 @@ programa
 			cadeia str_post = j.obter_json(obj_post)
 			j.liberar_objeto(obj_post)
 			
-			escreva(www.publicar_dados(URL+"/texto", str_post))
+			www.abrir_conexao(URL+"/texto")
+			www.adicionar_cabecalho("Authorization", "Bearer "+token_acesso)
+			www.adicionar_parametros(str_post)
+			escreva(www.fazer_requisicao(www.PUBLICAR))
 		}
 		
 		cadeia comando
@@ -80,7 +86,10 @@ programa
 		cadeia str_post = j.obter_json(obj_post)
 		j.liberar_objeto(obj_post)
 		
-		escreva(www.publicar_dados(URL+"/texto", str_post))
+		www.abrir_conexao(URL+"/texto")
+		www.adicionar_cabecalho("Authorization", "Bearer "+token_acesso)
+		www.adicionar_parametros(str_post)
+		escreva(www.fazer_requisicao(www.PUBLICAR))
 		
 		retorne OK
 	}
@@ -117,16 +126,28 @@ programa
 			j.atribuir_propriedade(body, "username", usuario)
 			j.atribuir_propriedade(body, "password", senha)
 			www.adicionar_parametros(j.obter_json(body))
+			j.liberar_objeto(body)
 			
 			cadeia resultado = www.fazer_requisicao(www.PUBLICAR)
-			
-			se(t.obter_caracter(resultado, 0) != '{') {
+			inteiro obj_resultado = json_parse(resultado)
+			se(obj_resultado == -1) 
+			{
 				escreva(resultado, "\n")
 				escreva("\nTente novamente. \nObs: Lembre-se que a senha deve ser forte!\n")
-			} senao {
-				escreva("\nLogin realizado com sucesso!\n")
 				retorne
 			}
+				
+			token_acesso = _str(obj_resultado, "token")
+			j.liberar_objeto(obj_resultado)
+			
+			se(token_acesso == "")
+			{
+				escreva("Não foi possível receber token de acesso... Tente novamente \n")
+				retorne
+			}
+			
+			escreva("\nLogin realizado com sucesso!\n")
+			retorne
 		}
 	}
 	

@@ -1,11 +1,11 @@
 <resources>
 
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+    <!-- Tema principal baseado em Material 3 -->
+    <style name="Theme.PortugolWeb" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <!-- No Material 3, colorPrimaryContainer substitui o colorPrimaryVariant/colorPrimaryDark do M2 -->
+        <item name="colorPrimaryContainer">@color/colorPrimaryDark</item>
+        <item name="colorSecondary">@color/colorAccent</item>
     </style>
 
 </resources>
