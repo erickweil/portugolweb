@@ -19,7 +19,6 @@
             android:name=".Inicio"
             android:exported="true"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:windowSoftInputMode="adjustResize"
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

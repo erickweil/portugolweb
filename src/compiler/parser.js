@@ -29,7 +29,7 @@ function pmatch(index, tokens, ...expectedIds)
   if (index + expectedIds.length > tokens.length) return false;
 
   // Verifica cada ID esperado contra o token correspondente
-  return expectedIds.every((id, i) => tokens[index + i]?.id === id);
+  return expectedIds.every((id, i) => tokens[index + i].id === id);
 };
 
 

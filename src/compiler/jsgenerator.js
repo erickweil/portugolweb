@@ -1065,7 +1065,7 @@ export default class JsGenerator {
 
 						retType = member ? member.type : T_vazio;
 
-						if(member?.jsSafe) {
+						if(member && member.jsSafe) {
 							this.gen(biblioteca+"."+campo.name+"(");
 						} else {
 							this.gen("(await ("+biblioteca+".promisify("+biblioteca+"."+campo.name+")(");
@@ -1076,7 +1076,7 @@ export default class JsGenerator {
 							let parType = (funcPars && funcPars[k]) ? funcPars[k].type : -1;
 							this.gen(this.tryConvertType(parType,funcArgs[k],funcArgsGen[k]));
 						}
-						if(member?.jsSafe) {
+						if(member && member.jsSafe) {
 							this.gen(")"+(retType != T_vazio ? ".value" : ""));
 						} else {
 							this.gen(")))");

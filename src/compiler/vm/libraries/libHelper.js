@@ -25,7 +25,7 @@ export class BibliotecaBase {
             // Chama a função original da biblioteca
             const result = fn.apply(this, args);
             if(!result || result.state === undefined) {
-                return result?.value;
+                return result ? result.value : undefined;
             }
 
             const pending = new Promise((resolve, reject) => {
