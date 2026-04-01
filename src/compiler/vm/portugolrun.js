@@ -584,7 +584,7 @@ export default class PortugolRuntime {
 	executarParou(msg)
 	{
 		if(this.escrever_tempo)
-		escreva("\n\n"+msg+" Tempo de execução:"+Math.trunc(performance.now()-this.lastvmTime)+" milissegundos");
+		escreva("\n\n"+msg+" Tempo de execução:"+Math.trunc(performance.now()-this.lastvmTime)+" milissegundos\n");
 
 		flushEscreva();
 		this.promisefn = false;

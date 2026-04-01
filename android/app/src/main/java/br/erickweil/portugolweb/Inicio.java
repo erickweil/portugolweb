@@ -21,11 +21,13 @@ import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import java.io.BufferedReader;
@@ -78,6 +80,7 @@ public class Inicio extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inicio);
 
@@ -93,7 +96,7 @@ public class Inicio extends AppCompatActivity {
             v.setPadding(0, 0, 0, bottomInset);
             if(webview != null) {
                 webview.requestApplyInsets();
-                execJavascriptCode("document.body.scrollTop = 0;");
+                // execJavascriptCode("document.body.scrollTop = 0;");
             }
             return insets;
         });

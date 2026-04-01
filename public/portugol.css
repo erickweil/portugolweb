@@ -17,16 +17,13 @@ body {
 	max-height: 100dvh;
 	width: 100vw;
 
-	overflow-y: hidden;
-	overflow-x: hidden;
+	/* https://www.bram.us/2016/05/02/prevent-overscroll-bounce-in-ios-mobilesafari-pure-css/ */
+	position: fixed;
+	overflow: hidden;
 }
 
-body {
-	/*height:100vh;*/
-	
+body {	
 	background: #263238;
-
-	position: relative;
 }
 
 #hidden{
@@ -184,7 +181,7 @@ body.mobile .mobileHidden{
 #hotbar{
 	z-index:9;
 	display:block;
-	position: absolute;
+	position: fixed;
 	bottom:-80px;
 	left:0px;
 	border-top: 1px solid #1E2324;
@@ -376,7 +373,7 @@ h1 {
 /* Configurações do menu de configurações */
 
 #settingsContainer{
-	position: absolute;
+	position: fixed;
 	top: var(--safe-area-inset-top, 0px);
 	right: var(--safe-area-inset-right, 0px);
 	display: flex;
