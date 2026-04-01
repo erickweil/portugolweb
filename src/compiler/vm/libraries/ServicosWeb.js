@@ -1,6 +1,6 @@
-import { T_cadeia, T_inteiro, T_parO, T_vazio, T_word } from "../../tokenizer";
-import Internet from "./Internet";
-import { BibliotecaBase } from "./libHelper";
+import { T_cadeia, T_inteiro, T_parO, T_vazio, T_word } from "../../tokenizer.js";
+import Internet from "./Internet.js";
+import { BibliotecaBase } from "./libHelper.js";
 
 export default class ServicosWeb extends BibliotecaBase {
     /**

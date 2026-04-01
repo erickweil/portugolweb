@@ -47,24 +47,38 @@ import Hotbar from "./pages/index/hotbar.js";
 			return;
 		}
 
-		let txt = "<div class='atecemporcento'><table class='tabelavariaveis'><thead><tr><th>Variaveis</th></tr></thead><tbody>";
+		const wrapper = document.createElement("div");
+		wrapper.className = "atecemporcento";
+
+		const table = document.createElement("table");
+		table.className = "tabelavariaveis";
+		table.innerHTML = "<thead><tr><th>Variaveis</th></tr></thead>";
+
+		const tbody = document.createElement("tbody");
 		for(const v of tabela) {
 			let vtxt = "";
 
-			if (v.value === undefined || v.value === null) 
-			vtxt = "";
-			else vtxt = VM_valueToString(v.type,v.value);
-			
+			if (v.value !== undefined && v.value !== null) {
+				vtxt = VM_valueToString(v.type, v.value);
+			}
 
 			if(vtxt.length > 1000) {
-				vtxt = vtxt.substring(0,1000) + "...";
+				vtxt = vtxt.substring(0, 1000) + "...";
 			}
-			txt += "<tr><td>"+v.name+":&emsp;"+vtxt+"</td></tr>";
+
+			const tr = document.createElement("tr");
+			const td = document.createElement("td");
+			// Usar textContent evita XSS ao exibir nomes e valores de variáveis
+			td.textContent = v.name + ":\u2004" + vtxt;
+			tr.appendChild(td);
+			tbody.appendChild(tr);
 		}
-		txt += "</tbody></table></div>";
+
+		table.appendChild(tbody);
+		wrapper.appendChild(table);
 
 		div_tabelavariaveis.style.display = "block";
-		div_tabelavariaveis.innerHTML = txt;
+		div_tabelavariaveis.replaceChildren(wrapper);
 	}
 
 	function ocultarTabelaVariaveis() {
@@ -118,7 +132,7 @@ import Hotbar from "./pages/index/hotbar.js";
 				
 				btn.value = "Parar";
 				portugolRun.executar(string_cod,compilado,enviarErro,passoapasso)
-				.then((output) => {
+				.then((_output) => {
 
 					if(passoapasso)
 					limparErros(["info"]); // Limpa o último realce de linha (por algum motivo não funciona no leia quando é pulado)
@@ -366,7 +380,7 @@ import Hotbar from "./pages/index/hotbar.js";
 				let file = element.files[0];
 
 				let reader = new FileReader();
-				reader.onload = function(progressEvent)
+				reader.onload = function(_progressEvent)
 				{
 					editorManager.setValue(this.result); // moves cursor to the start
 					

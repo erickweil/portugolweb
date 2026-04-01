@@ -29,9 +29,15 @@ export default defineConfig([globalIgnores(
     },
 
     rules: {
-        "no-unused-vars": "off",
+        // Usar prefixo _ para args intencionalmente ignorados: function foo(_unused) {}
+        "no-unused-vars": ["warn", {
+            "vars": "all",
+            "args": "after-used",
+            "argsIgnorePattern": "^_",
+            "caughtErrors": "none"
+        }],
         "no-useless-escape": "off",
-        "no-constant-condition": "off",
+        "no-constant-condition": "error",
         "no-var": "error",
         semi: ["error", "always"],
         "no-implicit-globals": "error",
@@ -43,7 +49,7 @@ export default defineConfig([globalIgnores(
         "no-duplicate-imports": "error",
         "no-invalid-this": "error",
         "no-shadow": "error",
-        "no-useless-assignment": "off",
+        "no-useless-assignment": "warn",
         //"import/no-absolute-path": "error",
         //"import/no-self-import": "error",
 

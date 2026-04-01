@@ -14,7 +14,8 @@ import java.io.IOException;
 
 public class WebJSInterface {
     Inicio context;
-    public String file_to_save;
+    // package-private: acessado apenas por Inicio no mesmo pacote
+    String file_to_save;
     WebJSInterface(Inicio c){
         context = c;
     }

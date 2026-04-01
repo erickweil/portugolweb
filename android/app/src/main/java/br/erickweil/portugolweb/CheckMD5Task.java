@@ -1,7 +1,8 @@
 package br.erickweil.portugolweb;
 
 
-import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -13,8 +14,11 @@ import java.io.InputStream;
 import java.nio.ByteOrder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class CheckMD5Task extends AsyncTask<CheckMD5Task.FileHashEntry,Integer, CheckMD5Task.FileHashEntry[]> {
+public class CheckMD5Task {
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
     private static final String TAG = "MD5";
 
     public static class FileHashEntry {
@@ -42,7 +46,14 @@ public class CheckMD5Task extends AsyncTask<CheckMD5Task.FileHashEntry,Integer, 
         this.onResponse = callback;
     }
 
-    @Override
+    public void execute(FileHashEntry... tasks) {
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+        executor.execute(() -> {
+            FileHashEntry[] result = doInBackground(tasks);
+            mainHandler.post(() -> onPostExecute(result));
+        });
+    }
+
     protected FileHashEntry[] doInBackground(FileHashEntry... tasks) {
 
         for (int i = 0; i < tasks.length; i++) {
@@ -61,9 +72,10 @@ public class CheckMD5Task extends AsyncTask<CheckMD5Task.FileHashEntry,Integer, 
         return tasks;
     }
 
-    @Override
     protected void onPostExecute(FileHashEntry[] fileHashEntries) {
-        super.onPostExecute(fileHashEntries);
+        if (onResponse != null) {
+            onResponse.resposta(fileHashEntries);
+        }
     }
 
     public static boolean checkMD5(FileHashEntry t) {

@@ -21,11 +21,11 @@ export default defineConfig({
 		// Usar terser para ter suporte a mais navegadores (webview...)
 		minify: 'terser',
 		terserOptions: {
-			ecma: 5,
-			ie8: true,
-			safari10: true,
+			ecma: 2017,
+			compress: {
+				passes: 2,
+			},
 			format: {
-				max_line_len: 500,
 				webkit: true
 			}
 		},

@@ -194,7 +194,6 @@ public class Inicio extends AppCompatActivity {
         webviewSettings.setCacheMode(SITE_FAZER_CACHE ? WebSettings.LOAD_DEFAULT : WebSettings.LOAD_NO_CACHE);
 
         webviewSettings.setDatabaseEnabled(true);
-        webviewSettings.setDomStorageEnabled(true);
 
         webview.setWebChromeClient(new WebChromeClient());
         final WebViewClient client = new InterceptorWebViewClient(
@@ -213,10 +212,12 @@ public class Inicio extends AppCompatActivity {
 
         webview.setWebViewClient(client);
 
-        webviewSettings.setAllowFileAccessFromFileURLs(true); //Maybe you don't need this rule
-        webviewSettings.setAllowUniversalAccessFromFileURLs(true);
-
-
+        // Nota: setAllowFileAccessFromFileURLs e setAllowUniversalAccessFromFileURLs
+        // NÃO são necessários aqui: o WebView carrega de https://, não de file://.
+        // O InterceptorWebViewClient mantém a origem https:// ao servir arquivos locais.
+        // Habilitar essas flags seria um risco de segurança sem nenhum benefício.
+        // webviewSettings.setAllowFileAccessFromFileURLs(true); //Maybe you don't need this rule
+        // webviewSettings.setAllowUniversalAccessFromFileURLs(true);
 
         Log.d("INICIO","Iniciando App, Página salva no cache:"+cachePathToOpen);
 

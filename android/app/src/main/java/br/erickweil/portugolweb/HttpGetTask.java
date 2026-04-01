@@ -1,6 +1,7 @@
 package br.erickweil.portugolweb;
 
-import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -12,8 +13,11 @@ import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class HttpGetTask<T extends HttpGetTask.TaskStatus> extends AsyncTask<T,Integer, T[]> {
+public class HttpGetTask<T extends HttpGetTask.TaskStatus> {
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
     public static final int SEND_RETRY = 3;
 
     public int CONNECT_TIMEOUT;
@@ -184,9 +188,17 @@ public class HttpGetTask<T extends HttpGetTask.TaskStatus> extends AsyncTask<T,I
         this.onResponse = onResponse;
     }
 
+    @SafeVarargs
+    public final void execute(T... tasks) {
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+        executor.execute(() -> {
+            T[] result = doInBackground(tasks);
+            mainHandler.post(() -> onPostExecute(result));
+        });
+    }
 
-    @Override
-    protected T[] doInBackground(T... tasks) {
+    @SafeVarargs
+    protected final T[] doInBackground(T... tasks) {
 
         for (int i = 0; i < tasks.length; i++) {
             HttpGetTask.TaskStatus t = tasks[i];
@@ -257,7 +269,6 @@ public class HttpGetTask<T extends HttpGetTask.TaskStatus> extends AsyncTask<T,I
         return new Utilidades.GetResp(0,new ByteArrayInputStream(msg.getBytes(StandardCharsets.UTF_8)));
     }
 
-    @Override
     protected void onPostExecute(T[] resposta) {
         try {
             onResponse.resposta(resposta);
