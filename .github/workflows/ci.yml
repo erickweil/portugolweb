@@ -4,12 +4,12 @@ name: CI CD for GitHub Pages
 on:
   # Runs on pushes targeting the default branch
   push:
-    branches: ['main']
+    branches: ['master']
     # Não leva em conta mudanças na pasta android, que é onde fica o código do app mobile
     paths-ignore:
       - 'android/**'
   pull_request:
-    branches: ['main']
+    branches: ['master']
     paths-ignore:
       - 'android/**'
 
@@ -35,9 +35,9 @@ jobs:
         run: npm i
       - name: Run tests
         run: npm run test
-  # Deploy to GitHub Pages only on push to main
+  # Deploy to GitHub Pages only on push to master
   deploy:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
