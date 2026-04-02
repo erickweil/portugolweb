@@ -17,4 +17,4 @@
 *.apk
 *.aab
 *services.json
-/app/src/main/assets/portugolweb/
+/app/src/main/assets/portugolweb
