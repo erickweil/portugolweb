@@ -1,0 +1,35 @@
+[versions]
+agp                     = "8.13.2"
+googleServices          = "4.4.4"
+
+compileSdk              = "36"
+minSdk                  = "23"
+targetSdk               = "36"
+
+appcompat               = "1.7.1"
+core                    = "1.18.0"
+material                = "1.13.0"
+constraintlayout        = "2.2.1"
+firebaseBom             = "34.11.0"
+
+junit                   = "4.13.2"
+androidxTestRunner      = "1.7.0"
+espressoCore            = "3.7.0"
+
+[libraries]
+androidx-appcompat          = { group = "androidx.appcompat",            name = "appcompat",          version.ref = "appcompat"        }
+androidx-core               = { group = "androidx.core",                 name = "core",               version.ref = "core"             }
+androidx-constraintlayout   = { group = "androidx.constraintlayout",     name = "constraintlayout",   version.ref = "constraintlayout" }
+material                    = { group = "com.google.android.material",   name = "material",           version.ref = "material"         }
+
+firebase-bom                = { group = "com.google.firebase",           name = "firebase-bom",       version.ref = "firebaseBom"      }
+firebase-analytics          = { group = "com.google.firebase",           name = "firebase-analytics"                                  }
+firebase-messaging          = { group = "com.google.firebase",           name = "firebase-messaging"                                  }
+
+junit                       = { group = "junit",                         name = "junit",              version.ref = "junit"            }
+androidx-test-runner        = { group = "androidx.test",                 name = "runner",             version.ref = "androidxTestRunner" }
+espresso-core               = { group = "androidx.test.espresso",        name = "espresso-core",      version.ref = "espressoCore"     }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+google-services     = { id = "com.google.gms.google-services",          version.ref = "googleServices" }

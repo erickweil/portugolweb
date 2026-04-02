@@ -14,17 +14,17 @@ import Teclado from "./libraries/Teclado.js";
 import Texto from "./libraries/Texto.js";
 import Tipos from "./libraries/Tipos.js";
 import Util from "./libraries/Util.js";
-import { escreva, getCurrentTokenIndex, getScopeFromTokenIndex, STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMgetGlobalVar, VMgetVar, VMrun, VMsetup, VMtoString, VM_async_return, VM_b2s, VM_f2s, VM_getCodeMax, VM_getDelay, VM_getExecJS, VM_i2s 
+import { escreva, flushEscreva, getCurrentTokenIndex, getScopeFromTokenIndex, STATE_ASYNC_RETURN, STATE_BREATHING, STATE_DELAY, STATE_DELAY_REPEAT, STATE_ENDED, STATE_PENDINGSTOP, STATE_RUNNING, STATE_STEP, STATE_WAITINGINPUT, VMgetGlobalVar, VMgetVar, VMrun, VMsetup, VMtoString, VM_async_return, VM_b2s, VM_f2s, VM_getCodeMax, VM_getDelay, VM_getExecJS, VM_i2s, recursiveDeclareArray, limpa, leia, sorteia, VMerro, VM_realbool2s 
 } from "./vm.js";
 import { checkIsMobile } from "../../extras/mobile.js";
+import ServicosWeb from "./libraries/ServicosWeb.js";
 
-function debug_exibe_bytecode() {
+function debug_exibe_bytecode(text) {
 	try{
-		document.getElementById("hidden").innerHTML = VMtoString();
+		document.getElementById("hidden").innerHTML = text;
 	}
 	catch(e){
-		let myStackTrace = e.stack || e.stacktrace || "";
-		console.log(myStackTrace);
+		console.error(e);
 	}
 }
 
@@ -72,7 +72,14 @@ function _doExec(that,resolve)
 	}
 	else
 	{
-		throw "Estado desconhecido:"+state;
+		throw new Error("Estado desconhecido:"+state);
+	}
+}
+
+class PararExecucaoError extends Error {
+	constructor(message) {
+		super(message);
+		this.name = "PararExecucaoError";
 	}
 }
 
@@ -91,6 +98,8 @@ export default class PortugolRuntime {
 
 		this.libraries = {};
 		this.promisefn = false;
+		this.isJsRunning = false;
+		this._jsStopReject = null;
     }
 
 	getErroMiddleCallback(erroCallback) {
@@ -104,14 +113,7 @@ export default class PortugolRuntime {
 			
 			that.errosCount++;
 			if(that.escrever_erros) {
-				try {
-					let obj = {};
-					console.log(obj.erro.erromesmo);
-				} catch (e) {
-					let myStackTrace = e.stack || e.stacktrace || "";
-					
-					console.log(myStackTrace);
-				}
+				console.error("Linha " + lineNumber + ":" + colNumber + " [" + tipoErro + "] -> " + msg);
 			}
 			
 			// manter no formato de erro esperado pelo Ace Editor
@@ -151,6 +153,7 @@ export default class PortugolRuntime {
 		this.libraries["Objetos"] = new Objetos();
 		this.libraries["Tipos"] = new Tipos();
 		this.libraries["Internet"] = new Internet();
+		this.libraries["ServicosWeb"] = new ServicosWeb(this.libraries["Internet"]);
 
 		// Dependem de graficos
 		if(myCanvas && myCanvasModal && myCanvasWindow && myCanvasWindowTitle && myCanvasKeys)
@@ -174,7 +177,7 @@ export default class PortugolRuntime {
 	{		
 		if(!compilado || !compilado.success)
 		{
-			throw "Tentou executar mas havia erros na compilação";
+			throw new Error("Tentou executar mas havia erros na compilação");
 		}
 		
 		const that = this;
@@ -187,8 +190,7 @@ export default class PortugolRuntime {
 				}
 				catch(e)
 				{
-					let myStackTrace = e.stack || e.stacktrace || "";
-					console.log(myStackTrace);
+					console.error(e);
 
 					reject("Erro ao preparar a máquina");
 					return;
@@ -197,18 +199,147 @@ export default class PortugolRuntime {
 				// Inicia contagem de tempo
 				that.lastvmTime = performance.now();
 
-				// Loop Assíncrono de execução
-				that.promisefn = ()=>{_doExec(that,resolve);};
-				that.promisefn();
+				// Se tem código JS gerado e não é passo a passo, executar direto em JS
+				if(compilado.jsgenerator && compilado.jsgenerator.generatedCode && !passoapasso) {
+					that._executarJS(compilado).then(resolve).catch(reject);
+				} else {
+					// Loop Assíncrono de execução
+					that.promisefn = ()=>{_doExec(that,resolve);};
+					that.promisefn();
+				}
 		});
 		}
 	}
 
+	async _executarJS(compilado)
+	{
+		const that = this;
+		that.lastvmState = STATE_RUNNING;
+		that.lastvmTime = performance.now();
+
+		// Sinal de parada único: ao rejeitar, cancela leia, promisify e asyncReturn pendentes
+		const stopPromise = new Promise((_, reject) => { that._jsStopReject = reject; });
+		stopPromise.catch(() => {}); // evitar unhandled rejection quando o programa terminar normalmente
+		for(let libName in this.libraries) {
+			const lib = this.libraries[libName];
+			lib.stopPromise = stopPromise;
+			lib.setTimeout = (fun, delay) => {
+				flushEscreva();
+				mySetTimeout("EXEC", fun, delay);
+			};
+			lib.asyncReturn = () => {
+				flushEscreva();
+				this.lastvmState = STATE_ASYNC_RETURN;
+				const asyncReturnPromise = new Promise((resolve, reject) => {
+					this.promisefn = (retValue) => {
+						this.lastvmState = STATE_RUNNING;
+						resolve(retValue);
+					};
+				});
+				return Promise.race([asyncReturnPromise, stopPromise]);
+			};
+		}
+		
+		const ctx = {
+			libraries: this.libraries,
+			escreva: escreva,
+			limpa: limpa,
+			i2s: VM_i2s,
+			f2s: VM_f2s,
+			b2s: VM_realbool2s,
+			newArray: recursiveDeclareArray,
+			sorteia: sorteia,
+			leia: (tipo) => {
+				const leiaPromise = new Promise((resolve, reject) => {
+					flushEscreva();
+					that.lastvmState = STATE_WAITINGINPUT;
+					that.promisefn = () => {
+						that.lastvmState = STATE_RUNNING;
+						// Quando receber o input, parsear ele e retornar o valor para o programa
+						let entrada = leia();
+						switch(tipo)
+						{
+							case "inteiro":
+								resolve(parseInt(entrada));
+							break;
+							case "real":
+								resolve(parseFloat(entrada));
+							break;
+							case "caracter":
+								resolve(entrada.charAt(0));
+							break;
+							case "logico":
+								resolve(entrada.trim().toLowerCase() === "verdadeiro");
+							break;
+							case "cadeia":
+							default:
+								resolve(entrada);
+						}
+					};
+					if (typeof window !== 'undefined') {
+						// BROWSER
+						// Vai continuar depois
+						if(typeof that.div_saida.focus === 'function')
+							that.div_saida.focus();
+
+						cursorToEnd(that.div_saida);
+						return;
+					} else {
+						// NODE
+						that.div_saida.leia().then((input) => {
+							that.div_saida.value += input;
+							that.notifyReceiveInput();
+						});
+						return;
+					}
+				});
+				return Promise.race([leiaPromise, stopPromise]);
+			}		
+		};
+		
+		try
+		{
+			//let asyncFn = (0, eval)(compilado.jsgenerator.generatedCode);
+			// unlike eval(), the Function constructor creates functions that execute in the global scope only.
+			const fnGen = new Function(compilado.jsgenerator.generatedCode);
+			const asyncFn = fnGen();
+			
+			// Executar
+			this.isJsRunning = true;
+			await asyncFn(ctx);
+			this.isJsRunning = false;
+			flushEscreva();
+			this.executarParou("Programa finalizado.");
+			return this.div_saida.value;
+		}
+		catch(e)
+		{
+			this.isJsRunning = false;
+			flushEscreva();
+			if(e instanceof PararExecucaoError) {
+				// Programa foi interrompido, não é um erro real
+				this.executarParou("Programa interrompido pelo usuário.");
+			} else {
+				console.error("Erro na execução JS:", e);
+				VMerro("Erro durante execução: "+e);
+				this.executarParou("Programa finalizado com erro.");
+			}
+			return this.div_saida.value;
+		}
+		finally
+		{
+			// Limpar referências do sinal de parada nas bibliotecas
+			for(let libName in this.libraries) {
+				this.libraries[libName].stopPromise = null;
+			}
+			this._jsStopReject = null;
+		}
+	}
+	
 	_prepararMaquina(string_cod,compilado,erroCallback) {
 		// Preparar Máquina
 		VMsetup(
 			compilado.compiler.functions,
-			compilado.jsgenerator.functions,
 			this.libraries,
 			compilado.compiler.scopeList,
 			compilado.compiler.globalCount,
@@ -218,11 +349,29 @@ export default class PortugolRuntime {
 		);
 			
 		// Para testar compilação se tiver ativado
-		if(this.mostrar_bytecode) debug_exibe_bytecode();
+		if(this.mostrar_bytecode) {
+			if(compilado.jsgenerator && compilado.jsgenerator.generatedCode) {
+				debug_exibe_bytecode(compilado.jsgenerator.generatedCode);
+			} else {
+				debug_exibe_bytecode(VMtoString());
+			}
+		}
 	}
 
 	parar()
 	{
+		// Modo JS (turbo): independente do estado, rejeita a stopPromise via Promise.race.
+		// O catch de _executarJS captura o PararExecucaoError e chama executarParou para limpeza.
+		if(this.isJsRunning) {
+			myClearTimeout("EXEC");
+			if(this._jsStopReject) {
+				const rej = this._jsStopReject;
+				this._jsStopReject = null;
+				rej(new PararExecucaoError("Programa interrompido pelo usuário."));
+			}
+			return true;
+		}
+
 		if(this.lastvmState == STATE_RUNNING || this.lastvmState == STATE_WAITINGINPUT || this.lastvmState == STATE_BREATHING || this.lastvmState == STATE_DELAY || this.lastvmState == STATE_DELAY_REPEAT || this.lastvmState == STATE_STEP || this.lastvmState == STATE_ASYNC_RETURN)
 		{
 			if(this.lastvmState == STATE_WAITINGINPUT || this.lastvmState == STATE_STEP || this.lastvmState == STATE_ASYNC_RETURN || this.lastvmState == STATE_DELAY || this.lastvmState == STATE_DELAY_REPEAT)
@@ -304,7 +453,8 @@ export default class PortugolRuntime {
 			let librariesNames = Object.keys(this.libraries);
 			for(let i =0;i<librariesNames.length;i++)
 			{
-				this.libraries[librariesNames[i]].resetar();
+				const lib = this.libraries[librariesNames[i]];
+				lib.resetar();
 			}
 			
 			let compiler = new Compiler(tree,this.libraries,relevantTokens,string_cod,null,erroCounterCallback);
@@ -318,16 +468,15 @@ export default class PortugolRuntime {
 				return {success:false,"tokenizer":tokenizer,"tree":tree,"compiler":compiler};
 			}
 			
-			let jsgenerator = {"functions":false};
+			let jsgenerator = {generatedCode:false};
 			if(mayCompileJS && VM_getExecJS())
 			{
 				try{
-					jsgenerator = new JsGenerator(tree,this.libraries,relevantTokens,string_cod,this.div_saida,erroCounterCallback);
+					jsgenerator = new JsGenerator(compiler, tree,this.libraries,relevantTokens,string_cod,erroCounterCallback);
 					jsgenerator.compile();	
 				}
 				catch(e){
-					let myStackTrace = e.stack || e.stacktrace || "";
-					console.log(myStackTrace);
+					console.error(e);
 				}
 			}
 			
@@ -411,7 +560,7 @@ export default class PortugolRuntime {
 		}
 		else
 		{
-			throw "Não estava esperando input";
+			throw new Error("Não estava esperando input");
 		}
 	}
 
@@ -419,21 +568,25 @@ export default class PortugolRuntime {
 	{
 		if(this.lastvmState == STATE_ASYNC_RETURN)
 		{
-			VM_async_return(retValue);
-			//executarVM();
-			this.promisefn();
+			if(this.isJsRunning) {
+				this.promisefn(retValue);
+			} else {
+				VM_async_return(retValue);
+				this.promisefn();
+			}
 		}
 		else
 		{
-			throw "Não estava esperando async return";
+			throw new Error("Não estava esperando async return");
 		}
 	}
 
 	executarParou(msg)
 	{
 		if(this.escrever_tempo)
-		escreva("\n\n"+msg+" Tempo de execução:"+Math.trunc(performance.now()-this.lastvmTime)+" milissegundos");
+		escreva("\n\n"+msg+" Tempo de execução:"+Math.trunc(performance.now()-this.lastvmTime)+" milissegundos\n");
 
+		flushEscreva();
 		this.promisefn = false;
 		this.lastvmState = STATE_ENDED;
 		if(this.libraries["Graficos"])

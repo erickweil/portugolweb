@@ -1,5 +1,3 @@
-/* eslint-env node, jest */
-
 import { Parser } from '../src/compiler/parser.js';
 import { Tokenizer } from '../src/compiler/tokenizer.js';
 //import { assert, assertEquals, test, testAll } from './test.js';

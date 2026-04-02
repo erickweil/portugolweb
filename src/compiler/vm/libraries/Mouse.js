@@ -1,8 +1,11 @@
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../tokenizer.js";
 import { TouchManager } from "../../../extras/mobile.js";
 import { STATE_DELAY_REPEAT, VM_setDelay } from "../vm.js";
-export default class Mouse {
+import { BibliotecaBase } from "./libHelper.js";
+export default class Mouse extends BibliotecaBase {
 	constructor(canvas) {
+		super();
+		
 		this.canvas = canvas;
 		this.BOTAO_DIREITO = 1;
 		this.BOTAO_MEIO= 2;
@@ -123,7 +126,7 @@ export default class Mouse {
 		if(botao == this.BOTAO_DIREITO) return {value:this.pressionado[2]};
 		else if(botao == this.BOTAO_ESQUERDO) return {value:this.pressionado[0]};
 		else if(botao == this.BOTAO_MEIO) return {value:this.pressionado[1]};
-		else throw "O Botão deve ser 0, 1 ou 2";
+		else throw new Error("O Botão deve ser 0, 1 ou 2");
 	}
 	
 	algum_botao_pressionado()

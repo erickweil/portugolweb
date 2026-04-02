@@ -1,392 +1,409 @@
 import { getAllVariableParserDecl } from "../compiler/parser.js";
 import { getTypeWord, reserved_words, type_words, T_parO, T_word } from "../compiler/tokenizer.js";
 
-export default class portugolCompleter
-{
-	constructor(libraries)
+/**
+ * Scores para priorizar sugestões no autocomplete.
+ * Quanto maior o score, mais alto na lista.
+ */
+const SCORE = {
+	LIBRARY_MEMBER: 100000, // Membros de bibliotecas (após ".")
+	LOCAL_VARIABLE:   1200, // Variáveis locais
+	GLOBAL_VARIABLE:  1100, // Variáveis globais
+	USER_FUNCTION:    1000, // Funções definidas no programa
+	BUILTIN_FUNCTION:  900, // Funções built-in
+	LIBRARY_NAME:      800, // Nome de biblioteca
+	INCLUA_TEMPLATE:   700, // Template "inclua biblioteca X --> x"
+	TYPE_WORD:         500, // Tipos (inteiro, cadeia, real...)
+	KEYWORD:           400, // Palavras reservadas (se, enquanto, para...)
+	SNIPPET:           300, // Snippets de estrutura
+};
+
+/**
+ * Snippets de estruturas comuns da linguagem Portugol.
+ */
+const PORTUGOL_SNIPPETS = [
 	{
-		this.listaPalavras = [
-			"leia()"
-		];
-		
-		this.listaPalavras = this.listaPalavras.concat(reserved_words);
-		this.listaPalavras = this.listaPalavras.concat(type_words);
-		
-		this.identifierRegexps = [/[^\s\+\-\*\/%><!=&|^~;,.{}()\[\]:]+/]; // Match not a separator
-		//this.identifierRegexps = [/[^\s]+/];
-		//this.identifierRegexps = [/.+/];
-		this.tokenizer = false;
-		this.librariesNames = Object.keys(libraries);
+		caption: "programa",
+		snippet: 'programa\n{\n\tfuncao inicio()\n\t{\n\t\t$0\n\t}\n}',
+		meta: "Estrutura",
+		docHTML: "<b>programa</b><hr>Estrutura principal de um programa Portugol.",
+		score: SCORE.SNIPPET
+	},
+	{
+		caption: "funcao (...)",
+		snippet: 'funcao ${1:nome}(${2})\n{\n\t$0\n}',
+		meta: "Estrutura",
+		docHTML: "<b>funcao</b><hr>Declara uma nova função.",
+		score: SCORE.SNIPPET
+	},
+	{
+		caption: "se (...)",
+		snippet: 'se(${1:condicao})\n{\n\t$0\n}',
+		meta: "Estrutura",
+		docHTML: "<b>se</b><hr>Estrutura condicional se.",
+		score: SCORE.SNIPPET
+	},
+	{
+		caption: "se senao (...)",
+		snippet: 'se(${1:condicao})\n{\n\t$2\n}\nsenao\n{\n\t$0\n}',
+		meta: "Estrutura",
+		docHTML: "<b>se/senao</b><hr>Estrutura condicional se/senao.",
+		score: SCORE.SNIPPET
+	},
+	{
+		caption: "enquanto (...)",
+		snippet: 'enquanto(${1:condicao})\n{\n\t$0\n}',
+		meta: "Estrutura",
+		docHTML: "<b>enquanto</b><hr>Laço de repetição enquanto.",
+		score: SCORE.SNIPPET
+	},
+	{
+		caption: "faca enquanto (...)",
+		snippet: 'faca\n{\n\t$0\n}\nenquanto(${1:condicao})',
+		meta: "Estrutura",
+		docHTML: "<b>faca/enquanto</b><hr>Laço de repetição faça enquanto.",
+		score: SCORE.SNIPPET
+	},
+	{
+		caption: "para (...)",
+		snippet: 'para(inteiro ${1:i} = ${2:0}; $1 < ${3:10}; $1++)\n{\n\t$0\n}',
+		meta: "Estrutura",
+		docHTML: "<b>para</b><hr>Laço de repetição para.",
+		score: SCORE.SNIPPET
+	},
+	{
+		caption: "escolha (...)",
+		snippet: 'escolha(${1:variavel})\n{\n\tcaso ${2:valor}:\n\t\t$0\n\t\tpare\n\tcaso contrario:\n\t\t\n\t\tpare\n}',
+		meta: "Estrutura",
+		docHTML: "<b>escolha</b><hr>Estrutura de seleção múltipla escolha/caso.",
+		score: SCORE.SNIPPET
+	},
+	{
+		caption: "leia (...)",
+		snippet: 'leia(${1})',
+		meta: "Função",
+		docHTML: "<b>leia(variavel)</b><hr>Lê um valor da entrada do usuário.",
+		score: SCORE.BUILTIN_FUNCTION
+	},
+];
+
+/**
+ * Completer Portugol para o Ace Editor.
+ * 
+ * Implementa a interface de completer do Ace (getCompletions, getDocTooltip).
+ * Integra-se com o compilador Portugol para oferecer sugestões contextuais.
+ */
+export default class PortugolCompleter {
+
+	constructor(libraries) {
+		// Palavras base da linguagem
+		this._keywords = reserved_words.map(w => ({
+			caption: w,
+			value: w,
+			meta: "Palavra-chave",
+			docHTML: "<b>" + w + "</b><hr>Palavra reservada da linguagem.",
+			score: SCORE.KEYWORD
+		}));
+
+		this._types = type_words.map(w => ({
+			caption: w,
+			value: w,
+			meta: "Tipo",
+			docHTML: "<b>" + w + "</b><hr>Tipo de dado.",
+			score: SCORE.TYPE_WORD
+		}));
+
+		// Regex para identificar tokens do Portugol no autocomplete
+		this.identifierRegexps = [/[a-zA-Z_\u00C0-\u024F][a-zA-Z0-9_\u00C0-\u024F]*/];
+
+		// Estado do compilador
+		this.tokenizer = null;
+		this.incluas = null;
+		this.functions = null;
+		this.variaveisGlobais = null;
+		this.todasVariaveis = null;
+
+		// Bibliotecas disponíveis
+		this.libraryNames = Object.keys(libraries);
 		this.libraries = libraries;
-		this.incluas = false;
-		this.functions = false;
-		this.variaveisGlobais = false;
-		this.todasvariaveis = false;
+
+		// Cache de sugestões de bibliotecas (pré-computado)
+		this._libraryIncluaSuggestions = this.libraryNames.map(name => ({
+			caption: "inclua biblioteca " + name + " --> " + name.toLowerCase().charAt(0),
+			value: "inclua biblioteca " + name + " --> " + name.toLowerCase().charAt(0),
+			meta: "Biblioteca",
+			docHTML: "<b>inclua biblioteca " + name + "</b><hr>Inclui a biblioteca " + name + " no programa.",
+			score: SCORE.INCLUA_TEMPLATE
+		}));
+
+		this._libraryNameSuggestions = this.libraryNames.map(name => ({
+			caption: name,
+			value: name,
+			meta: "Biblioteca",
+			docHTML: "<b>" + name + "</b><hr>Biblioteca disponível.",
+			score: SCORE.LIBRARY_NAME
+		}));
 	}
-	
-	setCompiler(compilado)
-	{
-		if(compilado.tokenizer)
-		{
+
+	/**
+	 * Atualiza o estado do compilador para fornecer sugestões mais precisas.
+	 * Chamado após cada compilação bem-sucedida.
+	 */
+	setCompiler(compilado) {
+		if (compilado.tokenizer) {
 			this.tokenizer = compilado.tokenizer;
 		}
-		if(compilado.compiler)
-		{
+		if (compilado.compiler) {
 			this.incluas = compilado.compiler.incluas;
 			this.functions = compilado.compiler.functions;
 		}
-		if(compilado.tree)
-		{
+		if (compilado.tree) {
 			this.variaveisGlobais = compilado.tree.variaveis;
-			this.todasvariaveis = [];
-			getAllVariableParserDecl(compilado.tree.funcoes,this.todasvariaveis);
+			this.todasVariaveis = [];
+			getAllVariableParserDecl(compilado.tree.funcoes, this.todasVariaveis);
 		}
-		
-		
-		
-		/*this.todasvariaveis = {};
-		for(var i=0;i<codetree.funcoes.length;i++)
-		{
-			var f = codetree.funcoes[i];
-		
-			
-			this.todasvariaveis[f.name] = f.statements.filter(entry=>{
-				return entry.id == STATEMENT_declArr || entry.id == STATEMENT_declVar;
-			});
-			
-		}*/
 	}
 
-	getFunctionHTMLDoc(member,id) {
-		console.log(member);
+	/**
+	 * Gera a documentação HTML para uma função ou membro de biblioteca.
+	 */
+	_buildDocHTML(name, member, id) {
 		return [
-			"<b>", this.getFunctionDefinition(member.name,member,true,false,id) , "</b>", "<hr></hr>",
+			"<b>", this._buildSignature(name, member, true, id), "</b>",
+			"<hr>",
 			member.comment || ""
 		].join("");
 	}
-	
-	getFunctionDefinition(name,member,caption,snippet,id)
-	{
-		//"largura_texto":{id:T_parO,parameters:[T_cadeia],type:T_inteiro,jsSafe:true},
-		
-		if(id == T_word)
-		{
-			let ret = name;
-			
-			if(caption)
-			{
-				return ret+" : "+getTypeWord(member.type);
-			}
-			else
-			{
-				return ret;
-			}
+
+	/**
+	 * Constrói a assinatura de uma função/variável como texto.
+	 * @param {string} name - Nome da função/variável
+	 * @param {object} member - Objeto com informações (type, parameters, etc.)
+	 * @param {boolean} withTypes - Se deve incluir os tipos na assinatura
+	 * @param {number} id - Tipo do token (T_word para variáveis, T_parO para funções)
+	 * @returns {string} Assinatura formatada
+	 */
+	_buildSignature(name, member, withTypes, id) {
+		if (id === T_word) {
+			return withTypes ? name + " : " + getTypeWord(member.type) : name;
 		}
-		else if(id == T_parO)
-		{
-			let ret = name+"(";
-			
-			if(member.parameters)
-			{
-				if(snippet)
-				{
-					ret += "$0";
-				} 
-				else for(let i=0;i<member.parameters.length;i++)
-				{
-					if(i > 0) ret += ", ";
-					
-					let p = member.parameters[i];
-					if(typeof p === 'object')
-					{
-						if(caption)
-						{
-						ret += getTypeWord(p.type);
-						ret += " ";
+
+		if (id === T_parO) {
+			let sig = name + "(";
+
+			if (member.parameters) {
+				for (let i = 0; i < member.parameters.length; i++) {
+					if (i > 0) sig += ", ";
+					const p = member.parameters[i];
+					if (typeof p === 'object') {
+						if (withTypes) {
+							sig += getTypeWord(p.type) + " ";
 						}
-						ret += p.name;
+						sig += p.name;
 					}
 				}
 			}
-			
-			if(caption)
-			{
-				return ret+") : "+getTypeWord(member.type);
+
+			sig += ")";
+			if (withTypes) {
+				sig += " : " + getTypeWord(member.type);
 			}
-			else
-			{
-				return ret+")";
+			return sig;
+		}
+
+		return name;
+	}
+
+	/**
+	 * Constrói um snippet com placeholders para parâmetros de função.
+	 */
+	_buildSnippet(name, member) {
+		let snip = name + "(";
+		if (member.parameters && member.parameters.length > 0) {
+			for (let i = 0; i < member.parameters.length; i++) {
+				if (i > 0) snip += ", ";
+				const p = member.parameters[i];
+				if (typeof p === 'object') {
+					snip += "${" + (i + 1) + ":" + p.name + "}";
+				}
+			}
+		} else {
+			snip += "$0";
+		}
+		snip += ")";
+		return snip;
+	}
+
+	/**
+	 * Detecta se o cursor está após um "." e retorna o prefixo antes do ponto.
+	 * @returns {{ isDot: boolean, objectName: string }}
+	 */
+	_detectDotContext(entireLine, pos) {
+		const offPonto = entireLine.lastIndexOf(".");
+		if (offPonto === -1 || offPonto + 1 !== pos.column) {
+			return { isDot: false, objectName: "" };
+		}
+		// Extrai a palavra antes do ponto
+		const beforeDot = entireLine.substring(0, offPonto).trimEnd();
+		const match = beforeDot.match(/([a-zA-Z_\u00C0-\u024F][a-zA-Z0-9_\u00C0-\u024F]*)$/);
+		return {
+			isDot: true,
+			objectName: match ? match[1] : ""
+		};
+	}
+
+	/**
+	 * Retorna membros de uma biblioteca pelo nome ou alias.
+	 */
+	_getLibraryMembers(objectName) {
+		// Verifica se é nome direto da biblioteca
+		if (this.libraries[objectName]) {
+			return { lib: this.libraries[objectName], libName: objectName };
+		}
+
+		// Verifica se é alias de inclua
+		if (this.incluas) {
+			for (const inclua of this.incluas) {
+				if (inclua.alias === objectName) {
+					return { lib: this.libraries[inclua.name], libName: inclua.name };
+				}
 			}
 		}
+
+		return null;
 	}
-	
+
+	/**
+	 * Interface do Ace Editor: retorna as sugestões de autocomplete.
+	 */
 	getCompletions(editor, session, pos, prefix, callback) {
-		
-		let firstvmTime = performance.now();
-		let lastvmTime = firstvmTime;
-		//prefix = prefix.trim();
-		let sugestoes = []; // Lista de sugestões
-		let outPrefix = prefix; // Prefixo do identificador que está sendo escrito, e será substituido
-		
-		
-		let entireLine = editor.session.getLine(pos.row);
-		
-		//if(this.tokenizer)
-		//{
-		//	var tokenindex = this.tokenizer.getTokenIndexAtRowCol(pos.row+1,pos.column);
-		//	var token = this.tokenizer.tokens[tokenindex];
-		//	console.log("row:"+pos.row+",col:"+pos.column+" i:"+tokenindex+":'"+token.txt+"'");
-		//}
-		
-		let millis_tokens = Math.trunc(performance.now()-lastvmTime);
-		lastvmTime = performance.now();
-		//this.retrievePrecedingIdentifier(line, pos.column, identifierRegex);
-		//var outAppend = ""; // ??
-		
-		// value é o valor a ser checado
-		// caption é o valor que será exibido na lista
-		// meta é a palavrinha que aparece depois
-		for(let i =0;i<this.listaPalavras.length;i++)
-		{
-			let p = this.listaPalavras[i];
-			sugestoes.push({value:p,caption:p,meta:"sugestão",tooltip:"",score:0});
-		}
-		
-		let millis_palavras = Math.trunc(performance.now()-lastvmTime);
-		lastvmTime = performance.now();
-		/*var bibliotecaCheck = /^.*[\D]\.[a-z0-9_]*$/.test(entireLine.toLowerCase());
-		if(!bibliotecaCheck && this.incluas)
-		{
-			for(var i =0;i<this.incluas.length;i++)
-			{
-				var inclua = this.incluas[i];
-				if(prefix == inclua.alias)
-				{
-					bibliotecaCheck = true;
-				}
-			}
-		}*/
-		
-		//var incluaCheck = /^\s*incl.*$/.test(prefix);
-		
-		//if(incluaCheck)
-		//{
-			//let offPonto = prefix.lastIndexOf(".");			
-			//outAppend = "inclua biblioteca ";
-			
-			//console.info("Inclua:", linhaSemPonto);
-			//sugestoes = [];
-			for(let i =0;i<this.librariesNames.length;i++)
-			{
-				let libName = this.librariesNames[i];
-				let sugValue = "inclua biblioteca "+libName+" --> "+libName.toLowerCase().charAt(0);
-				sugestoes.push({value:sugValue,caption:sugValue,meta:"Biblioteca",tooltip:"Incluir a biblioteca",score:0});
-			}
-		//}
-		
-		let millis_incluas = Math.trunc(performance.now()-lastvmTime);
-		lastvmTime = performance.now();
-		
-		if(this.functions)
-		{
-			for(let i =0;i<this.functions.length;i++)
-			{
-				let entry = this.functions[i];
-				if(entry.name.includes("$") || entry.name.includes("#")) continue; // pula os leia$inteiro, leia$cadeia, etc...
-				
-				sugestoes.push({
-							caption: entry.name,
-							snippet: this.getFunctionDefinition(entry.name,entry,false,true,T_parO),
-							docHTML: this.getFunctionHTMLDoc(entry,T_parO),
-							meta: "Função",
-							value: entry.name,
-							tooltip:"Função criada neste programa.",
-							score:0
+		const entireLine = session.getLine(pos.row);
+		const dotCtx = this._detectDotContext(entireLine, pos);
+
+		// Se estamos após ".", mostrar apenas membros da biblioteca
+		if (dotCtx.isDot && dotCtx.objectName) {
+			const libResult = this._getLibraryMembers(dotCtx.objectName);
+			if (libResult && libResult.lib) {
+				const memberSuggestions = Object.keys(libResult.lib.members).map(entry => {
+					const member = libResult.lib.members[entry];
+					return {
+						caption: this._buildSignature(entry, member, true, member.id),
+						snippet: member.id === T_parO ? this._buildSnippet(entry, member) : undefined,
+						value: member.id !== T_parO ? entry : undefined,
+						meta: libResult.libName,
+						docHTML: this._buildDocHTML(entry, member, member.id),
+						score: SCORE.LIBRARY_MEMBER
+					};
 				});
-				
-				
+				callback(null, memberSuggestions);
+				return;
 			}
 		}
-		
-		
-		let millis_funcoes = Math.trunc(performance.now()-lastvmTime);
-		lastvmTime = performance.now();
-		
-		if(this.variaveisGlobais)
-		{
-			for(let i =0;i<this.variaveisGlobais.length;i++)
-			{
-				let entry = this.variaveisGlobais[i];
-				
+
+		// Sugestões gerais
+		const sugestoes = [];
+
+		// 1. Snippets de estrutura
+		for (const snip of PORTUGOL_SNIPPETS) {
+			sugestoes.push(snip);
+		}
+
+		// 2. Palavras-chave e tipos
+		for (const kw of this._keywords) {
+			sugestoes.push(kw);
+		}
+		for (const tp of this._types) {
+			sugestoes.push(tp);
+		}
+
+		// 3. Templates de inclua biblioteca
+		for (const inc of this._libraryIncluaSuggestions) {
+			sugestoes.push(inc);
+		}
+
+		// 4. Nomes de bibliotecas
+		for (const lib of this._libraryNameSuggestions) {
+			sugestoes.push(lib);
+		}
+
+		// 5. Funções definidas no programa
+		if (this.functions) {
+			for (const entry of this.functions) {
+				// Pula funções internas (leia$inteiro, etc.)
+				if (entry.name.includes("$") || entry.name.includes("#")) continue;
+
 				sugestoes.push({
-							caption: this.getFunctionDefinition(entry.name,entry,true,false,T_word),
-							meta: "Variável Global",
-							value: this.getFunctionDefinition(entry.name,entry,false,false,T_word),
-							tooltip:"Variável Global neste programa.",
-							score:0
+					caption: this._buildSignature(entry.name, entry, true, T_parO),
+					snippet: this._buildSnippet(entry.name, entry),
+					meta: "Função",
+					docHTML: this._buildDocHTML(entry.name, entry, T_parO),
+					score: SCORE.USER_FUNCTION
 				});
 			}
 		}
-		
-		let millis_globais = Math.trunc(performance.now()-lastvmTime);
-		lastvmTime = performance.now();
-		
-		// deveria encontrar em que escopo está?
-		if(this.todasvariaveis)
-		{
-			for(let i =0;i<this.todasvariaveis.length;i++)
-			{
-				let entry = this.todasvariaveis[i];
-				
+
+		// 6. Variáveis globais
+		if (this.variaveisGlobais) {
+			for (const entry of this.variaveisGlobais) {
 				sugestoes.push({
-							caption: this.getFunctionDefinition(entry.name,entry,true,false,T_word),
-							meta: "Variável Local",
-							value: this.getFunctionDefinition(entry.name,entry,false,false,T_word),
-							tooltip:"Variável Local neste programa.",
-							score:0
+					caption: this._buildSignature(entry.name, entry, true, T_word),
+					value: entry.name,
+					meta: "Global",
+					docHTML: "<b>" + this._buildSignature(entry.name, entry, true, T_word) + "</b><hr>Variável global.",
+					score: SCORE.GLOBAL_VARIABLE
 				});
 			}
 		}
-		
-		
-		let millis_variaveis = Math.trunc(performance.now()-lastvmTime);
-		lastvmTime = performance.now();
-		
-		if(this.incluas)
-		{
-			
-			let offPonto = entireLine.lastIndexOf(".");
-			let linhaSemPonto = "";
-			if(offPonto != -1)
-			{
-				//outPrefix = prefix.substring(offPonto+1);
-				linhaSemPonto = entireLine.substring(0,offPonto);
-			}
-			
-			let cursorNoPonto = offPonto+1==pos.column;
-			
-			//outAppend = linhaSemPonto+".";
-			
-			//console.info("Biblioteca:"+linhaSemPonto+" offPonto:"+offPonto+" col:"+pos.column);
-			
-			//var libsugestoes = [];
-			
-			for(let i =0;i<this.librariesNames.length;i++)
-			{
+
+		// 7. Variáveis locais (todas as funções)
+		if (this.todasVariaveis) {
+			for (const entry of this.todasVariaveis) {
 				sugestoes.push({
-							caption: this.librariesNames[i],
-							meta: "Biblioteca",
-							value: this.librariesNames[i],
-							tooltip:"Nome de Biblioteca.",
-							score:0
+					caption: this._buildSignature(entry.name, entry, true, T_word),
+					value: entry.name,
+					meta: "Local",
+					docHTML: "<b>" + this._buildSignature(entry.name, entry, true, T_word) + "</b><hr>Variável local.",
+					score: SCORE.LOCAL_VARIABLE
 				});
-				
-				if(cursorNoPonto && linhaSemPonto.endsWith(this.librariesNames[i]))
-				{
-					
-					let lib = this.libraries[this.librariesNames[i]];
-				
-					sugestoes = sugestoes.concat( Object.keys(lib.members).map(entry=>{
-						return {
-							caption: this.getFunctionDefinition(entry,lib.members[entry],true,false,lib.members[entry].id),
-							meta: this.librariesNames[i],
-							value: this.getFunctionDefinition(entry,lib.members[entry],false,false,lib.members[entry].id),
-							tooltip:"Membro da Biblioteca "+this.librariesNames[i],
-							score:100000
-						};
-					}));
-				}
 			}
-			if(this.incluas)
-			{
-				for(let i =0;i<this.incluas.length;i++)
-				{
-					let inclua = this.incluas[i];
-					
-					sugestoes.push({
-							caption: inclua.alias + " ("+inclua.name+")",
-							meta: "Biblioteca",
-							value: inclua.alias,
-							tooltip:"Abreviação da Biblioteca "+inclua.name,
-							score:0
-					});
-					
-					if(cursorNoPonto && linhaSemPonto.endsWith(inclua.alias))
-					{
-						
-						let lib = this.libraries[inclua.name];
-					
-						sugestoes = sugestoes.concat( Object.keys(lib.members).map(entry=>{
-						return {
-							caption: this.getFunctionDefinition(entry,lib.members[entry],true,false,lib.members[entry].id),
-							meta: inclua.name,
-							value: this.getFunctionDefinition(entry,lib.members[entry],false,false,lib.members[entry].id),
-							tooltip:"Membro da Biblioteca "+inclua.name,
-							score:100000
-						};
-						}));
-					}
-				}
+		}
+
+		// 8. Alias de incluas
+		if (this.incluas) {
+			for (const inclua of this.incluas) {
+				sugestoes.push({
+					caption: inclua.alias + " (" + inclua.name + ")",
+					value: inclua.alias,
+					meta: "Biblioteca",
+					docHTML: "<b>" + inclua.alias + "</b><hr>Atalho para biblioteca " + inclua.name + ".<br>Digite <code>" + inclua.alias + ".</code> para ver membros.",
+					score: SCORE.LIBRARY_NAME
+				});
 			}
-			
-			// para só mostrar as sugestões de bibliotecas
-			//if(libsugestoes.length > 0)
-			//{
-			//	sugestoes = libsugestoes;
-			//}
 		}
-		
-		let millis_bibliotecas = Math.trunc(performance.now()-lastvmTime);
-		lastvmTime = performance.now();
-		
-		//console.info(entireLine+" ("+outPrefix+") --> "+sugestoes.map(entry=>{
-		//		return entry.value;
-		//}));
-		
-		//for(var i=0;i<sugestoes.length;i++)
-		//{
-		//	sugestoes[i] = outAppend+sugestoes[i];
-		//}
-		
-		/*for(var i=0;i<sugestoes.length;i++)
-		{
-			sugestoes[i].score = i;
-		}*/
-		
-		if(Math.trunc(performance.now()-firstvmTime) > 100)
-		{
-		console.log("Sugestoes Tempo de execução:"+Math.trunc(performance.now()-firstvmTime)+" milissegundos ["+
-		millis_tokens+" "+
-		millis_palavras+" "+
-		millis_incluas+" "+
-		millis_globais+" "+
-		millis_funcoes+" "+
-		millis_variaveis+" "+
-		millis_bibliotecas+"]"
-		);
-		}
-		
-		callback(
-			null,
-			sugestoes.filter(entry=>{
-				return outPrefix=="" || (typeof(entry.value) == "string" && entry.value.includes(outPrefix));
-			})
-			//.map(entry=>{
-			//	return {
-			//		caption: entry.label.trim(),
-			//		meta: "sugestão",
-			//		value: entry.check
-			//	};
-			//})
-		);
+
+		// Filtra por prefixo (case-insensitive)
+		// Assim não sugere errado um monte de coisa nada a ver
+		const lowerPrefix = prefix.toLowerCase();
+		const filtered = prefix === ""
+			? sugestoes
+			: sugestoes.filter(s => {
+				const val = (s.value || s.caption || "");
+				return typeof val === "string" && val.toLowerCase().includes(lowerPrefix);
+			});
+
+		callback(null, sugestoes);
 	}
-	
+
+	/**
+	 * Interface do Ace Editor: retorna tooltip HTML para um item do autocomplete.
+	 */
 	getDocTooltip(item) {
-        if (!item.docHTML) {
-            item.docHTML = [
-                "<b>", item.caption , "</b>", "<hr></hr>",
-                item.tooltip
-            ].join("");
-        }
-    }
+		if (!item.docHTML) {
+			item.docHTML = [
+				"<b>", item.caption, "</b>",
+				"<hr>",
+				item.tooltip || ""
+			].join("");
+		}
+	}
 }

@@ -2,6 +2,7 @@ import { canBePreUnary, findPreviousComment, getOpPrecedence, isDualOperator, is
 } from "./tokenizer.js";
 
 export const STATEMENT_declVar = 1;
+export const STATEMENT_declParVar = 14; // declaração de parâmetros de função
 export const STATEMENT_declArr = 10;
 export const STATEMENT_declArrValues = 13;
 export const STATEMENT_expr = 2;
@@ -15,18 +16,21 @@ export const STATEMENT_ret = 9;
 export const STATEMENT_escolha = 11;
 export const STATEMENT_caso = 12;
 
-function pmatch(index,tokens)
+/**
+ * Verifica se uma sequência de IDs de tokens corresponde aos tokens a partir de um índice.
+ * * @param {number} index - O índice inicial no array de tokens.
+ * @param {Array<Object>} tokens - O array de objetos de token (cada um deve ter uma propriedade .id).
+ * @param {...number} expectedIds - Uma sequência de IDs esperados para comparação.
+ * @returns {boolean} Retorna true se todos os IDs coincidirem na ordem fornecida.
+ */
+function pmatch(index, tokens, ...expectedIds) 
 {
-	let ti = index;
-	for (let i = 2; i < arguments.length && ti < tokens.length; i++) {
-		if(tokens[ti].id != arguments[i])
-		{
-			return false;
-		}
-		ti++;
-	}
-	return true;
-}
+  // Acabou os tokens antes de verificar todos os IDs esperados
+  if (index + expectedIds.length > tokens.length) return false;
+
+  // Verifica cada ID esperado contra o token correspondente
+  return expectedIds.every((id, i) => tokens[index + i].id === id);
+};
 
 
 export function getAllVariableParserDecl(stats,ret)
@@ -42,7 +46,7 @@ export function getAllVariableParserDecl(stats,ret)
 				getAllVariableParserDecl(s.statements,ret);
 			}
 		}
-		else if(s.id == STATEMENT_declArr || s.id == STATEMENT_declVar)
+		else if(s.id == STATEMENT_declArr || s.id == STATEMENT_declVar || s.id == STATEMENT_declParVar)
 		{
 			ret.push(s);
 		}
@@ -83,6 +87,7 @@ export class Parser {
 	
 	erro(token,msg)
 	{	
+		token = token || {index:0};
 		//var line = this.textInput.substring(token.index,this.textInput.indexOf("\n",token.index));
 		//console.log("linha "+numberOfLinesUntil(token.index,this.textInput)+", erro:"+msg);
 		//console.log("perto de '"+line+"'");
@@ -293,7 +298,7 @@ export class Parser {
 			}
 			else
 			{
-				tree.push({id:STATEMENT_declVar,index:tIndex,type:varType,isConst:isConst,byRef:byRef,name:varName,expr:false});
+				tree.push({id:STATEMENT_declParVar,index:tIndex,type:varType,isConst:isConst,byRef:byRef,name:varName,expr:false});
 			}
 			if(tokens[i].id != T_comma)
 			{

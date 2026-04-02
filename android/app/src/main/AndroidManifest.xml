@@ -9,10 +9,10 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-        android:usesCleartextTraffic="true"
+        android:theme="@style/Theme.PortugolWeb"
         android:hardwareAccelerated="true"
         android:largeHeap="true"
+        android:usesCleartextTraffic="false"
         >
 
         <activity

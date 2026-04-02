@@ -1,34 +1,35 @@
 package br.erickweil.portugolweb;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.util.Log;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.Random;
 
 public class JanelaHelper {
     public static void AbrirJanelaAplicativoDesatualizado(final Context context,String versaoApp, String respVersion) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         builder.setTitle(R.string.app_name);
-        builder.setMessage("Foi detectado que seu aplicativo está desatualizado, é altamente recomendado que você atualize o aplicativo\n*Salve seu trabalho* antes de atualizar\n A versão mais recente é "+respVersion+" e você ainda está na "+versaoApp);
+        builder.setMessage(context.getString(R.string.dialog_msg_app_desatualizado, respVersion, versaoApp));
         builder.setIcon(R.drawable.ic_launcher_foreground);
-        builder.setPositiveButton("Atualizar", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.dialog_btn_atualizar, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 dialog.dismiss();
                 abirAppNaLoja(context);
             }
         });
-        builder.setNegativeButton("Continuar Desatualizado", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.dialog_btn_continuar_desatualizado, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 dialog.dismiss();
             }
         });
-        AlertDialog alert = builder.create();
-        alert.show();
+        builder.show();
     }
 
     public static void abirAppNaLoja(final Context ctx)
@@ -42,22 +43,19 @@ public class JanelaHelper {
     }
 
     public static void AbrirJanelaDarNota(final Context context) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         builder.setTitle(R.string.app_name);
         Random random = new Random();
         int messageN = random.nextInt(10);
-        switch(messageN) {
-            case 0: builder.setMessage("Gostaria de sugerir algo? Faça isso no projeto no Github."); break;
-            case 1: builder.setMessage("Você é um professor? Contribua com o projeto no Github"); break;
-            case 2: builder.setMessage("Encontrou um problema? Você deveria relatar para que seja resolvido, por meio de uma issue no Github"); break;
-            case 3: builder.setMessage("Tem uma ideia de melhoria? Contribua com o projeto no Github"); break;
-            case 4: builder.setMessage("Sabia que este APP é Open Source? Veja todo o código no Github"); break;
-            case 5: builder.setMessage("Se você clicar no botão 'Dar uma Nota' esse pop-up irá parar de ser exibido"); break;
-            default: builder.setMessage("Está gostando do App? Considere Avaliá-lo na Play Store."); break;
+        String[] msgsNota = context.getResources().getStringArray(R.array.dialog_msgs_nota);
+        if (messageN < msgsNota.length) {
+            builder.setMessage(msgsNota[messageN]);
+        } else {
+            builder.setMessage(R.string.dialog_msg_nota_default);
         }
         builder.setIcon(R.drawable.ic_launcher_foreground);
         if(messageN < 5) {
-            builder.setPositiveButton("Abrir projeto", new DialogInterface.OnClickListener() {
+            builder.setPositiveButton(R.string.dialog_btn_abrir_projeto, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     dialog.dismiss();
 
@@ -67,12 +65,12 @@ public class JanelaHelper {
                     }
                     catch (Exception e)
                     {
-                        e.printStackTrace();
+                        Log.e("JANELAHELPER", "Erro: " + e, e);
                     }
                 }
             });
         } else {
-            builder.setPositiveButton("Dar uma Nota", new DialogInterface.OnClickListener() {
+            builder.setPositiveButton(R.string.dialog_btn_dar_nota, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     dialog.dismiss();
 
@@ -83,28 +81,27 @@ public class JanelaHelper {
                         prefsEdit.putInt("deu_nota", deuNota + 1);
                         prefsEdit.apply();// commit??
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Log.e("JANELAHELPER", "Erro: " + e, e);
                     }
 
                     abirAppNaLoja(context);
                 }
             });
         }
-        builder.setNegativeButton("Depois", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.dialog_btn_depois, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 dialog.dismiss();
             }
         });
-        AlertDialog alert = builder.create();
-        alert.show();
+        builder.show();
     }
 
     public static void abrirJanelaAtualizaoComSucesso(final Activity context, int versaoAntiga, int versaoAtual) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         builder.setTitle(R.string.app_name);
-        builder.setMessage("O Site do aplicativo atualizou para a versão "+versaoAtual+" (Você estava na "+versaoAntiga+"). Download da versão nova concluído.\n *Salve seu trabalho* e reinicie o aplicativo para ter efeito.");
+        builder.setMessage(context.getString(R.string.dialog_msg_webapp_atualizado, versaoAtual, versaoAntiga));
         builder.setIcon(R.drawable.ic_launcher_foreground);
-        builder.setPositiveButton("Reiniciar", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.dialog_btn_reiniciar, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 dialog.dismiss();
 
@@ -112,13 +109,12 @@ public class JanelaHelper {
                 context.recreate();
             }
         });
-        builder.setNegativeButton("Depois", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.dialog_btn_depois, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 dialog.dismiss();
             }
         });
 
-        AlertDialog alert = builder.create();
-        alert.show();
+        builder.show();
     }
 }

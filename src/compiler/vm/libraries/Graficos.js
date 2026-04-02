@@ -1,10 +1,13 @@
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../tokenizer.js";
 import { closeFullscreen, getScreenDimensions, openFullscreen } from "../../../extras/extras.js";
 import { STATE_BREATHING, STATE_DELAY_REPEAT, STATE_ENDED, VM_setCodeMax, VM_setDelay } from "../vm.js";
+import { BibliotecaBase, libBoolArg } from "./libHelper.js";
 
-export default class Graficos {
+export default class Graficos extends BibliotecaBase {
 	constructor(canvas,modal,cwindow,title,divKeys,libTeclado,isMobile)
 	{
+		super();
+		
 		this.isMobile = isMobile;
 		this.canvas = canvas;
 		this.modal = modal;
@@ -77,7 +80,7 @@ export default class Graficos {
 		"altura_texto":{id:T_parO,parameters:[{name:"texto",type:T_cadeia}],type:T_inteiro,jsSafe:true},
 		"desenhar_elipse":{id:T_parO,parameters:[{name:"pX",type:T_inteiro},{name:"pY",type:T_inteiro},{name:"largura",type:T_inteiro},{name:"altura",type:T_inteiro},{name:"preencher",type:T_logico}],type:T_vazio,jsSafe:true},
 		"entrar_modo_tela_cheia":{id:T_parO,parameters:[],type:T_vazio,jsSafe:true},
-		"desenhar_poligono":{id:T_parO,parameters:[{name:"matriz_pontos",type:T_Minteiro},{name:"preenchar",type:T_logico}],type:T_vazio,jsSafe:true},
+		"desenhar_poligono":{id:T_parO,parameters:[{name:"matriz_pontos",type:T_Minteiro},{name:"preencher",type:T_logico}],type:T_vazio,jsSafe:true},
 		"desenhar_ponto":{id:T_parO,parameters:[{name:"pX",type:T_inteiro},{name:"pY",type:T_inteiro}],type:T_vazio,jsSafe:true},
 		"carregar_imagem":{id:T_parO,parameters:[{name:"caminho",type:T_cadeia}],type:T_inteiro,jsSafe:false},
 		"liberar_imagem":{id:T_parO,parameters:[{name:"endereco",type:T_inteiro}],type:T_vazio,jsSafe:true},
@@ -139,7 +142,7 @@ export default class Graficos {
 	iniciar_modo_grafico(manter_visivel)
 	{
 		VM_setCodeMax(10000000); // para não dar flickering na tela
-		this.manter_visivel = manter_visivel == 0;
+		this.manter_visivel = libBoolArg(manter_visivel);
 		
 		let screenDim = getScreenDimensions();
 
@@ -149,6 +152,8 @@ export default class Graficos {
 		this.definir_dimensoes_janela(square-32,square-72);
 		
 		this.modal.style.display = "table";
+		// Exibir cursor do mouse por padrão
+		this.canvas.style.cursor = "auto";
 		
 		this.ctx = this.canvas.getContext("2d");
 		this.ctx.lineWidth = 2;
@@ -207,28 +212,23 @@ export default class Graficos {
 		// Vamos aproveitar essa função para atualizar os botões do teclado, caso tenha algum
 		if(this.isMobile && this.modal.style.display !== "none")
 		{
-			let teclas = Object.keys(this.libTeclado.checkMap);
-			let teclaCharMap = Object.keys(this.libTeclado.teclaCharMap);
+			if(!this.libTeclado.checkMapDirty && this.divKeys.innerHTML === "") return;
+
 			let resHTML = "";
-			
-			if(teclas.length > 0)
+			for(const t in this.libTeclado.checkMap)
 			{
-				for(let i =0;i<teclas.length;i++)
+				if(this.libTeclado.checkMap[t] === true)
 				{
-					let t = teclas[i];
-					
-					if(this.libTeclado.checkMap[t] === true)
+					this.libTeclado.checkMap[t] = false;
+					let tvalue = this.libTeclado.teclaCharMap[t];
+					if(typeof tvalue === 'undefined')
 					{
-						this.libTeclado.checkMap[t] = false;
-						let tvalue = this.libTeclado.teclaCharMap[t];
-						if(typeof tvalue === 'undefined')
-						{
-							tvalue = String.fromCharCode(t);
-						}
-						resHTML += "<input type=\"button\" value=\""+tvalue+"\" ontouchstart=\"index.GraficosBtnTypeDown('"+t+"')\" ontouchend=\"index.GraficosBtnTypeUp('"+t+"')\" onfocus=\"index.preventFocusCanvas(event)\" style=\"background: #1E2324;\">";
+						tvalue = String.fromCharCode(Number(t));
 					}
+					resHTML += "<input type=\"button\" value=\""+tvalue+"\" ontouchstart=\"index.GraficosBtnTypeDown('"+t+"')\" ontouchend=\"index.GraficosBtnTypeUp('"+t+"')\" onfocus=\"index.preventFocusCanvas(event)\" style=\"background: #1E2324;\">";
 				}
 			}
+			this.libTeclado.checkMapDirty = false;
 					
 			if(this.divKeys.innerHTML != resHTML)
 			this.divKeys.innerHTML = resHTML;
@@ -238,7 +238,7 @@ export default class Graficos {
 	desenhar_retangulo(x,y,w,h,arredondar,preencher) // lembrar que logico 0 é verdadeiro outra coisa é falso
 	{
 		this.startDraw(x,y,w,h);
-		if(arredondar == 0)
+		if(libBoolArg(arredondar))
 		{
 			let r = 0;
 			if (w <= h) r = w / 10.0;
@@ -252,12 +252,12 @@ export default class Graficos {
 			this.ctx.arcTo(x,   y,   x+w, y,   r);
 			this.ctx.closePath();
 			
-			if(preencher == 0) this.ctx.fill();
+			if(libBoolArg(preencher)) this.ctx.fill();
 			else this.ctx.stroke();
 		}
 		else
 		{
-			if(preencher == 0)
+			if(libBoolArg(preencher))
 			{
 				this.ctx.fillRect(x, y, w, h);
 			}
@@ -352,7 +352,7 @@ export default class Graficos {
 			this.ctx.beginPath();
 			this.ctx.ellipse(x + rx, y+ry, rx, ry, 0, 0, Math.PI*2);
 			//ctx.strokeStyle=style;
-			if(preencher == 0) this.ctx.fill();
+			if(libBoolArg(preencher)) this.ctx.fill();
 			else this.ctx.stroke();
 			//ctx.restore();
         }
@@ -373,7 +373,7 @@ export default class Graficos {
 			this.ctx.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
 			this.ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
 
-			if(preencher == 0) this.ctx.fill();
+			if(libBoolArg(preencher)) this.ctx.fill();
 			else this.ctx.stroke();
 			
 		}
@@ -429,7 +429,7 @@ export default class Graficos {
 			this.ctx.lineTo(ponto[0],ponto[1]);
 		}
 		this.ctx.closePath();
-		if(preencher == 0) this.ctx.fill();
+		if(libBoolArg(preencher)) this.ctx.fill();
 		else this.ctx.stroke();
 	}
 	
@@ -450,7 +450,7 @@ export default class Graficos {
 			}
 			else if(imgObject.error)
 			{
-				throw "Erro ao carregar a imagem \""+url+"\",\n só é permitido carregar imagens usando um endereço web, por exemplo: \"https://upload.wikimedia.org/wikipedia/commons/0/0f/Exemplo.jpg\"";
+				throw new Error("Erro ao carregar a imagem \""+url+"\",\n só é permitido carregar imagens usando um endereço web, por exemplo: \"https://upload.wikimedia.org/wikipedia/commons/0/0f/Exemplo.jpg\"");
 			}
 			else
 			{
@@ -467,12 +467,12 @@ export default class Graficos {
 			
 			img.onerror = function()
 			{
-				console.log("Erro ao carregar imagem :"+url);
+				console.error("Erro ao carregar a imagem: "+url);
 				imgObject.error = true;
 			};
 			
 			img.onload = function() {
-				console.log("Carregada imagem :"+url);
+				console.log("Carregou imagem: "+url);
 				imgObject.loaded = true;
 			};
 			
@@ -502,7 +502,7 @@ export default class Graficos {
 		}
 		else
 		{
-			throw "Imagem "+endereco+" não existe ou não foi carregada";
+			throw new Error("Imagem "+endereco+" não existe ou não foi carregada");
 		}
 	}
 	
@@ -527,7 +527,7 @@ export default class Graficos {
 		}
 		else
 		{
-			throw "Imagem "+endereco+" não existe ou não foi carregada";
+			throw new Error("Imagem "+endereco+" não existe ou não foi carregada");
 		}
 	}
 	
@@ -560,7 +560,7 @@ export default class Graficos {
 		}
 		else
 		{
-			throw "Imagem "+endereco+" não existe ou não foi carregada";
+			throw new Error("Imagem "+endereco+" não existe ou não foi carregada");
 		}
 	}
 
@@ -568,11 +568,12 @@ export default class Graficos {
 	{
 		if(this.imgs[endereco] && this.imgs[endereco].loaded)
 		{
-			return {value:this.imgs[endereco].img.height}; 
+			let img = this.imgs[endereco];
+			return {value: img.rescale ? img.rescaleY : img.img.height}; 
 		}
 		else
 		{
-			throw "Imagem "+endereco+" não existe ou não foi carregada";
+			throw new Error("Imagem "+endereco+" não existe ou não foi carregada");
 		}
 	}
 	
@@ -580,11 +581,12 @@ export default class Graficos {
 	{
 		if(this.imgs[endereco] && this.imgs[endereco].loaded)
 		{
-			return {value:this.imgs[endereco].img.width}; 
+			let img = this.imgs[endereco];
+			return {value: img.rescale ? img.rescaleX : img.img.width}; 
 		}
 		else
 		{
-			throw "Imagem "+endereco+" não existe ou não foi carregada";
+			throw new Error("Imagem "+endereco+" não existe ou não foi carregada");
 		}
 	}
 	
@@ -603,7 +605,7 @@ export default class Graficos {
 		return {value: (rgb>>8) & 0xFF};
 		else if(canal == this.CANAL_B)
 		return {value: (rgb) & 0xFF};
-		else throw "canal deve ser CANAL_R, CANAL_G ou CANAL_B";
+		else throw new Error("canal deve ser CANAL_R, CANAL_G ou CANAL_B");
 	}
 	
 	obter_cor(rgb,canal)
@@ -614,14 +616,14 @@ export default class Graficos {
 		return {value: (rgb>>8) & 0xFF};
 		else if(canal == this.CANAL_B)
 		return {value: (rgb) & 0xFF};
-		else throw "canal deve ser CANAL_R, CANAL_G ou CANAL_B";
+		else throw new Error("canal deve ser CANAL_R, CANAL_G ou CANAL_B");
 	}
 	
 	definir_estilo_texto(italico,negrito,sublinhado)
 	{
-		this.textoItalico = italico == 0;
-		this.textoNegrito = negrito == 0;
-		this.textoSublinhado = sublinhado == 0;
+		this.textoItalico = libBoolArg(italico);
+		this.textoNegrito = libBoolArg(negrito);
+		this.textoSublinhado = libBoolArg(sublinhado);
 		
 		this.updateText();
 	}

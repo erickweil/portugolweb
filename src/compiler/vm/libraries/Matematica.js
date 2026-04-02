@@ -1,8 +1,11 @@
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../tokenizer.js";
+import { BibliotecaBase } from "./libHelper.js";
 
-export default class Matematica {
+export default class Matematica extends BibliotecaBase {
 
 	constructor() {
+		super();
+		
 		this.PI = 3.141592653589793;
 		
 		this.members = {
@@ -56,20 +59,21 @@ export default class Matematica {
 	
 	raiz(x,n)
 	{
-		// não tinha que dar erro para x negativo?
-		try {
-			let negate = n % 2 == 1 && x < 0;
-			if(negate)
-				x = -x;
-			let possible = Math.pow(x, 1 / n);
-			n = Math.pow(possible, n);
-			if(Math.abs(x - n) < 1 && (x > 0 == n > 0))
-				return {value:negate ? -possible : possible};
+		// 1. Validação de erro real para raízes pares de números negativos
+		//if (x < 0 && n % 2 === 0) {
+		if( x < 0 && (!Number.isInteger(n) || Math.abs(n % 2) !== 1)) {
+			throw new Error("Não é possível calcular a raiz par de número de um número negativo dentro dos reais.");
 		}
-		catch(e)
-		{
-			console.log(e);
-		}
+
+		// 2. Lógica simplificada para o sinal
+		const sign = x < 0 ? -1 : 1;
+		const absX = Math.abs(x);
+
+		// 3. Cálculo direto
+		const result = Math.pow(absX, 1 / n);
+
+		// 4. Retorno aplicando o sinal correto
+		return { value: sign * result };
 	}
 	
 	seno(n)

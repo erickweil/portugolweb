@@ -47,7 +47,7 @@ export function htmlEntities(str) {
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-export function removeEscaping(tok,str,escaping)
+export function removeEscaping(tok,str,escaping,baseIndex = 0)
 {
 	// this.erro(this.tokens[this.tokens.length-1],"o tipo caracter deve conter apenas uma letra ou número. mude para cadeia");
 	let ret = "";
@@ -64,7 +64,7 @@ export function removeEscaping(tok,str,escaping)
 			else if(c1 == escaping) c0 = escaping;
 			else 
 			{
-				tok.erro(tok.tokens[tok.tokens.length-1],"Após inserir a barra invertida \\ você deve ter um desses: \\ (barra invertida), n (nova linha), t (tabulação), "+escaping+" (aspas)");
+				tok.erro(baseIndex+i,"Após inserir a barra invertida \\ você deve ter um desses: \\ (barra invertida), n (nova linha), t (tabulação), "+escaping+" (aspas)");
 			}
 			
 			i++;
@@ -494,7 +494,7 @@ export function getTypeWord(code)
 		case T_Mcadeia: return "cadeia[][]";
 		case T_Mreal: return "real[][]";
 		case T_Mlogico: return "logico[][]";
-		default: return code;
+		default: return ""+code;
 	}
 }
 
@@ -584,8 +584,11 @@ export class Tokenizer {
 		this.tokens = [];
     }
 	
-	erro(token,msg)
+	erro(index,msg)
 	{
+		//let token = {index: Math.max(0,index)};
+		let token = index ? {index: Math.max(0,index)} :
+			this.tokens.length > 0 ? { index: this.tokens[this.tokens.length-1].index } : { index:0 };
 		if(this.enviarErro)
 		this.enviarErro(this.input,token,msg,"sintatico");
 		else
@@ -630,34 +633,6 @@ export class Tokenizer {
 		return last;
 	}
 	
-	getTokenIndexAtRowCol(row,col)
-	{
-		let last = 0;
-		let firstIndex = -1;
-		for(let i =0; i< this.tokens.length;i++)
-		{
-			let tokenindex = this.tokens[i].index;
-			let tokenrow = numberOfLinesUntil(tokenindex,this.input);
-			
-			if(tokenrow == row && firstIndex == -1)
-			{
-				firstIndex = tokenindex;
-			}
-			
-			if(firstIndex != -1)
-			{
-				if(tokenindex - firstIndex > col)
-				{
-					return last;
-				}
-				
-				last = i;
-			}
-		}
-		return last;
-	}
-	
-	
 	// Adding a method to the constructor
 	tokenize()
 	{
@@ -677,7 +652,7 @@ export class Tokenizer {
 					{
 						if(kc == "\n")
 						{
-							this.erro(this.tokens[this.tokens.length-1],"não fechou as aspas");
+							this.erro(i,"não fechou as aspas");
 						}
 						break;
 					}
@@ -690,7 +665,7 @@ export class Tokenizer {
 				//str = str.replace(/\\"/g,'"');
 				//str = str.replace(/\\'/g,"'");
 				
-				str = removeEscaping(this,str,c);
+				str = removeEscaping(this,str,c,i);
 				
 				if(c == '"')
 				{
@@ -700,7 +675,7 @@ export class Tokenizer {
 				{
 					if(str.length != 1)
 					{
-						this.erro(this.tokens[this.tokens.length-1],"o tipo caracter deve conter apenas uma letra ou número. mude para cadeia");
+						this.erro(i, "o tipo caracter deve conter apenas uma letra ou número. mude para cadeia");
 						if(str.length > 1) str = str.charAt(0);
 					}
 					this.tokens.push({id:T_caracterLiteral,index:i,txt:str});
@@ -746,9 +721,10 @@ export class Tokenizer {
 				//{
 				
 				let k = i+1;
+				let kc;
 				for(; k< this.input.length;k++)
 				{
-					let kc = this.input.charAt(k);
+					kc = this.input.charAt(k);
 					//if( separators.indexOf(kc) > -1 && kc != '.' &&  kc!= 'X' && kc!='x' && kc!='b' && kc!='B')
 					if(!(/^[0-9A-Fa-f\.XxBb]$/.test(kc)))
 					{
@@ -756,7 +732,23 @@ export class Tokenizer {
 					}
 				}
 				let str = this.input.substring(i,k);
-				if(!str.includes("."))
+				let possivelReal = str.includes(".") || /^[\+\-]?\d+[eE]/.test(str);
+				if(possivelReal && (str.endsWith("e") || str.endsWith("E")) && (kc === '+' || kc === '-'))
+				{
+					// Consome os próximo tokens do número, para casos como "1e+10" ou "1e-5"
+					k++;
+					for(; k< this.input.length;k++)
+					{
+						kc = this.input.charAt(k);
+						if(!(/^[0-9]$/.test(kc)))
+						{
+							break;
+						}
+					}
+					str = this.input.substring(i,k);
+				}
+				
+				if(!possivelReal)
 					this.tokens.push({id:T_inteiroLiteral,index:i,txt:str});
 				else
 					this.tokens.push({id:T_realLiteral,index:i,txt:str});
@@ -913,7 +905,7 @@ export class Tokenizer {
 			}
 			else
 			{
-				this.erro(this.tokens[this.tokens.length-1],"Remova o caracter '"+c+"', isso não deveria estar aqui");
+				this.erro(i,"Remova o caracter '"+c+"', isso não deveria estar aqui");
 			}
 		}
 		return this.tokens;
@@ -975,121 +967,4 @@ export class Tokenizer {
 		}
 		return string;
 	}
-}
-
-// deprecated
-function token_replace2(input)
-{
-	let start_off = 0;
-	let string = "";
-	for(let i =0; i< input.length;i++)
-	{
-		let c = input.charAt(i);
-		if( c == '"' || c == "'")
-		{
-			let k = i+1;
-			for(; k< input.length;k++)
-			{
-				let kc = input.charAt(k);
-				if(kc == "\\") k++;
-				else if( kc == c || kc == "\n" )
-				{
-					break;
-				}
-			}
-			let str = input.substring(i,k+1);
-			let word = "<span class='string-literal'>"+str+"</span>"; 
-			string += word;
-			i = k;
-			start_off = i+1;
-		}
-		else if( c == '/' && input.charAt(i+1) == "/")
-		{
-			let k = i+1;
-			for(; k< input.length;k++)
-			{
-				let kc = input.charAt(k);
-				if( kc == "\n" )
-				{
-					break;
-				}
-			}
-			let str = input.substring(i,k+1);
-			let word = "<span class='comment-line'>"+str+"</span>"; 
-			string += word;
-			i = k;
-			start_off = i+1;
-		}
-		else if( c == '/' && input.charAt(i+1) == "*")
-		{
-			let k = i+1;
-			for(; k< input.length;k++)
-			{
-				let kc = input.charAt(k);
-				if( kc == "/" && input.charAt(k-1) == "*" )
-				{
-					break;
-				}
-			}
-			let str = input.substring(i,k+1);
-			let word = "<span class='comment-line'>"+str+"</span>"; 
-			string += word;
-			i = k;
-			start_off = i+1;
-		}
-		else if(c >= '0' && c <= '9')
-		{
-			if( separators.indexOf(input.charAt(i-1)) > -1) // antes do nÃºmero Ã© um separador
-			{
-			let k = i+1;
-			for(; k< input.length;k++)
-			{
-				let kc = input.charAt(k);
-				if( separators.indexOf(kc) > -1 && kc != '.' &&  kc!= 'X' && kc!='x' && kc!='b' && kc!='B')
-				{
-					break;
-				}
-			}
-			let str = input.substring(i,k);
-			let word = "<span class='numeric-literal'>"+str+"</span>"; 
-			string += word;
-			i = k-1;
-			start_off = i+1;
-			}
-		}
-		else if( separators.indexOf(c) > -1) // c Ã© um separador
-		{
-			if(i - start_off > 0)
-			{
-				let word = input.substring(start_off,i);
-				//var begin = input.substring(0,start_off-1);
-				//var end = input.substring(i,input.length);
-				if( !(separators.indexOf(word) > -1)) // n Ã© um separador
-				{
-					word = "<span class='w-"+word+"'>"+word+"</span>"; 
-					let sep_c = separators_names[separators.indexOf(c)];
-					let sep = "<span class='"+sep_c+"'>"+c+"</span>"; 
-					string += word;
-					string += sep;
-					
-					start_off = i+1;
-				}
-				else
-				{
-					let sep_c = separators_names[separators.indexOf(word)];
-					let sep = "<span class='"+sep_c+"'>"+word+"</span>"; 
-					string += sep;
-					start_off = i+1;
-				}
-			}
-			else
-			{
-				let sep_c = separators_names[separators.indexOf(c)];
-				let sep = "<span class='"+sep_c+"'>"+c+"</span>"; 
-				string += sep;
-				start_off = i+1;
-			}
-		}
-	}
-	return string;
 }

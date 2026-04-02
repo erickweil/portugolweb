@@ -1,23 +1,14 @@
 import portugolCompleter from "../../ace_editor/ace_portugol_completer.js";
-
-// Unico jeito que achei de fazer a biblioteca funcionar
-// É NÃO IMPORTANDO ELA
-//import * as __ace from '../lib/ace-src-min-noconflict/ace.js';
-//import * as __langtools from '../lib/ace-src-min-noconflict/ext-language_tools.js';
-//import * as __emmet from '../lib/ace-src-min-noconflict/ext-emmet.js';
-const ace = window.ace;
-ace.config.set('basePath','/lib/ace-src-min-noconflict/');
-
-// precisa disso aqui para usar a classe Range
-const Range = ace.require("ace/range").Range;
-
 export default class EditorManager {
 
     constructor() {
 
     }
 
-    initEditor(divID,fontSize,libraries,isMobile,editorFocusCallback) {
+    async initEditor(divID,fontSize,libraries,isMobile,editorFocusCallback) {
+        const { default: ace } = await import("../../ace_editor/ace_webpack.js");
+        this.Range = ace.default.require("ace/range").Range;
+
         this.fontSize = fontSize;
         this.editor_divID = divID;
         this.editor = ace.edit(divID,{
@@ -27,21 +18,20 @@ export default class EditorManager {
             navigateWithinSoftTabs: false
         }
         );
-        //console.log(ace);
         this.editor.setTheme("ace/theme/portugol_dark");
         this.editor.session.setMode("ace/mode/portugol");
 
         this.editor.setOptions({
             enableBasicAutocompletion: true,
-            enableSnippets: true, // negócio chato demais, tenho que fazer ficar mais intuitivo antes de ativar
-            enableEmmet: false, // oq é Emmet? nem eu sei
+            enableSnippets: false, // negócio chato demais, tenho que fazer ficar mais intuitivo antes de ativar
             enableLiveAutocompletion: true,
+            enableMobileMenu: false, // três pontinhos inúteis
             scrollPastEnd: 0.5
         });
 
         this.myPortugolCompleter = new portugolCompleter(libraries);
         this.aceLangTools = ace.require('ace/ext/language_tools');
-        this.aceLangTools.setCompleters();		
+        //this.aceLangTools.setCompleters();		
         this.aceLangTools.addCompleter(this.myPortugolCompleter);
         
         
@@ -52,10 +42,11 @@ export default class EditorManager {
             }
         });
 
-        if(isMobile)
-        {
-            this.editor.renderer.setShowGutter(false);
-        }
+        // A quer saber vamos ativar os números de linhas no mobile né
+        //if(isMobile)
+        //{
+        //    this.editor.renderer.setShowGutter(false);
+        //}
 
         this.editor.on("focus", editorFocusCallback);
         this.editor.focus();
@@ -75,6 +66,7 @@ export default class EditorManager {
 	}
 
     getValue() {
+        if (!this.editor) return "";
         return this.editor.getValue();
     }
 
@@ -91,6 +83,15 @@ export default class EditorManager {
         this.editor.setOptions({
 			fontSize: fontSize+"pt"
 		});
+    }
+
+    setGutterState(show) {
+        this.editor.renderer.setShowGutter(show);
+        this.editor.resize();
+    }
+
+    getGutterState() {
+        return this.editor.renderer.getShowGutter();
     }
 
     /**
@@ -203,7 +204,7 @@ export default class EditorManager {
 		this.editor.getSession().setAnnotations(this.errosAnnot);
 		
 		this.errosMarkers.push(
-            this.editor.getSession().addMarker(new Range(
+            this.editor.getSession().addMarker(new this.Range(
                     annot.row, 
                     0, 
                     annot.row, 
@@ -212,18 +213,20 @@ export default class EditorManager {
     }
 
     highlight(linha,coluna,colunaFim,scrollTo) {
+        // Coloca um 'i' no gutter
         this.errosAnnot.push({
 			row: linha-1,
 			column: coluna,
 			text: "", // Or the Json reply from the parser 
-			type: "information" // also warning and information
+			type: "info" // also warning, error and security
 		});
 		this.editor.getSession().setAnnotations(this.errosAnnot);
-		
+
+        // Coloca um realce na linha inteira
 		this.errosMarkers.push(
             this.editor.getSession()
             .addMarker(
-                new Range(linha-1, 0, linha-1, colunaFim), 
+                new this.Range(linha-1, 0, linha-1, colunaFim), 
                 'ace_realceportugol-marker', 'screenLine'
         ));
 		

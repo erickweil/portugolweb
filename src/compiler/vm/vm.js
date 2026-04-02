@@ -150,6 +150,7 @@ case B_ASTOREGLOBAL: return "astoreglobal";
 case B_ALOADGLOBAL: return "aloadglobal";
 case B_LIBLOAD: return "libload";
 case B_LIBINVOKE: return "libinvoke";
+default: return "unknown("+c+")";
 }
 }
 
@@ -221,6 +222,8 @@ case B_NEWARRAY:
 case B_NEWARRAYGLOBAL:
 case B_LIBINVOKE:
 	return 3;
+default: 
+	return 0;
 }
 }
 
@@ -268,13 +271,13 @@ export function VM_getGlobals() {
 }
 let VM_scopeList = false; // Para encontrar variáveis
 let VM_functions = false;
-let VM_jsfunctions = false;
 let VM_libraries = false;
 let VM_saida = false;
 export function VM_getSaida() {
 	return	VM_saida;
 }
 let VM_saidaDiv = false;
+let VM_saidaDirty = false; // true quando VM_saida foi modificado mas o DOM ainda não foi atualizado
 let VM_textInput = false;
 export function VM_getTextInput() {
 	return	VM_textInput;
@@ -290,10 +293,8 @@ export function VM_getCodeMax() {
 }
 
 let VM_escrevaCount = 0;
-let VM_escrevaMax = 1000;
+let VM_escrevaMax = 10000;
 let enviarErro = false;
-
-
 
 export function recursiveDeclareArray(sizes,defaultValue,i)
 {
@@ -325,7 +326,7 @@ export function recursiveDeclareArray(sizes,defaultValue,i)
 
 export function escreva(...txt)
 {
-	if(!VM_saidaDiv) throw "Desconfigurado escreva() não pode executar";
+	if(!VM_saidaDiv) throw new Error("Desconfigurado escreva() não pode executar");
 
 	if(VM_escrevaCount > VM_escrevaMax)
 	{
@@ -334,16 +335,27 @@ export function escreva(...txt)
 	}
 	for(let i=0;i<txt.length;i++)
 		VM_saida += txt[i];
-	
-	VM_saidaDiv.value = VM_saida;
-	VM_saidaDiv.scrollTop = VM_saidaDiv.scrollHeight;
+
+	VM_saidaDirty = true; // acumula no buffer; o DOM será atualizado no próximo flush
 	VM_escrevaCount++;
+}
+
+// Aplica o buffer acumulado ao DOM. Chamado quando a VM cede controle ao navegador.
+export function flushEscreva()
+{
+	if(VM_saidaDirty && VM_saidaDiv)
+	{
+		VM_saidaDirty = false;
+		VM_saidaDiv.value = VM_saida;
+		VM_saidaDiv.scrollTop = VM_saidaDiv.scrollHeight;
+	}
 }
 
 export function limpa()
 {
 	VM_saida = "";
 	VM_escrevaCount = 0;
+	VM_saidaDirty = false; // DOM será atualizado diretamente abaixo
 
 	if(!VM_saidaDiv) return;
 	VM_saidaDiv.value = VM_saida;
@@ -352,7 +364,7 @@ export function limpa()
 
 export function leia()
 {
-	if(!VM_saidaDiv) throw "Desconfigurado leia() não pode executar";
+	if(!VM_saidaDiv) throw new Error("Desconfigurado leia() não pode executar");
 
 	let saidadiv = VM_saidaDiv.value;
 	saidadiv = saidadiv.replace(/\r\n/g,"\n");
@@ -429,15 +441,16 @@ export function VM_valueToString(type,value) {
 	}
 }
 
+const VM_LOCALE_NO_GROUPING = { useGrouping: false };
 export function VM_i2s(value)
 {
-	return value.toLocaleString('fullwide', { useGrouping: false });
+	return value.toLocaleString('fullwide', VM_LOCALE_NO_GROUPING);
 }
 
 export function VM_f2s(value)
 {
 	let strFloat = ""+value;
-	if(!strFloat.includes(".")) strFloat += ".0";
+	if(!strFloat.includes(".") && !strFloat.includes("e")) strFloat += ".0";
 	return strFloat;
 }
 
@@ -528,10 +541,9 @@ export function VMerro(msg)
 	console.log("ERRO NA VM:",msg);
 }
 
-export function VMsetup(functions,jsfunctions,libraries,scopeList,globalCount,textInput,saida_div,erroCallback) 
+export function VMsetup(functions,libraries,scopeList,globalCount,textInput,saida_div,erroCallback) 
 {
 	VM_functions = functions;
-	VM_jsfunctions = jsfunctions;
 	VM_textInput = textInput;
 	VM_libraries = libraries;
 	VM_scopeList = scopeList;
@@ -565,15 +577,16 @@ export function VMsetup(functions,jsfunctions,libraries,scopeList,globalCount,te
 	
 }
 
-// testando performance
 export function VMrun(execMax)
 {
 	try {
 	VM_codeCount = 0;
-	while(true) // eslint-disable-line
+	while(true)
 	{
 		VM_codeCount++; // para parar o programa e atualizar a saida em loops muito demorados
-		if(VM_codeCount > execMax) return STATE_BREATHING;
+		if(VM_codeCount > execMax) { 
+			return STATE_BREATHING; 
+		}
 		//let code = this.next();
 		
 		
@@ -644,12 +657,19 @@ export function VMrun(execMax)
 				let lib = VM_code[VM_i++];
 				let meth = VM_code[VM_i++];
 				let methArgsN = VM_code[VM_i++];
-				let methArgs = [];
-				for(let i = 0;i<methArgsN; i++)
+				let methArgs;
+				if(methArgsN === 0)
+					methArgs = [];
+				else if(methArgsN === 1)
+					methArgs = [VM_stack[--VM_si]];
+				else
 				{
-					methArgs.push(VM_stack[--VM_si]);
+					methArgs = new Array(methArgsN);
+					for(let i = methArgsN - 1;i >= 0; i--)
+					{
+						methArgs[i] = VM_stack[--VM_si];
+					}
 				}
-				methArgs.reverse();
 				
 				let ret = VM_libraries[lib][meth].apply(VM_libraries[lib], methArgs);
 				
@@ -684,12 +704,19 @@ export function VMrun(execMax)
 			{
 				let methIndex = VM_code[VM_i++];
 				let methArgsN = VM_code[VM_i++];
-				let methArgs = [];
-				for(let i = 0;i<methArgsN; i++)
+				let methArgs;
+				if(methArgsN === 0)
+					methArgs = [];
+				else if(methArgsN === 1)
+					methArgs = [VM_stack[--VM_si]];
+				else
 				{
-					methArgs.push(VM_stack[--VM_si]);
+					methArgs = new Array(methArgsN);
+					for(let i = methArgsN - 1;i >= 0; i--)
+					{
+						methArgs[i] = VM_stack[--VM_si];
+					}
 				}
-				methArgs.reverse();
 				
 				if(
 					methIndex < 0
@@ -699,7 +726,7 @@ export function VMrun(execMax)
 				{
 					VMerro("Function '"+methIndex+"' not found");
 				}
-				else if(!VM_execJS || !VM_functions[methIndex].jsSafe)
+				else
 				{
 					// precisa criar um stackFrame
 					
@@ -723,35 +750,6 @@ export function VMrun(execMax)
 					if(methArgs) for(let i=0;i<methArgs.length;i++)
 					{
 						VM_vars[i] = methArgs[i];
-					}
-				}
-				else
-				{
-					let jsfuncName = VM_jsfunctions[methIndex].jsName;
-					if(!jsfuncName)
-					{
-						VMerro("Function '"+methIndex+"' has no name");
-					}
-					
-					
-					let jsfunc = window[jsfuncName];
-					
-					if(!jsfunc)
-					{
-						VMerro("Function '"+jsfuncName+"' not found");
-					}
-					else
-					{
-						//console.log("chamou "+jsfuncName);
-						let ret = jsfunc.apply(null,methArgs);
-						if(typeof ret !== "undefined")
-						{
-							if(typeof ret == "boolean")
-							{
-								ret = ret ? B_TRUE : B_FALSE;
-							}
-							VM_stack[VM_si++] = ret;
-						}
 					}
 				}
 			}
@@ -784,16 +782,22 @@ export function VMrun(execMax)
 				if(VM_frame.length > 0)
 				{
 					let vI = VM_frame.length -1;
-					//VM_funcIndex = VM_frame[vI].funcIndex;
-					//VM_code = VM_functions[VM_funcIndex].bytecode;
-					//VM_i = VM_frame[vI].i;
-					//VM_stack = VM_frame[vI].stack;
-					//VM_si = VM_frame[vI].si;
-					//VM_vars = VM_frame[vI].vars;
-					
-					//VM_frame.pop();
 					//push on the parent stack
 					VM_frame[vI].stack[VM_frame[vI].si++] = v;
+
+					// Basicamente cada valor é enviado para pilha um por um
+					// E após todo B_RETVALUE será chamado um B_RET, então não precisa aqui fazer pop
+					// Exemplo:
+					//   bc.push(B_RETVALUE);
+					//   bc.push(B_RET);
+					// VM_funcIndex = VM_frame[vI].funcIndex;
+					// VM_code = VM_functions[VM_funcIndex].bytecode;
+					// VM_i = VM_frame[vI].i;
+					// VM_stack = VM_frame[vI].stack;
+					// VM_si = VM_frame[vI].si;
+					// VM_vars = VM_frame[vI].vars;
+					
+					// VM_frame.pop();
 				}
 				else
 				{
@@ -812,15 +816,10 @@ export function VMrun(execMax)
 			
 			case B_F2I: VM_stack[VM_si-1] = Math.trunc(VM_stack[VM_si-1]); break;
 			
-			case B_I2S: VM_stack[VM_si-1] = VM_stack[VM_si-1].toLocaleString('fullwide', { useGrouping: false }); break;
-			case B_F2S: 
-			{
-				let strFloat = ""+VM_stack[VM_si-1];
-				if(!strFloat.includes(".")) strFloat += ".0";
-				VM_stack[VM_si-1] = strFloat;
-			}
-			break;
-			case B_B2S: VM_stack[VM_si-1] = (VM_stack[VM_si-1] == 0 ? "verdadeiro" : "falso"); break;
+			case B_I2S: VM_stack[VM_si-1] = VM_i2s(VM_stack[VM_si-1]); break;
+			case B_F2S: VM_stack[VM_si-1] = VM_f2s(VM_stack[VM_si-1]); break;
+			case B_B2S: VM_stack[VM_si-1] = VM_b2s(VM_stack[VM_si-1]); break;
+			case B_C2S: VM_stack[VM_si-1] = ""+VM_stack[VM_si-1]; break;
 			
 			case B_NEWARRAYGLOBAL:
 			case B_NEWARRAY:
@@ -828,19 +827,18 @@ export function VMrun(execMax)
 				let arrayVar = VM_code[VM_i++];
 				let ndims = VM_code[VM_i++];
 				let defaultValue = VM_code[VM_i++];
-				let sizes = [];
-				for(let k=0;k<ndims;k++)
+				let sizes = new Array(ndims);
+				for(let k=ndims-1;k>=0;k--)
 				{
 					let size = VM_stack[--VM_si];
 					if(size>=0)
-						sizes.push(size);
+						sizes[k] = size;
 					else
 					{
 						VMerro("Tentou criar vetor com tamanho inválido '"+size+"'");
 						return STATE_ENDED;
 					}
 				}
-				sizes.reverse();
 				
 				if(code == B_NEWARRAYGLOBAL)
 				VM_globals[arrayVar] = recursiveDeclareArray(sizes,defaultValue,0);
@@ -854,30 +852,36 @@ export function VMrun(execMax)
 				let arrayVar = VM_code[VM_i++];
 				let ndims = VM_code[VM_i++];
 				
-				let indexes = [];
-				for(let k=0;k<ndims;k++)
+				let indexes = new Array(ndims);
+				for(let k=ndims-1;k>=0;k--)
 				{
-					indexes.push(VM_stack[--VM_si]);
+					indexes[k] = VM_stack[--VM_si];
 				}
-				indexes.reverse();
 				
 				let tempArr = code == B_ASTOREGLOBAL ? VM_globals[arrayVar] :VM_vars[arrayVar];
+				if(!tempArr)
+				{
+					VMerro("Tentou acessar vetor ou matriz não inicializado");
+					return STATE_ENDED;
+				}
 				for(let k=0;k<ndims-1;k++)
 				{
-					if(indexes[k]>=0 && indexes[k] < tempArr.length)
+					if(tempArr && indexes[k]>=0 && indexes[k] < tempArr.length)
 						tempArr = tempArr[indexes[k]];
 					else
 					{
-						VMerro("a matriz tem tamanho '"+tempArr.length+"' na dimensão '"+k+"' mas tentou acessar a posição '"+indexes[k]+"'");
+						let currentLength = tempArr ? tempArr.length : -1;
+						VMerro("a matriz tem tamanho '"+currentLength+"' na dimensão '"+k+"' mas tentou acessar a posição '"+indexes[k]+"'");
 						return STATE_ENDED;
 					}
 				}
 				
-				if(indexes[ndims-1]>=0 && indexes[ndims-1] < tempArr.length)
+				if(tempArr && indexes[ndims-1]>=0 && indexes[ndims-1] < tempArr.length)
 					tempArr[indexes[ndims-1]] = VM_stack[--VM_si];
 				else
 				{
-					VMerro("O vetor vai de 0 à "+(tempArr.length-1)+" mas tentou acessar a posição '"+indexes[ndims-1]+"'");
+					let currentLength = tempArr ? tempArr.length : 0;
+					VMerro("O vetor vai de 0 à "+(currentLength-1)+" mas tentou acessar a posição '"+indexes[ndims-1]+"'");
 					return STATE_ENDED;
 				}
 			}
@@ -888,41 +892,48 @@ export function VMrun(execMax)
 				let arrayVar = VM_code[VM_i++];
 				let ndims = VM_code[VM_i++];
 				
-				let indexes = [];
-				for(let k=0;k<ndims;k++)
+				let indexes = new Array(ndims);
+				for(let k=ndims-1;k>=0;k--)
 				{
-					indexes.push(VM_stack[--VM_si]);
+					indexes[k] = VM_stack[--VM_si];
 				}
-				indexes.reverse();
 				
 				let tempArr = code == B_ALOADGLOBAL ? VM_globals[arrayVar] :VM_vars[arrayVar];
+				if(!tempArr)
+				{
+					VMerro("Tentou acessar vetor ou matriz não inicializado");
+					return STATE_ENDED;
+				}
 				for(let k=0;k<ndims-1;k++)
 				{
-					if(indexes[k]>=0 && indexes[k] < tempArr.length)
+					if(tempArr && indexes[k]>=0 && indexes[k] < tempArr.length)
 						tempArr = tempArr[indexes[k]];
 					else
 					{
-						VMerro("a matriz tem tamanho '"+tempArr.length+"' na dimensão '"+k+"' mas tentou acessar a posição '"+indexes[k]+"'");
+						let currentLength = tempArr ? tempArr.length : -1;
+						VMerro("a matriz tem tamanho '"+currentLength+"' na dimensão '"+k+"' mas tentou acessar a posição '"+indexes[k]+"'");
 						return STATE_ENDED;
 					}
 				}
 				
-				if(indexes[ndims-1]>=0 && indexes[ndims-1] < tempArr.length)
+				if(tempArr && indexes[ndims-1]>=0 && indexes[ndims-1] < tempArr.length)
 					VM_stack[VM_si++] = tempArr[indexes[ndims-1]];
 				else
 				{
-					VMerro("O vetor vai de 0 à "+(tempArr.length-1)+" mas tentou acessar a posição '"+indexes[ndims-1]+"'");
+					let currentLength = tempArr ? tempArr.length : 0;
+					VMerro("O vetor vai de 0 à "+(currentLength-1)+" mas tentou acessar a posição '"+indexes[ndims-1]+"'");
 					return STATE_ENDED;
 				}
 			}
 			break;
 			
-			case B_WRITE: 
+			case B_WRITE:
 				escreva(VM_stack[--VM_si]);
-				return STATE_BREATHING; // para n travar tudo com muitos escrevas.
+				VM_codeCount += 100; // Não é lançado breathing a cada escreva, mas cada escreva aumenta as chances de acontecer um breathing
+				break; // acumula no buffer; flush ocorre no próximo yield por codeCount
 			case B_CLEAR:
-				limpa();
-				return STATE_BREATHING; // para n travar tudo com muitos escrevas.
+				limpa(); // limpa() já atualiza o DOM diretamente
+				return STATE_BREATHING;
 			case B_WAITINPUT: 
 				return STATE_WAITINGINPUT;
 			case B_READ_INT:
@@ -934,7 +945,7 @@ export function VMrun(execMax)
 					return STATE_ENDED;
 				}
 				
-				if(!/^[\+\-]?\d+$/.test(intRead)) // eslint-disable-line
+				if(!/^[\+\-]?\d+$/.test(intRead))
 				{
 					VMerro("Deveria inserir um número inteiro, mas inseriu outro tipo");
 					return STATE_ENDED;
@@ -948,14 +959,19 @@ export function VMrun(execMax)
 				let floatRead = leia();
 				if(!floatRead || 0 === floatRead.length)
 				{
-					VMerro("Deveria inserir um número, mas inseriu nada");
+					VMerro("Deveria inserir um número real, mas inseriu nada");
 					return STATE_ENDED;
 				}
-								
-				let floatConverted = parseFloat(floatRead);
+
+				if(!/^[\+\-]?(?:\d+\.\d*|\d*\.\d+|\d+)(?:[eE][\+\-]?\d+)?$/.test(floatRead))
+				{
+					VMerro("Deveria inserir um número real, mas inseriu outro tipo");
+					return STATE_ENDED;
+				}
+				let floatConverted = Number(floatRead);
 				if(isNaN(floatConverted) || !isFinite(floatConverted))
 				{
-					VMerro("Deveria inserir um número, mas inseriu outro tipo");
+					VMerro("Deveria inserir um número real, mas resultou em um valor inválido");
 					return STATE_ENDED;
 				}
 				
@@ -998,9 +1014,12 @@ export function VMrun(execMax)
 	}
 	}
 	catch(err) {
-		console.log(err.stack);
+		console.error(err);
 		VMerro(err);
 		return STATE_ENDED;
+	}
+	finally {
+		flushEscreva(); // idempotente: apenas atualiza o DOM se houver conteúdo pendente
 	}
 }
 

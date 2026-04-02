@@ -1,11 +1,11 @@
-import { B_ADD, B_ALOAD, B_ALOADGLOBAL, B_AND, B_ASTORE, B_ASTOREGLOBAL, B_B2S, B_CLEAR, B_DIV, B_DUP, B_F2I, B_F2S, B_FALSE, B_GOTO, B_I2S, B_iDIV, B_IFCMPEQ, B_IFCMPGE, B_IFCMPGT, B_IFCMPLE, B_IFCMPLT, B_IFCMPNE, B_IFEQ, B_IFNE, B_INVOKE, B_LIBINVOKE, B_LIBLOAD, B_LOAD, B_LOADGLOBAL, B_MUL, B_NEG, B_NEWARRAY, B_NEWARRAYGLOBAL, B_NO, B_NOT, B_OR, B_POP, B_PUSH, B_READ_BOOL, B_READ_CHAR, B_READ_FLOAT, B_READ_INT, B_READ_STRING, B_REM, B_RET, B_RETVALUE, B_SHL, B_SHR, B_STORE, B_STOREGLOBAL, B_SUB, B_SWAP, B_TRUE, B_WAITINPUT, B_WRITE, B_XOR 
+import { B_ADD, B_ALOAD, B_ALOADGLOBAL, B_AND, B_ASTORE, B_ASTOREGLOBAL, B_B2S, B_CLEAR, B_DIV, B_DUP, B_F2I, B_F2S, B_FALSE, B_GOTO, B_I2S, B_iDIV, B_IFCMPEQ, B_IFCMPGE, B_IFCMPGT, B_IFCMPLE, B_IFCMPLT, B_IFCMPNE, B_IFEQ, B_IFNE, B_INVOKE, B_iREM, B_LIBINVOKE, B_LIBLOAD, B_LOAD, B_LOADGLOBAL, B_MUL, B_NEG, B_NEWARRAY, B_NEWARRAYGLOBAL, B_NO, B_NOT, B_OR, B_POP, B_PUSH, B_READ_BOOL, B_READ_CHAR, B_READ_FLOAT, B_READ_INT, B_READ_STRING, B_REM, B_RET, B_RETVALUE, B_SHL, B_SHR, B_STORE, B_STOREGLOBAL, B_SUB, B_SWAP, B_TRUE, B_WAITINPUT, B_WRITE, B_XOR 
 } from "./vm/vm.js";
-import { STATEMENT_block, STATEMENT_caso, STATEMENT_declArr, STATEMENT_declArrValues, STATEMENT_declVar, STATEMENT_enquanto, STATEMENT_escolha, STATEMENT_expr, STATEMENT_facaEnquanto, STATEMENT_para, STATEMENT_pare, STATEMENT_ret, STATEMENT_se 
+import { STATEMENT_block, STATEMENT_caso, STATEMENT_declArr, STATEMENT_declArrValues, STATEMENT_declParVar, STATEMENT_declVar, STATEMENT_enquanto, STATEMENT_escolha, STATEMENT_expr, STATEMENT_facaEnquanto, STATEMENT_para, STATEMENT_pare, STATEMENT_ret, STATEMENT_se 
 } from "./parser.js";
 import { convertArrayType, convertMatrixType, getSeparator, getTypeWord, isAttribOp, T_and, T_attrib, T_attrib_bitand, T_attrib_bitnot, T_attrib_bitor, T_attrib_div, T_attrib_minus, T_attrib_mul, T_attrib_plus, T_attrib_rem, T_attrib_shiftleft, T_attrib_shiftright, T_attrib_xor, T_autodec, T_autoinc, T_bitand, T_bitnot, T_bitor, T_cadeia, T_cadeiaLiteral, T_caracter, T_caracterLiteral, T_div, T_dot, T_equals, T_ge, T_gt, T_inteiro, T_inteiroLiteral, T_le, T_logico, T_logicoLiteral, T_lt, T_Matriz, T_Minteiro, T_minus, T_Mlogico, T_mul, T_not, T_notequals, T_or, T_parO, T_plus, T_pre_autodec, T_pre_autoinc, T_real, T_realLiteral, T_rem, T_shiftleft, T_shiftright, T_squareO, T_unary_minus, T_unary_plus, T_vazio, T_Vetor, T_Vinteiro, T_Vlogico, T_word, T_xor 
 } from "./tokenizer.js";
 
-export function getDefaultValue(code,global)
+export function getDefaultValue(code)
 {
 	switch(code)
 	{
@@ -13,8 +13,9 @@ export function getDefaultValue(code,global)
 		case T_caracter: return '\0';
 		case T_cadeia: return "";
 		case T_real: return 0.0;
-		case T_logico: return (global ? 1 : false);
+		case T_logico: return B_FALSE; // B_FALSE=1=falso, consistente entre local e global
 		case T_squareO: return [];
+		default: return undefined;
 	}
 }
 
@@ -111,7 +112,7 @@ export function checarCompatibilidadeTipo(tA,tB,op)
 		break;
 		case T_attrib_bitnot:
 		case T_bitnot:
-			return true; // ?????????
+			return (tA == T_inteiro || tA == T_logico);
 		case T_unary_minus:
 		case T_unary_plus:
 		case T_autoinc:
@@ -135,6 +136,8 @@ export function checarCompatibilidadeTipo(tA,tB,op)
 		case T_squareO: // operador de indexagem ?
 			return tB == T_inteiro;
 	}
+
+	return false;
 }
 
 export function getTipoRetorno(tA,tB)
@@ -149,6 +152,7 @@ export function getTipoRetorno(tA,tB)
 
 export function funcArgsToStr(types)
 {
+	if(!types || types.length === 0) return "";
 	let str = getTypeWord(types[0]);
 	for(let i=1;i<types.length;i++)
 	{
@@ -488,8 +492,8 @@ export class Compiler {
 			B_RETVALUE,
 			B_RET
 			],varCount:2,parameters:[
-			{id: STATEMENT_declVar, index: 0, type: T_inteiro, isConst: false, byRef: false, expr:false, name:"de"},
-			{id: STATEMENT_declVar, index: 0, type: T_inteiro, isConst: false, byRef: false, expr:false, name:"ate"}
+			{id: STATEMENT_declParVar, index: 0, type: T_inteiro, isConst: false, byRef: false, expr:false, name:"de"},
+			{id: STATEMENT_declParVar, index: 0, type: T_inteiro, isConst: false, byRef: false, expr:false, name:"ate"}
 			],type:T_inteiro,jsSafe:true
 		}
 		];
@@ -662,6 +666,12 @@ export class Compiler {
 			{
 				this.erro("não pode retornar "+getTypeWord(tipoRet)+" nesta função, ela é do tipo "+getTypeWord(func.type));
 			}
+			
+			// O valor de retorno deve ir para a stack pai ANTES dos valores de referência,
+			// pois o chamador itera os parâmetros em ordem reversa para desempilhar os
+			// valores byRef. Assim o valor de retorno fica sob os byRefs na stack pai e
+			// é acessado corretamente pelo chamador após todos os byRefs serem guardados.
+			bc.push(B_RETVALUE);
 		}
 		
 		if(func.parameters)
@@ -669,7 +679,7 @@ export class Compiler {
 			for(let i=0;i<func.parameters.length;i++)
 			{
 				// precisa empurrar os valores das variáveis de referência na stack
-				if(func.parameters[i].byRef && func.parameters[i].id == STATEMENT_declVar)
+				if(func.parameters[i].byRef && func.parameters[i].id == STATEMENT_declParVar)
 				{
 					let v = this.getVar(func.parameters[i].name);
 					
@@ -681,15 +691,7 @@ export class Compiler {
 			}
 		}
 		
-		if(expr)
-		{
-			bc.push(B_RETVALUE);
-			bc.push(B_RET);
-		}
-		else
-		{
-			bc.push(B_RET);
-		}
+		bc.push(B_RET);
 	}
 	
 	shallowExtract(statements,statID)
@@ -748,7 +750,7 @@ export class Compiler {
 						bc.push(v.global ? B_NEWARRAYGLOBAL : B_NEWARRAY);
 						bc.push(v.index);
 						bc.push(declared);
-						bc.push(getDefaultValue(v.arrayType,v.global));
+						bc.push(getDefaultValue(v.arrayType));
 					}
 					else if(stat.expr && stat.expr.id == STATEMENT_declArrValues && declared == 0)
 					{
@@ -763,7 +765,7 @@ export class Compiler {
 						bc.push(v.global ? B_NEWARRAYGLOBAL : B_NEWARRAY);
 						bc.push(v.index);
 						bc.push(arrayDim);
-						bc.push(getDefaultValue(v.arrayType,v.global));
+						bc.push(getDefaultValue(v.arrayType));
 					}
 					
 					if(stat.expr)
@@ -787,6 +789,7 @@ export class Compiler {
 					}
 				}
 				break;
+				case STATEMENT_declParVar:
 				case STATEMENT_declVar:
 				{
 					let v = this.createVar(stat.name,stat.comment,stat.type,stat.isConst,false);
@@ -802,6 +805,16 @@ export class Compiler {
 						
 						bc.push(v.global ? B_STOREGLOBAL : B_STORE);
 						bc.push(v.index);
+					}
+					else
+					{
+						if(stat.id != STATEMENT_declParVar) {
+							// Inicializar com valor padrão só quando é uma variável normal. Parâmetros não
+							bc.push(B_PUSH);
+							bc.push(getDefaultValue(v.type));
+							bc.push(v.global ? B_STOREGLOBAL : B_STORE);
+							bc.push(v.index);
+						}
 					}
 				}
 				break;
@@ -979,7 +992,6 @@ export class Compiler {
 						}
 						else
 						{
-							if(k < casosExpressions.length-1)
 							bc.push(B_DUP);// duplica o valor da expressão na stack
 							
 							// deveria checar o tipo?
@@ -1006,9 +1018,10 @@ export class Compiler {
 						this.compileStatements(stat.statements,func);
 					
 					if(!this.loopScope.contrario)
-					{ // se não tem o caso contrário
+					{ // se não tem o caso contrário: emite B_POP para descartar o valor do escolha
 						let jumpIndex = this.loopScope.getContrarioJump();
-						bc[jumpIndex] = bc.length;
+						bc[jumpIndex] = bc.length; // pula para o B_POP abaixo
+						bc.push(B_POP); // descarta o valor do escolha quando nenhum caso combinou
 					}
 					
 					this.loopScope = this.loopScope.parentScope;
@@ -1032,11 +1045,15 @@ export class Compiler {
 						}
 						//console.log("replaced "+jumpIndex+" --> "+bc.length);
 						bc[jumpIndex] = bc.length;
+						bc.push(B_POP); // descarta o valor do escolha (que foi DUP'd) da pilha
 					}
 					else
 					{
 						this.erro("o 'caso' não faz sentido aqui, deve ser colocado em uma estrutura escolha.");
 					}
+				break;
+				default:
+					this.erro("statement desconhecido, id: "+stat.id);
 				break;
 			}
 		}
@@ -1412,6 +1429,10 @@ export class Compiler {
 				{
 					bc.push(B_iDIV);
 				}
+				else if(tRet == T_inteiro && (expr.op == T_rem || expr.op == T_attrib_rem))
+				{
+					bc.push(B_iREM);
+				}
 				else switch(expr.op)
 				{
 					case T_attrib_plus:
@@ -1452,7 +1473,13 @@ export class Compiler {
 						break;
 						
 					case T_attrib_xor:
-					case T_xor:bc.push(B_XOR);break;
+					case T_xor:
+						if(tExprA == T_logico) {// logico é invertido
+							bc.push(B_XOR);
+							bc.push(B_NO);
+						} else
+							bc.push(B_XOR);
+						break;
 					
 					default:
 						this.erro("o operador "+getSeparator(expr.op)+" não pode ter dois operandos.");
@@ -1567,9 +1594,12 @@ export class Compiler {
 						if(args.length == 1)
 						{
 							let v = this.getVar(args[0].name);
-							if(v.isArray)
+							if(v.isArray) {
+								if(args[0].op != T_squareO) {
+									this.erro("leia com vetor ou matriz deve indexar a posição, ex: leia("+v.name+"[0])");
+								}
 								methName += "$"+getTypeWord(v.arrayType);
-							else
+							} else
 								methName += "$"+getTypeWord(v.type);
 
 							this.compileExpr(args[0],bc,-1);
@@ -1759,6 +1789,9 @@ export class Compiler {
 					
 				return libObj.members[campo.name].type;
 				}
+				default:
+					this.erro("expressão com operador desconhecido, id: "+expr.op);
+					return T_vazio;
 			}
 		}
 	}

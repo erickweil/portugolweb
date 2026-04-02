@@ -1,7 +1,10 @@
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico } from "../../tokenizer.js";
+import { BibliotecaBase, libBoolArg } from "./libHelper.js";
 
-export default class Calendario {
+export default class Calendario extends BibliotecaBase {
 	constructor() {
+		super();
+		
 		this.DIA_DOMINGO = 1;
 		this.DIA_SEGUNDA_FEIRA = 2;
 		this.DIA_TERCA_FEIRA = 3;
@@ -96,33 +99,33 @@ export default class Calendario {
 	dia_semana_completo(dia,maiusculas,minusculas)
 	{
 		if(dia <= 0 || dia > this.diasCompleto.length) {
-			throw "Deve estar entre 1 e 7 para ser um dia válido, recebeu:"+dia;
+			throw new Error("Deve estar entre 1 e 7 para ser um dia válido, recebeu:"+dia);
 		}
 
-		return {value:maiusculas == 0 ? this.diasCompleto[dia-1].toUpperCase() : ( 
-		minusculas == 0 ? this.diasCompleto[dia-1].toLowerCase() : this.diasCompleto[dia-1]
+		return {value: libBoolArg(maiusculas) ? this.diasCompleto[dia-1].toUpperCase() : ( 
+		libBoolArg(minusculas) ? this.diasCompleto[dia-1].toLowerCase() : this.diasCompleto[dia-1]
 		)};
 	}
 	
 	dia_semana_curto(dia,maiusculas,minusculas)
 	{
 		if(dia <= 0 || dia > this.diasCurto.length) {
-			throw "Deve estar entre 1 e 7 para ser um dia válido, recebeu:"+dia;
+			throw new Error("Deve estar entre 1 e 7 para ser um dia válido, recebeu:"+dia);
 		}
 
-		return {value:maiusculas == 0 ? this.diasCurto[dia-1].toUpperCase() : ( 
-		minusculas == 0 ? this.diasCurto[dia-1].toLowerCase() : this.diasCurto[dia-1]
+		return {value:libBoolArg(maiusculas) ? this.diasCurto[dia-1].toUpperCase() : ( 
+		libBoolArg(minusculas) ? this.diasCurto[dia-1].toLowerCase() : this.diasCurto[dia-1]
 		)};
 	}
 	
 	dia_semana_abreviado(dia,maiusculas,minusculas)
 	{
 		if(dia <= 0 || dia > this.diasAbr.length) {
-			throw "Deve estar entre 1 e 7 para ser um dia válido, recebeu:"+dia;
+			throw new Error("Deve estar entre 1 e 7 para ser um dia válido, recebeu:"+dia);
 		}
 
-		return {value:maiusculas == 0 ? this.diasAbr[dia-1].toUpperCase() : ( 
-		minusculas == 0 ? this.diasAbr[dia-1].toLowerCase() : this.diasAbr[dia-1]
+		return {value:libBoolArg(maiusculas) ? this.diasAbr[dia-1].toUpperCase() : ( 
+		libBoolArg(minusculas) ? this.diasAbr[dia-1].toLowerCase() : this.diasAbr[dia-1]
 		)};
 	}
 	
@@ -143,7 +146,7 @@ export default class Calendario {
 	
 	hora_atual(formato)
 	{
-		if(formato)
+		if(libBoolArg(formato))
 		{
 			return {value:new Date().getHours()};		
 		}

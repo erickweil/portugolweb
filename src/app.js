@@ -20,6 +20,7 @@ import Hotbar from "./pages/index/hotbar.js";
 	const myCanvas = document.getElementById("myCanvas");
 	const myCanvasKeys = document.getElementById("myCanvasKeys");
 	const hotbar = document.getElementById("hotbar");
+	const settingsMenu = document.getElementById("settingsMenu");
 
 	let fontSize = 10;
 	
@@ -46,24 +47,38 @@ import Hotbar from "./pages/index/hotbar.js";
 			return;
 		}
 
-		let txt = "<div class='atecemporcento'><table class='tabelavariaveis'><thead><tr><th>Variaveis</th></tr></thead><tbody>";
+		const wrapper = document.createElement("div");
+		wrapper.className = "atecemporcento";
+
+		const table = document.createElement("table");
+		table.className = "tabelavariaveis";
+		table.innerHTML = "<thead><tr><th>Variaveis</th></tr></thead>";
+
+		const tbody = document.createElement("tbody");
 		for(const v of tabela) {
 			let vtxt = "";
 
-			if (v.value === undefined || v.value === null) 
-			vtxt = "";
-			else vtxt = VM_valueToString(v.type,v.value);
-			
+			if (v.value !== undefined && v.value !== null) {
+				vtxt = VM_valueToString(v.type, v.value);
+			}
 
 			if(vtxt.length > 1000) {
-				vtxt = vtxt.substring(0,1000) + "...";
+				vtxt = vtxt.substring(0, 1000) + "...";
 			}
-			txt += "<tr><td>"+v.name+":&emsp;"+vtxt+"</td></tr>";
+
+			const tr = document.createElement("tr");
+			const td = document.createElement("td");
+			// Usar textContent evita XSS ao exibir nomes e valores de variáveis
+			td.textContent = v.name + ":\u2004" + vtxt;
+			tr.appendChild(td);
+			tbody.appendChild(tr);
 		}
-		txt += "</tbody></table></div>";
+
+		table.appendChild(tbody);
+		wrapper.appendChild(table);
 
 		div_tabelavariaveis.style.display = "block";
-		div_tabelavariaveis.innerHTML = txt;
+		div_tabelavariaveis.replaceChildren(wrapper);
 	}
 
 	function ocultarTabelaVariaveis() {
@@ -96,7 +111,7 @@ import Hotbar from "./pages/index/hotbar.js";
 			if(btn.value != "Executar")
 			{
 				console.error("Botão em estado inconsistente(Deveria ser Executar):"+btn.value);
-				btn.value == "Executar";
+				btn.value = "Executar";
 			}
 
 			autoSave();
@@ -117,26 +132,22 @@ import Hotbar from "./pages/index/hotbar.js";
 				
 				btn.value = "Parar";
 				portugolRun.executar(string_cod,compilado,enviarErro,passoapasso)
-				.then((output) => {
+				.then((_output) => {
 
 					if(passoapasso)
-					limparErros(["information"]); // Limpa o último realce de linha (por algum motivo não funciona no leia quando é pulado)
+					limparErros(["info"]); // Limpa o último realce de linha (por algum motivo não funciona no leia quando é pulado)
 
 					btn.value = "Executar";
 				})
 				.catch((err) => {
-					let myStackTrace = err.stack || err.stacktrace || "";
-
-					console.log(myStackTrace);
+					console.error(err);
 
 					btn.value = "Executar";
 				});
 			}
 			catch(e)
 			{
-				let myStackTrace = e.stack || e.stacktrace || "";
-
-				console.log(myStackTrace);
+				console.error(e);
 			
 				enviarErro({
 					row: 0,
@@ -145,7 +156,7 @@ import Hotbar from "./pages/index/hotbar.js";
 					textprev: "",
 					textnext: "",
 					text: "Erro ao compilar"+e, // Or the Json reply from the parser 
-					type: "error", // also warning and information
+					type: "error", // also warning, info and security
 					myErrorType: "compilador"
 				});
 
@@ -159,7 +170,7 @@ import Hotbar from "./pages/index/hotbar.js";
 			{
 				console.error("Botão em estado inconsistente(Deveria ser 'Parar' ou 'Parando...'):"+btn.value);
 			}
-			btn.value == "Parando...";
+			btn.value = "Parando...";
 
 			if(portugolRun.parar())
 			{
@@ -170,10 +181,6 @@ import Hotbar from "./pages/index/hotbar.js";
 
 	export function exemplo(nome)
 	{
-		if(nome == "aleatorio")
-		{
-			nome+=  Math.floor(Math.random() * 4);
-		}
 		httpGetAsync("exemplos/"+nome+".por",
 		function(code)
 		{
@@ -181,24 +188,88 @@ import Hotbar from "./pages/index/hotbar.js";
 			limparErros();
 		}
 		);
-		document.getElementById('modalExemplos').style.display = 'none';
+		setMostrarModal(false);
+	}
+
+	export function setMostrarModal(checked) {
+		if(!checked) {
+			document.getElementById('modalExemplos').style.display = 'none';
+			closeSettingsMenu();
+		} else {
+			document.getElementById('modalExemplos').style.display = 'table';
+		}
+	}
+
+	export function showModalExemplos(event) {
+		setMostrarModal(true);
+		closeSettingsMenu();
+		document.getElementById('modalExemplosContent').style.display = 'flex';
+		event.stopPropagation();
 	}
 
 	export function toggleHotbar(show)
 	{
+		syncCheckbox("check-mostrar-hotbar-menu", show);
 		hotbarManager.toggleHotbar(show);
 	}
 
-	export function setModoTurbo(checkbox)
+	export function setModoTurbo(checked)
 	{
-		VM_setExecJS( (portugolRun.lastvmState == STATE_ENDED) && checkbox.checked);
-		checkbox.checked = VM_getExecJS();
-		console.log("Modo: "+(VM_getExecJS() ? 'Modo Turbo' : 'Modo Normal'));
+		VM_setExecJS( (portugolRun.lastvmState == STATE_ENDED) && checked);
+		syncCheckbox("check-modo-turbo-menu", VM_getExecJS());
+		console.log("Modo: "+(VM_getExecJS() ? 'Modo Turbo' : 'Modo Normal'));		
 	}
 
 	export function setAutoCompleterState(checked)
 	{
+		syncCheckbox("check-auto-completar-menu", checked);
 		editorManager.setAutoCompleterState(checked);
+	}
+
+	export function setMostrarGutter(checked)
+	{
+		syncCheckbox("check-mostrar-gutter-menu", checked);
+		editorManager.setGutterState(checked);
+	}
+
+	export function toggleSettingsMenu(event)
+	{
+		if(event)
+		{
+			event.preventDefault();
+			event.stopPropagation();
+		}
+
+		if(settingsMenu.style.display == "block")
+		{
+			setMostrarModal(false);
+			closeSettingsMenu();
+		}
+		else
+		{
+			setMostrarModal(true);
+			document.getElementById('modalExemplosContent').style.display = 'none';
+			settingsMenu.style.display = "block";
+		}
+	}
+
+	export function closeSettingsMenu(event)
+	{
+		if(event)
+		{
+			event.stopPropagation();
+		}
+
+		settingsMenu.style.display = "none";
+	}
+
+	function syncCheckbox(id,checked)
+	{
+		const element = document.getElementById(id);
+		if(element)
+		{
+			element.checked = checked;
+		}
 	}
 
 	export function executarStepStart(btn)
@@ -309,7 +380,7 @@ import Hotbar from "./pages/index/hotbar.js";
 				let file = element.files[0];
 
 				let reader = new FileReader();
-				reader.onload = function(progressEvent)
+				reader.onload = function(_progressEvent)
 				{
 					editorManager.setValue(this.result); // moves cursor to the start
 					
@@ -377,6 +448,11 @@ import Hotbar from "./pages/index/hotbar.js";
 		}
 	}
 
+	export function toggleMostrarBytecode(mostrar) {
+		mostrar_bytecode = mostrar;
+		document.getElementById('hidden').style.display = mostrar ? 'block' : 'none';
+	}
+
 	/**
 	 * PARA FUNCIONAR COM O ANDROID PRECISA DESSAS FUNÇÕES NO OBJETO WINDOW.
 	 * É O JEITO DE INTEGRAR
@@ -398,7 +474,6 @@ import Hotbar from "./pages/index/hotbar.js";
 	
 	function limparErros(tipoErros)
 	{
-		console.log("limpando erros");
 		editorManager.removeMarkers();
 		errosSaida.innerHTML = "";
 		if(tipoErros)
@@ -459,22 +534,23 @@ import Hotbar from "./pages/index/hotbar.js";
 	{
 		try {
 			persistentStoreValue("code",editorManager.getValue());
-			let autoComplete = document.getElementById("check-auto-completar").checked;
+			let autoComplete = document.getElementById("check-auto-completar-menu").checked;
 			persistentStoreValue("autoComplete",autoComplete);
 			
-			let modoTurbo = document.getElementById("check-modo-turbo").checked;
+			let modoTurbo = document.getElementById("check-modo-turbo-menu").checked;
 			persistentStoreValue("modoTurbo",modoTurbo);
 			
-			let mostrandoHotbar = document.getElementById("check-mostrar-hotbar").checked;
+			let mostrandoHotbar = document.getElementById("check-mostrar-hotbar-menu").checked;
 			persistentStoreValue("mostrarHotbar",mostrandoHotbar);
+
+			let mostrandoGutter = document.getElementById("check-mostrar-gutter-menu").checked;
+			persistentStoreValue("mostrarGutter",mostrandoGutter);
 			
 			let tamanhoFonte = fontSize;
 			persistentStoreValue("tamanhoFonte",tamanhoFonte);
 			
 		} catch (e) {
-			let myStackTrace = e.stack || e.stacktrace || "";
-
-			console.log(myStackTrace);
+			console.error(e);
 		}
 	}
 	
@@ -483,6 +559,7 @@ import Hotbar from "./pages/index/hotbar.js";
 		let last_code = persistentGetValue("code");
 		//var hideHotbar = (""+persistentGetValue("hideHotbar")) == "true";
 		let mostrandoHotbar = persistentGetValue("mostrarHotbar");
+		let mostrandoGutter = persistentGetValue("mostrarGutter");
 		let autoComplete = persistentGetValue("autoComplete");
 		let modoTurbo = persistentGetValue("modoTurbo");
 		let tamanhoFonte = persistentGetValue("tamanhoFonte");
@@ -490,41 +567,48 @@ import Hotbar from "./pages/index/hotbar.js";
 		if(typeof(autoComplete) == "string")
 		{
 			autoComplete = ""+autoComplete == "true";
-			document.getElementById("check-auto-completar").checked = autoComplete;
 			setAutoCompleterState(autoComplete);
 		}
 		else
 		{
-			document.getElementById("check-auto-completar").checked = true; 
+			setAutoCompleterState(true);
 		}
 		
 		if(typeof(modoTurbo) == "string")
 		{
 			modoTurbo = ""+modoTurbo == "true";
-			document.getElementById("check-modo-turbo").checked = modoTurbo;
-			setModoTurbo(document.getElementById("check-modo-turbo"));
+			setModoTurbo(modoTurbo);
 		}
 		else
 		{
-			document.getElementById("check-modo-turbo").checked = VM_getExecJS(); 
+			setModoTurbo(false);
 		}
 		
 		if(typeof(mostrandoHotbar) == "string")
 		{
 			// Lembrando da última escolha do usuário
 			mostrandoHotbar = ""+mostrandoHotbar == "true";
-			document.getElementById("check-mostrar-hotbar").checked = mostrandoHotbar; 
 			toggleHotbar(mostrandoHotbar);
 		} 
 		else 
 		{
 			// Padrão mostrar hotbar no mobile, esconder no pc
-			toggleHotbar(isMobile);
+			toggleHotbar(false);
 		}
 
 		if(typeof(tamanhoFonte) == "string")
 		{
 			fonteTamanho(parseInt(""+tamanhoFonte));
+		}
+
+		if(typeof(mostrandoGutter) == "string")
+		{
+			mostrandoGutter = ""+mostrandoGutter == "true";
+			setMostrarGutter(mostrandoGutter);
+		}
+		else
+		{
+			setMostrarGutter(!isMobile);
 		}
 		
 		return last_code;
@@ -540,7 +624,7 @@ import Hotbar from "./pages/index/hotbar.js";
 	{
 		// Essa compilação é para melhorar o auto completar
 		// Não vai precisar fazer nada se o auto completar estiver desativado
-		if(!document.getElementById("check-auto-completar").checked) return;
+		if(!document.getElementById("check-auto-completar-menu").checked) return;
 	
 		try {
 			// Apenas se não estiver executando
@@ -579,9 +663,7 @@ import Hotbar from "./pages/index/hotbar.js";
 				//console.log("Compilou:"+compilado.success+" Tempo de execução:"+Math.trunc(performance.now()-lastvmTime)+" milissegundos");
 			}
 		} catch (e) {
-			let myStackTrace = e.stack || e.stacktrace || "";
-
-			console.log(myStackTrace);
+			console.error(e);
 		}
 	}
 	
@@ -607,17 +689,6 @@ import Hotbar from "./pages/index/hotbar.js";
 	
 	portugolRun.iniciarBibliotecas(myCanvas,myCanvasModal,myCanvasWindow,myCanvasWindowTitle,myCanvasKeys);
 
-	editorManager.initEditor("myEditor",fontSize,portugolRun.libraries,isMobile,() => {
-		if(isMobile)
-		{
-			hotbarManager.collapseUntil("MIDDLE");
-		}
-		else
-		{
-			hotbarManager.collapseUntil("EXTENDED");
-		}
-	});
-
 	div_saida.style.fontSize = fontSize+"pt";
 	errosSaida.style.fontSize = fontSize+"pt";
 	div_tabelavariaveis.style.fontSize = fontSize+"pt";
@@ -633,28 +704,47 @@ import Hotbar from "./pages/index/hotbar.js";
 	if (document.addEventListener)
 	{
 		//window.addEventListener("resize", hideHotBarWhenLandscape);
+		document.addEventListener('click', (e) => {
+			setMostrarModal(false);
+		}, false);
 		document.addEventListener('fullscreenchange', exitHandler, false);
 		document.addEventListener('mozfullscreenchange', exitHandler, false);
 		document.addEventListener('MSFullscreenChange', exitHandler, false);
 		document.addEventListener('webkitfullscreenchange', exitHandler, false);
 	}
 
-	if(isMobile) {
-		if(typeof Android === 'undefined')
-		{
-			editorManager.setValue("programa\n{\n\tfuncao inicio()\n\t{\n\t\t\n\t\tescreva(\"Baixe o aplicativo na play store:\\n\")\n\t\tescreva(\"https://play.google.com/store/apps/details?id=br.erickweil.portugolweb \\n\")\n\t\t\n\t}\n}\n");
-		}
-	}
+	async function initEditor() {
+		await editorManager.initEditor("myEditor",fontSize,portugolRun.libraries,isMobile,() => {
+			if(isMobile)
+			{
+				hotbarManager.collapseUntil("MIDDLE");
+			}
+			else
+			{
+				hotbarManager.collapseUntil("EXTENDED");
+			}
+		});
 
-	function setEditorFromAutoSave() {
+		if(isMobile) {
+			if(typeof Android === 'undefined')
+			{
+				editorManager.setValue("programa\n{\n\tfuncao inicio()\n\t{\n\t\t\n\t\tescreva(\"Baixe o aplicativo na play store:\\n\")\n\t\tescreva(\"https://play.google.com/store/apps/details?id=br.erickweil.portugolweb \\n\")\n\t\t\n\t}\n}\n");
+			}
+		}
+
 		let last_code = getAutoSave();
 		if(last_code)
 			editorManager.setValue(last_code);
-	}
-	setEditorFromAutoSave();
 
-	hotbarManager.resizeEditorToFitHotbar();
-	if(isMobile)
-	{
-		document.body.classList.add('mobile');
+		hotbarManager.resizeEditorToFitHotbar();
+		if(isMobile)
+		{
+			document.body.classList.add('mobile');
+		}
 	}
+
+	setTimeout(() => {
+		initEditor().catch((err) => {
+			console.error(err);
+		});
+	}, 1);

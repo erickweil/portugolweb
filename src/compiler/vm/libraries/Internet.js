@@ -1,8 +1,11 @@
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../tokenizer.js";
 import { STATE_ASYNC_RETURN, STATE_DELAY_REPEAT, VM_async_return, VM_setDelay } from "../vm.js";
+import { BibliotecaBase } from "./libHelper.js";
 
-export default class Internet {
+export default class Internet extends BibliotecaBase {
 	constructor() {
+		super();
+		
 		this.members = {
 
 		"baixar_imagem":{id:T_parO,parameters:[{name:"endereco",type:T_cadeia},{name:"caminho",type:T_cadeia}],type:T_cadeia,jsSafe:false},
@@ -23,6 +26,14 @@ export default class Internet {
 		this.tempo = 0;
 		this.tempo_limite = 10000;
 	}
+
+	finalizarRequisicao()
+	{
+		this.ocupado = false;
+		this.retorno = false;
+		this.tempo = 0;
+		this.abortador = false;
+	}
 	
 	baixar_imagem(endereco, caminho)
 	{
@@ -31,7 +42,7 @@ export default class Internet {
 
 	definir_tempo_limite(tempo_limite)
 	{
-		this.tempo_limite = tempo_limite;
+		this.tempo_limite = Math.max(0, tempo_limite);
 	}
 	
 	endereco_disponivel(endereco)
@@ -41,7 +52,7 @@ export default class Internet {
 			Android.httpgetcheck(endereco,this.tempo_limite); // eslint-disable-line
 			return {state:STATE_ASYNC_RETURN}; 
 		}
-		else //return {value:"Obter páginas da internet apenas funciona no aplicativo Android, pelo navegador não é possível devido a limitações de segurança que grande parte dos navegadores aplicam."};
+		else
 		{
 			let ret = this.obter_texto(endereco);
 			if(ret.state == STATE_DELAY_REPEAT) {
@@ -51,95 +62,109 @@ export default class Internet {
 			return {value:ret.__sucess};
 		}
 	}
-	
+
 	obter_texto(endereco)
 	{
+		// Manter comportamento antigo.
 		if(typeof Android !== 'undefined')
 		{
 			Android.httpget(endereco,this.tempo_limite); // eslint-disable-line
 			return {state:STATE_ASYNC_RETURN}; 
 		}
-		else// return {value:"Obter páginas da internet apenas funciona no aplicativo Android, pelo navegador não é possível devido a limitações de segurança que grande parte dos navegadores aplicam."};
+		else
 		{
-			if(this.ocupado)
+			return this._fazer_requisicao(endereco, "GET", {
+				credentials: 'same-origin' // Mantendo o comportamento anterior, não enviar cookies
+			});
+		}
+	}
+	
+	/**
+	 * 
+	 * @param {string} endereco 
+	 * @param {"GET"|"PATCH"|"POST"|"PUT"|"DELETE"} metodoHttp 
+	 * @param {RequestInit} [opcoes]
+	 */
+	_fazer_requisicao(endereco, metodoHttp, opcoes)
+	{
+		if(opcoes.body && opcoes.body === "") {
+			opcoes.body = undefined; // Evitar enviar body de texto vazio, o que pode causar problemas em algumas APIs
+		}
+		
+		if(this.ocupado)
+		{
+			if(this.retorno !== false)
 			{
-				this.tempo = this.tempo + 1;
-
-				if(this.retorno !== false)
-				{
-					let ret = this.retorno;
-					this.ocupado = false;
-					this.retorno = false;	
-					this.tempo = 0;
-					this.abortador = false;				
-					return ret;
-				}
-				else
-				{
-					if(this.tempo > this.tempo_limite)
-					{
-						this.abortador.abort();
-						this.ocupado = false;
-						this.retorno = false;	
-						this.tempo = 0;
-						this.abortador = false;	
-						return {value:"Tempo limite atingido",__sucess:false};
-					}
-					else 
-					{
-						VM_setDelay(1);
-						return {state:STATE_DELAY_REPEAT};
-					}
-				}
+				let ret = this.retorno;
+				this.finalizarRequisicao();
+				return ret;
 			}
 			else
 			{
-				this.ocupado = true;
-				this.tempo = 0;
-				this.retorno = false;
-				this.abortador = new AbortController();
-				
-				try{
-					let that = this;
-					fetch(endereco, {method:"GET",  signal: that.abortador.signal})
-					.then((response) => {
-						// check for error response
-						if (!response.ok) {
-							// get error message from body or default to response status
-							const error = response.status;
-							return Promise.reject(error);
-						}
-				
-						return response.text();
-					})
-					.then((text) => {
-						if(!text) {
-							return Promise.reject("Resposta Vazia");
-						}
-				
-						that.retorno = {value:""+text,__sucess:true};
-					})
-					.catch( (reason) => {
-						console.log("FETCH --> CATCH:"+reason);
-						if (reason.name === 'AbortError') {
-							console.log('Fetch aborted');
-						} else {
-							that.retorno = {value:""+reason,__sucess:false};
-						}
-					});
+				if((Date.now() - this.tempo) > this.tempo_limite)
+				{
+					if(this.abortador) this.abortador.abort();
+					this.finalizarRequisicao();
+					return {value:"Tempo limite atingido",__sucess:false};
 				}
-				catch(e) {
-					console.log("TRY --> CATCH"+e);
-					this.ocupado = false;
-					this.retorno = false;	
-					this.tempo = 0;
-					this.abortador = false;	
-					return {value:""+e,__sucess:false};
+				else 
+				{
+					VM_setDelay(1);
+					return {state:STATE_DELAY_REPEAT};
 				}
-
-				VM_setDelay(1);
-				return {state:STATE_DELAY_REPEAT};
 			}
+		}
+		else
+		{
+			this.ocupado = true;
+			this.tempo = Date.now();
+			this.retorno = false;
+			this.abortador = new AbortController();
+			
+			try{
+				let that = this;
+				fetch(endereco, {
+					method: metodoHttp, 
+					signal: that.abortador.signal,
+					cache: 'no-cache',
+					redirect: 'follow',
+					...(opcoes || {})
+				})
+				.then((response) => {
+					// check for error response
+					if (!response.ok) {
+						// get error message from body or default to response status
+						return response.text().then((text) => {
+							return Promise.reject(new Error(response.status + " " + response.statusText + ";" + text));
+						});
+					}
+			
+					return response.text();
+				})
+				.then((text) => {
+					if(!text) {
+						return Promise.reject(new Error("Resposta Vazia"));
+					}
+			
+					that.retorno = {value:""+text,__sucess:true};
+				})
+				.catch( (reason) => {
+					console.error(reason);
+					if (reason.name === 'AbortError') {
+						return;
+					} else {
+						that.retorno = {value:""+reason,__sucess:false};
+					}
+				});
+			}
+			catch(e) {
+				console.error(e);
+				this.finalizarRequisicao();
+				return {value:""+e,__sucess:false};
+			}
+
+			VM_setDelay(1);
+			return {state:STATE_DELAY_REPEAT};
 		}
 	}
 }

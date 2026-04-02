@@ -1,9 +1,12 @@
-/* eslint-env node */
+/* global process */
+
 // Ponto de partida para executar um programa do portugol direto
 // Obtendo o código do programa a ser executado de um arquivo ou da entrada de dados
 
 import { readFile } from 'fs/promises';
+import { resolve } from 'path';
 import { createInterface } from 'readline/promises';
+import { pathToFileURL } from 'url';
 import PortugolRuntime from "./src/compiler/vm/portugolrun.js";
 
 // Obter o código do programa a ser executado
@@ -58,7 +61,7 @@ if(ajuda) {
 }
 
 if(filePrograma) {
-    programa = await readFile(new URL(filePrograma, import.meta.url),{encoding:"utf8"});
+    programa = await readFile(pathToFileURL(resolve(filePrograma)),{encoding:"utf8"});
 }
 
 let run;
@@ -112,7 +115,7 @@ try {
     run = new PortugolRuntime({
         value:"",
         leia: async () => {
-            const valorLido = await readline.question("");
+			const valorLido = (await readline.question("")) ?? "";
             saidaEscrita += valorLido+"\n";
             return valorLido+"\n";
         }

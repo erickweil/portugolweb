@@ -1,7 +1,10 @@
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro } from "../../tokenizer.js";
+import { BibliotecaBase, libBoolArg } from "./libHelper.js";
 
-export default class Tipos {
+export default class Tipos extends BibliotecaBase {
 	constructor() {
+		super();
+		
 		this.members = {
 		"cadeia_e_caracter":{id:T_parO,parameters:[{name:"cad",type:T_cadeia}],type:T_logico,jsSafe:true},
 		"cadeia_e_inteiro":{id:T_parO,parameters:[{name:"cad",type:T_cadeia},{name:"base",type:T_inteiro}],type:T_logico,jsSafe:true},
@@ -52,7 +55,7 @@ export default class Tipos {
 		return {value:/^[+-]?[0-9]+$/.test(cad)};
 		else if(base == 16)
 		return {value:/^[+-]?(0x)?[0-9a-f]+$/.test(cad)};
-		else throw "A base deve ser 2,10 ou 16";
+		else throw new Error("A base deve ser 2, 10 ou 16");
 	}
 	
 	cadeia_e_logico(cad)
@@ -62,32 +65,39 @@ export default class Tipos {
 	
 	cadeia_e_real(cad)
 	{
-		return {value:/^[+-]?[0-9]+\.[0-9]+$/.test(cad)};
+		return {value:/^[\+\-]?(?:\d+\.\d*|\d*\.\d+|\d+)(?:[eE][\+\-]?\d+)?$/.test(cad)};
 	}
 	
 	cadeia_para_caracter(cad)
 	{
 		if(this.cadeia_e_caracter(cad).value) return {value:cad.charAt(0)};
-		else throw "o valor '"+cad+"' não pode ser convertido para caracter";
+		else throw new Error("o valor '"+cad+"' não pode ser convertido para caracter");
 	}
 	
 	cadeia_para_inteiro(cad,base)
 	{
-		if(this.cadeia_e_inteiro(cad,base).value) return {value:parseInt(cad,base)};
-		else throw "o valor '"+cad+"' não pode ser convertido para inteiro";
+		if(this.cadeia_e_inteiro(cad,base).value) {
+			cad = cad.toLowerCase();
+			if(base === 2) {
+				cad = cad.replace(/0b/, "");
+			} else if(base === 16) {
+				cad = cad.replace(/0x/, "");
+			}
+			return {value:parseInt(cad,base)};
+		} else throw new Error("o valor '"+cad+"' não pode ser convertido para inteiro");
 	}
 	
 	cadeia_para_logico(cad)
 	{
 		if(cad == "verdadeiro") return {value:true};
 		else if(cad == "falso") return {value:false};
-		else throw "o valor '"+cad+"' não pode ser convertido para logico";
+		else throw new Error("o valor '"+cad+"' não pode ser convertido para logico");
 	}
 	
 	cadeia_para_real(cad)
 	{
 		if(this.cadeia_e_real(cad).value) return {value:parseFloat(cad)};
-		else throw "o valor '"+cad+"' não pode ser convertido para real";
+		else throw new Error("o valor '"+cad+"' não pode ser convertido para real");
 	}
 	
 	caracter_e_inteiro(cad)
@@ -111,7 +121,7 @@ export default class Tipos {
 	{
 		if(this.caracter_e_inteiro(cad).value)
 		return {value:cad.charCodeAt(0)-48};
-		else throw "o valor '"+cad+"' não pode ser convertido para inteiro";
+		else throw new Error("o valor '"+cad+"' não pode ser convertido para inteiro");
 	}
 	
 	caracter_para_logico(cad)
@@ -119,7 +129,7 @@ export default class Tipos {
 		cad = cad.toLowerCase();
 		if(cad == "s") return {value:true};
 		else if(cad == "n") return {value:false};
-		else throw "o valor '"+cad+"' não pode ser convertido para logico";
+		else throw new Error("o valor '"+cad+"' não pode ser convertido para logico");
 	}
 	
 	inteiro_e_caracter(i)
@@ -129,13 +139,14 @@ export default class Tipos {
 	
 	inteiro_para_cadeia(i,base)
 	{
+		if(base !== 2 && base !== 10 && base !== 16) throw new Error("A base deve ser 2, 10 ou 16");
 		return {value: i.toString(base)};
 	}
 	
 	inteiro_para_caracter(i)
 	{
 		if(this.inteiro_e_caracter(i).value) return {value:(""+i).charAt(0)};
-		else throw "o valor '"+i+"' não pode ser convertido para caracter";
+		else throw new Error("o valor '"+i+"' não pode ser convertido para caracter");
 	}
 	
 	inteiro_para_logico(i)
@@ -150,26 +161,28 @@ export default class Tipos {
 	
 	logico_para_cadeia(log)
 	{
-		return {value:log == 0 ? "verdadeiro" : "falso"};
+		return {value: libBoolArg(log) ? "verdadeiro" : "falso"};
 	}
 	
 	logico_para_caracter(log)
 	{
-		return {value:log == 0 ? "s" : "n"};
+		return {value: libBoolArg(log) ? "s" : "n"};
 	}
 	
 	logico_para_inteiro(log)
 	{
-		return {value:log == 0 ? 1 : 0};
+		return {value: libBoolArg(log) ? 1 : 0};
 	}
 	
 	real_para_cadeia(rea)
 	{
-		return {value:""+rea};
+		let strFloat = ""+rea;
+		if(!strFloat.includes(".") && !strFloat.includes("e")) strFloat += ".0";
+		return {value:strFloat};
 	}
 	
 	real_para_inteiro(rea)
 	{
-		return {value:Math.floor( rea )};
+		return {value:Math.trunc( rea )};
 	}
 }

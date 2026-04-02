@@ -46,7 +46,16 @@ if(typeof Android !== 'undefined')
 
     if(window.navigator)
     {
-        window.navigator.clipboard = new MyClipboard();
+        const myClipboard = new MyClipboard();
+        try {
+            Object.defineProperty(window.navigator, 'clipboard', {
+                get: () => myClipboard,
+                configurable: true
+            });
+        } catch(e) {
+            // fallback: tenta atribuição direta caso defineProperty falhe
+            window.navigator.clipboard = myClipboard;
+        }
     }
 }
 

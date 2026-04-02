@@ -1,5 +1,3 @@
-/* eslint-env node, jest */
-
 import { httpGetAsync } from "../src/extras/extras.js";
 import PortugolRuntime from "../src/compiler/vm/portugolrun.js";
 //import { assert, assertEquals, test, testAll } from './test.js';
@@ -24,7 +22,7 @@ function doExecCheck(input) {
     const ex_fim = lninput.lastIndexOf("---")-1;
     const ex_inicio = lninput.lastIndexOf("---",ex_fim)+4;
     const ex_txt = lninput.substring(ex_inicio,ex_fim);
-    if(!ex_txt) throw "Não tem o que o código deveria produzir";
+    if(!ex_txt) throw new Error("Não tem o que o código deveria produzir");
     //assert(ex_txt != false);
 
 
@@ -34,7 +32,7 @@ function doExecCheck(input) {
 
     const compilado = run.compilar(input,false,false);
     //assert(compilado.success);
-    if(!compilado.success) throw "Erro na compilação";
+    if(!compilado.success) throw new Error("Erro na compilação");
 
     return run.executar(input,compilado,false).then((saida) => {
         if(!saida) return Promise.reject("Saída Vazia");
@@ -45,7 +43,7 @@ function doExecCheck(input) {
 
 function testExemplo(exemplo) {
     test(exemplo,() => {
-        return fetch("/test/programas/"+exemplo, {method:"GET"})
+        return fetch("/exemplos/test/"+exemplo, {method:"GET"})
         .then((response) => {
             if (!response.ok) return Promise.reject(response.status);    
 
@@ -73,4 +71,14 @@ describe("PortugolRuntime",() => {
     testExemplo("bibli_calendario.por");
     testExemplo("bibli_matematica.por");
     testExemplo("bibli_texto.por");
+    testExemplo("notacao_cientifica.por");
+    testExemplo("xor_logico.por");
+    testExemplo("escolha.por");
+    testExemplo("byref_retorno.por");
+    testExemplo("bibli_tipos.por");
+    testExemplo("logico_array_default.por");
+
+    testExemplo("faca_enquanto.por");       // STATEMENT_facaEnquanto (do-while)
+    testExemplo("matriz_literal.por");      // compileDeclArray fix: [[a,b],[c,d]]
+    testExemplo("variaveis_globais.por");   // globais via closure
 });

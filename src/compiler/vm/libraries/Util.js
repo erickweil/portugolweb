@@ -1,8 +1,11 @@
 import { T_parO, T_word, T_inteiro, T_cadeia, T_caracter, T_real, T_logico, T_vazio, T_Minteiro, T_Vetor, T_Matriz } from "../../tokenizer.js";
 import { STATE_DELAY, VM_setDelay } from "../vm.js";
+import { BibliotecaBase } from "./libHelper.js";
 
-export default class Util {
+export default class Util extends BibliotecaBase {
 	constructor() {
+		super();
+		
 		this.members = {
 		"aguarde":{id:T_parO,parameters:[{name:"intervalo",type:T_inteiro}],type:T_vazio,jsSafe:false},
 		
@@ -33,7 +36,7 @@ export default class Util {
 	
 	resetar()
 	{
-		this.time = new Date().getTime();
+		this.time = Date.now();
 	}
 	
 	aguarde(intervalo)
@@ -59,12 +62,12 @@ export default class Util {
 	
 	sorteia(minimo,maximo)
 	{
-		maximo += 1; // para incluir o maximo dentro do intervalo
-		return {value: Math.floor(Math.random() * (maximo-minimo)) + minimo};
+		if(maximo < minimo) throw new Error("O valor máximo deve ser maior ou igual ao mínimo");
+		return {value:Math.floor(Math.random() * ((maximo-minimo) + 1)) + minimo};
 	}
 	
 	tempo_decorrido()
 	{
-		return {value:new Date().getTime() - this.time};
+		return {value:Date.now() - this.time};
 	}
 }

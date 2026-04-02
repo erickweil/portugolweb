@@ -1,23 +1,34 @@
 package br.erickweil.portugolweb;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,7 +37,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
-public class Inicio extends Activity {
+public class Inicio extends AppCompatActivity {
 
     public static final String SITE_PROTOCOLO = "https://";
     public static final String SITE_DOMINIO = "erickweil.github.io";
@@ -47,6 +58,9 @@ public class Inicio extends Activity {
     private String fileToOpen;
     private int webAppVersion;
 
+    ActivityResultLauncher<String> saveFileLauncher;
+    ActivityResultLauncher<String> loadFileLauncher;
+
     // Se for true não irá tentar atualizar. previne um loop de erros ao abrir o app
     public static boolean falhouCache;
 
@@ -66,8 +80,62 @@ public class Inicio extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inicio);
+
+        // Trata insets de IME (teclado) e barras do sistema para funcionar corretamente
+        // no modo edge-to-edge obrigatório do Android 15+ (targetSdk 35).
+        // O adjustResize do WebView não funciona sozinho em edge-to-edge.
+        LinearLayout webviewContainer = findViewById(R.id.webview_container);
+        ViewCompat.setOnApplyWindowInsetsListener(webviewContainer, (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+            int bottomInset = Math.max(ime.bottom, systemBars.bottom);
+            //v.setPadding(systemBars.left, systemBars.top, systemBars.right, bottomInset);
+            v.setPadding(0, 0, 0, bottomInset);
+            if(webview != null) {
+                webview.requestApplyInsets();
+                // execJavascriptCode("document.body.scrollTop = 0;");
+            }
+            return insets;
+        });
+
+        // Registrar launchers antes de onStart (substituem startActivityForResult)
+        saveFileLauncher = registerForActivityResult(
+                new ActivityResultContracts.CreateDocument("text/plain"),
+                uri -> {
+                    if (uri == null) return;
+                    try {
+                        if (JSinterface.file_to_save != null) {
+                            OutputStream output = getContentResolver().openOutputStream(uri);
+                            if (output != null) {
+                                output.write(JSinterface.file_to_save.getBytes(StandardCharsets.UTF_8));
+                                output.flush();
+                                output.close();
+                            }
+                        }
+                    } catch (IOException e) {
+                        Log.e("INICIO", "Erro: " + e, e);
+                        Toast.makeText(this, "Problemas ao salvar:" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+
+        loadFileLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                uri -> {
+                    if (uri == null) return;
+                    long fileSize = getURISize(uri);
+                    if (fileSize < MAX_FILESIZE) {
+                        String fileEscapedText = readEscapedTextFromURI(uri);
+                        if (fileEscapedText != null)
+                            execJavascriptCode("android_loaded(\"" + fileEscapedText + "\")");
+                    } else {
+                        Toast.makeText(this, "O arquivo é grande demais:" + fileSize + " bytes!", Toast.LENGTH_LONG).show();
+                    }
+                }
+        );
 
         // Get the intent that started this activity
         Intent intent = getIntent();
@@ -100,7 +168,7 @@ public class Inicio extends Activity {
 
                 prefsEdit.putString("identifier", identifier);
             }
-            prefsEdit.apply();// commit??
+            prefsEdit.apply();
 
             Log.d("INICIO","Iniciado "+startCount+" vezes");
             if(startCount == 10 || startCount == 20 || startCount == 40 || (deuNota == 0 && startCount > 50 && startCount % 20 == 0))
@@ -110,7 +178,7 @@ public class Inicio extends Activity {
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Log.e("INICIO", "Erro: " + e, e);
         }
 
 
@@ -126,7 +194,6 @@ public class Inicio extends Activity {
         webviewSettings.setCacheMode(SITE_FAZER_CACHE ? WebSettings.LOAD_DEFAULT : WebSettings.LOAD_NO_CACHE);
 
         webviewSettings.setDatabaseEnabled(true);
-        webviewSettings.setDomStorageEnabled(true);
 
         webview.setWebChromeClient(new WebChromeClient());
         final WebViewClient client = new InterceptorWebViewClient(
@@ -145,10 +212,12 @@ public class Inicio extends Activity {
 
         webview.setWebViewClient(client);
 
-        webviewSettings.setAllowFileAccessFromFileURLs(true); //Maybe you don't need this rule
-        webviewSettings.setAllowUniversalAccessFromFileURLs(true);
-
-
+        // Nota: setAllowFileAccessFromFileURLs e setAllowUniversalAccessFromFileURLs
+        // NÃO são necessários aqui: o WebView carrega de https://, não de file://.
+        // O InterceptorWebViewClient mantém a origem https:// ao servir arquivos locais.
+        // Habilitar essas flags seria um risco de segurança sem nenhum benefício.
+        // webviewSettings.setAllowFileAccessFromFileURLs(true); //Maybe you don't need this rule
+        // webviewSettings.setAllowUniversalAccessFromFileURLs(true);
 
         Log.d("INICIO","Iniciando App, Página salva no cache:"+cachePathToOpen);
 
@@ -160,6 +229,8 @@ public class Inicio extends Activity {
 
     public int loaded = 0;
     public void onWebViewPageFinished(WebView webview, String url) {
+        // https://medium.com/androiddevelopers/make-webviews-edge-to-edge-a6ef319adfac
+        webview.requestApplyInsets();
         if(loaded == 0)
         {
             if(fileToOpen != null)
@@ -172,7 +243,7 @@ public class Inicio extends Activity {
 
             if(!falhouCache && SITE_FAZER_CACHE) {
                 // É para que não atrapalhe o carregamento da página.
-                new Handler().postDelayed(() -> checkLatestVersion(webAppVersion), 750);
+                new Handler(Looper.getMainLooper()).postDelayed(() -> checkLatestVersion(webAppVersion), 750);
             }
         }
         loaded++;
@@ -201,13 +272,18 @@ public class Inicio extends Activity {
         String myVersionName = "not available"; // initialize String
 
         try {
-            myVersionName = packageManager.getPackageInfo(packageName, 0).versionName;
+            PackageInfo packageInfo;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                packageInfo = packageManager.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0));
+            } else {
+                packageInfo = packageManager.getPackageInfo(packageName, 0);
+            }
+            myVersionName = packageInfo.versionName;
         } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
+            Log.e("INICIO", "Erro: " + e, e);
         }
 
         VersionChecker checker = new VersionChecker(getVersionCheck(),myVersionName,webAppVersion,this);
-        //        checker.execute("A");
         checker.executar();
     }
 
@@ -238,7 +314,7 @@ public class Inicio extends Activity {
             } else return null;
         }
         catch(IOException e) {
-            e.printStackTrace();
+            Log.e("INICIO", "Erro: " + e, e);
             Toast.makeText(this, "Problemas ao carregar:"+e.getMessage(), Toast.LENGTH_SHORT).show();
             return null;
         }
@@ -283,64 +359,13 @@ public class Inicio extends Activity {
             returnCursor.moveToFirst();
             return returnCursor.getLong(sizeIndex);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("INICIO", "Erro: " + e, e);
             return -1;
         }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode,resultCode,data);
-        if(requestCode == WebJSInterface.CODE_SAVE && resultCode == Activity.RESULT_OK) {
-            Uri uri = data.getData();
-
-            //just as an example, I am writing a String to the Uri I received from the user:
-
-            try {
-                if(JSinterface.file_to_save != null && uri != null) {
-                    OutputStream output = getContentResolver().openOutputStream(uri);
-                    if(output != null) {
-                        output.write(JSinterface.file_to_save.getBytes(StandardCharsets.UTF_8));
-                        output.flush();
-                        output.close();
-                    }
-                }
-            }
-            catch(IOException e) {
-                e.printStackTrace();
-                Toast.makeText(this, "Problemas ao salvar:"+e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        }
-
-        if(requestCode == WebJSInterface.CODE_LOAD && resultCode == Activity.RESULT_OK) {
-            Uri uri = data.getData();
-
-            //just as an example, I am writing a String to the Uri I received from the user:
-
-            long fileSize = getURISize(uri);
-            
-            if(fileSize < MAX_FILESIZE)
-            {
-                String fileEscapedText = readEscapedTextFromURI(uri);
-                if(fileEscapedText != null)
-                    execJavascriptCode("android_loaded(\""+fileEscapedText+"\")");
-            }
-            else
-            {
-                Toast.makeText(this,"O arquivo é grande demais:"+fileSize+" bytes!",Toast.LENGTH_LONG).show();
-            }
-        }
-    }
-
-    public void execJavascriptCode(String code)
-    {
-        if(code == null || code.isEmpty()) return;
-
-        //webview.loadUrl("javascript:"+code);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-            webview.evaluateJavascript(code, null); // this don't reload the page, should worry about?
-        } else {
-            webview.loadUrl("javascript:"+code); // NUNCA VAI EXECUTAR MAS OK
-        }
+    public void execJavascriptCode(String code) {
+        if (code == null || code.isEmpty()) return;
+        webview.evaluateJavascript(code, null);
     }
 }

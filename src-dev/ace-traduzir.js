@@ -30,7 +30,7 @@ function special_replace(string_input, obj_replace_dictionary) {
     });
 }
 
-const bibliotecaAcePath = "./lib/ace-src-min-noconflict/";
+const bibliotecaAcePath = "./lib/src-min-noconflict/";
 let acejs_txt = readFileSync(bibliotecaAcePath+"ace.js", {encoding: "utf8"});
 acejs_txt = special_replace(acejs_txt, {
 // Funciona porque faz o match das aspas e a letra maiúscula

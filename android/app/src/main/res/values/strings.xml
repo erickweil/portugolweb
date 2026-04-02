@@ -1,5 +1,27 @@
 <resources>
     <string name="app_name">Portugol Web</string>
-
     <string name="default_channel_id">portugolchannel</string>
+
+    <!-- Diálogo: App desatualizado -->
+    <string name="dialog_msg_app_desatualizado">Foi detectado que seu aplicativo está desatualizado, é altamente recomendado que você atualize o aplicativo\n*Salve seu trabalho* antes de atualizar\n A versão mais recente é %1$s e você ainda está na %2$s</string>
+    <string name="dialog_btn_atualizar">Atualizar</string>
+    <string name="dialog_btn_continuar_desatualizado">Continuar Desatualizado</string>
+
+    <!-- Diálogo: Dar nota / engajamento -->
+    <string-array name="dialog_msgs_nota">
+        <item>Gostaria de sugerir algo? Faça isso no projeto no Github.</item>
+        <item>Você é um professor? Contribua com o projeto no Github</item>
+        <item>Encontrou um problema? Você deveria relatar para que seja resolvido, por meio de uma issue no Github</item>
+        <item>Tem uma ideia de melhoria? Contribua com o projeto no Github</item>
+        <item>Sabia que este APP é Open Source? Veja todo o código no Github</item>
+        <item>Se você clicar no botão \'Dar uma Nota\' esse pop-up irá parar de ser exibido</item>
+    </string-array>
+    <string name="dialog_msg_nota_default">Está gostando do App? Considere Avaliá-lo na Play Store.</string>
+    <string name="dialog_btn_abrir_projeto">Abrir projeto</string>
+    <string name="dialog_btn_dar_nota">Dar uma Nota</string>
+    <string name="dialog_btn_depois">Depois</string>
+
+    <!-- Diálogo: WebApp atualizado -->
+    <string name="dialog_msg_webapp_atualizado">O Site do aplicativo atualizou para a versão %1$d (Você estava na %2$d). Download da versão nova concluído.\n *Salve seu trabalho* e reinicie o aplicativo para ter efeito.</string>
+    <string name="dialog_btn_reiniciar">Reiniciar</string>
 </resources>

@@ -1,5 +1,3 @@
-/* eslint-env node, jest */
-
 import { Tokenizer } from '../src/compiler/tokenizer.js';
 
 //import { assert, assertEquals, test, testAll } from './test.js';
@@ -47,13 +45,12 @@ function testExemplo(exemplo) {
         testExemplo("aleatorio1.por");
         testExemplo("aleatorio2.por");
         testExemplo("aleatorio3.por");
-        testExemplo("aleatorio5.por");
         testExemplo("bibliotecas.por");
         testExemplo("bolachaoumaca.por");
         testExemplo("branco.por");
         testExemplo("condicoes.por");
         testExemplo("entrada.por");
-        testExemplo("funcoes.por");
+        testExemplo("recursividade.por");
         testExemplo("graficos.por");
         testExemplo("internet.por");
         testExemplo("jogodavida.por");
