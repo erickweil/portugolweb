@@ -1,164 +1,90 @@
 programa
 {
+	// Obs: Este exemplo só funciona no aplicativo Android.
+	// pois o navegador não deixa baixar arquivos de qualquer site
+
 	inclua biblioteca Internet
-	inclua biblioteca Texto --> t
-	inclua biblioteca Tipos --> tp
-	inclua biblioteca Util
+	inclua biblioteca Texto
 	
-	cadeia ASCII =     " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
-	cadeia ASCII_URI =  "!.!!!!!!...!!..!..........!!!!!!!..........................!!!!.!..........................!!!."
+	// Pesquise um livro em https://www.gutenberg.org/ebooks/
+	// E copie o link para o formato txt UTF-8
+	// Ou utilize um dos exemplos abaixo
 
-	cadeia TAGS_BLOCO[] = {"address","article","aside","blockquote","canvas",
-	"dd","div","dl","dt","fieldset","figcaption","figure","footer",
-	"form","h1","h2","h3","h4","h5","h6","header","hr","li","main",
-	"nav","noscript","ol","p","pre","section","table","tfoot","ul","video",
-	
-	"br","hr"
-	}
+	// Os Lusíadas
+	cadeia url = "https://www.gutenberg.org/cache/epub/3333/pg3333.txt"
 
-	funcao inteiro converterParaASCII(caracter c)
-	{
-		retorne t.posicao_texto(""+c,ASCII,0) + 32
-	}
-	
-	funcao cadeia encodeURI(cadeia txt)
-	{
-		cadeia ret = ""
-		para(inteiro i=0;i<t.numero_caracteres(txt);i++)
-		{
-			caracter c = t.obter_caracter(txt,i)
-			inteiro code = converterParaASCII(c)
-			se(code >= 32)
-			{
-				caracter substitute = t.obter_caracter(ASCII_URI,code-32)
-				cadeia cfinal
-				se(c == ' ')
-				{
-					cfinal = "+"
-				}
-				senao se(substitute == '!')
-				{
-					cfinal = "%"+t.caixa_alta(tp.inteiro_para_cadeia(code,16))
-				}
-				senao
-				{
-					cfinal = ""+c
-				}
-				
-				ret += cfinal
-			}
-		}
-		retorne ret
-	}
+	// Bíblia João Ferreira d'Almeida
+	// cadeia url = "https://www.gutenberg.org/cache/epub/62383/pg62383.txt"
 
-	
-	// Manipulação do HTML
-	cadeia html=""
-	inteiro htmlsz=0
-	inteiro index=0
-	
-	// Procura o próximo que der com a pesquisa
-	funcao proximo(cadeia pesquisa)
-	{
-		inteiro i = t.posicao_texto(pesquisa,html,index)
-		se(i>0)
-		{
-			index=i
-		
-			index+= t.numero_caracteres(pesquisa)
-        }
-	}
-	
-	// pegar o nome da tag
-	funcao logico proximoNome(cadeia teste)
-	{
-		inteiro i = t.posicao_texto(teste,html,index)
-		retorne i == index
-	}
-	
-	funcao logico proximoNomeArr(cadeia teste[])
-	{
-		para(inteiro i =0;i<Util.numero_elementos(teste);i++)
-		{
-			se(proximoNome(teste[i])) retorne verdadeiro
-		}
-		retorne falso
-	}
-	
-	funcao cadeia removerTags(cadeia txthtml)
-	{
-		html = txthtml
-		htmlsz = t.numero_caracteres(txthtml)
-		
-		//Acha o body, assim pula todo o css e js do <head>
-		proximo("<body")
-		//pula a tag
-		proximo(">")
-		
-		cadeia textoFinal = ""
-		logico quebrouLinha = falso
-		para(;index<t.numero_caracteres(html);index++)
-		{
-			caracter c = t.obter_caracter(html,index)
-			se(c == '<')
-			{
-				index++
-				// Nao escrever o javascript nem css na tela
-				se(proximoNome("script") ou proximoNome("style"))
-				{
-					proximo("</")
-					index+=5
-				}
-				senao
-				{
-				//	se(proximoNome("br"))
-				//	{
-					se(proximoNomeArr(TAGS_BLOCO))
-					{
-						textoFinal+="\n"
-						quebrouLinha = verdadeiro
-					}
-				//	}
-					proximo(">")
-					index--
-				}
-			}
-			senao
-			{
-				inteiro code = converterParaASCII(c)
-				se(code >=32) // Assim não escreve quebras de linha nem nenhum outro caracter especial que poderia dar problema
-							  // mas ae acaba perdendo os acentos
-				{
-					textoFinal += c
-					quebrouLinha = falso
-				}
-			}
-		}
-		retorne textoFinal
-	}
-	
+	// A Concise Dictionary of Middle English from A.D. 1150 to 1580
+	// cadeia url = "https://www.gutenberg.org/cache/epub/10625/pg10625.txt"
+
+	cadeia livroTXT
 	funcao inicio ()
 	{
-		escreva("_____________________________________\n")
-		escreva("|                                   |\n")
-		escreva("|                                   |\n")
-		escreva("|                                   |\n")
-		escreva("|                                   |\n")
-		escreva("|              GOOGLE               |\n")
-		escreva("|                                   |\n")
-		escreva("|                                   |\n")
-		escreva("|                                   |\n")
-		escreva("|___________________________________|\n")
-		escreva("\n\nInsira sua pesquisa:")
-		cadeia pesquisa 
-		leia(pesquisa)
+		escreva("Baixando livro... \n")
+		escreva("URL --> '", url, "' \n")
 		
-		// Por enquanto, para funcionar o site TEM que ser HTTPS
-		cadeia site = "https://www.google.com/search?q="+encodeURI(pesquisa)
+		livroTXT = Internet.obter_texto(url)
 		
-		cadeia pesquisaHTML = Internet.obter_texto(site)
-		//cadeia pesquisaHTML = "<html><head><script>aaaaaaa aaaaa aaaa</script><body>Oi tudo <b>bem</b>?<br>Ok então Tchau</body></html>"
+		escreva("Baixou o livro!\n")
+		reiniciar_linhas()
+		cadeia titulo = proxima_linha()
+		escreva(titulo, "\n")
 		
-		escreva(removerTags(pesquisaHTML))
+		enquanto(verdadeiro)
+		{
+			escreva("Pesquisar no livro:\n")
+			cadeia pesquisa
+			leia(pesquisa)
+			pesquisa = Texto.caixa_alta(pesquisa)
+			
+            reiniciar_linhas()
+            cadeia linha
+            inteiro quantas = 0
+            faca
+            {
+            	linha = proxima_linha()
+            	cadeia LINHA = Texto.caixa_alta(linha)
+				// Faz a pesquisa convertido para caixa alta para ignorar
+				// diferenças entra maiúsculas e minúsculas	
+            	se(Texto.posicao_texto(pesquisa, LINHA, 0) != -1)
+            	{
+            		escreva(linha, "\n")
+            		quantas++
+            	}
+            }
+            enquanto(nao fim)
+            
+            escreva("\nOcorrências:", quantas, "\n")
+		}
+	}
+	
+	// Essas funções permitem atravessar
+	// linha por linha um texto grande de forma simples
+	inteiro linha_i
+	inteiro linha_ui
+	logico fim
+	funcao reiniciar_linhas()
+	{
+		linha_i = -1
+		linha_ui = -1
+		fim = falso
+	}
+	funcao cadeia proxima_linha()
+	{
+		se(linha_i >= Texto.numero_caracteres(livroTXT)) {
+			fim = verdadeiro
+			retorne ""
+		}
+		
+		linha_i++
+		linha_ui = linha_i 
+		enquanto (linha_i < Texto.numero_caracteres(livroTXT) e Texto.obter_caracter(livroTXT, linha_i) != '\n')
+		{
+			linha_i++
+		}
+		fim = falso
+		retorne Texto.extrair_subtexto(livroTXT, linha_ui, linha_i)
 	}
 }

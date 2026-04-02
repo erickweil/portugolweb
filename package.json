@@ -1,6 +1,6 @@
 {
   "name": "portugolweb",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Portugol Web",
   "main": "src/index.js",
   "type": "module",

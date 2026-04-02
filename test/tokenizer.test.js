@@ -50,7 +50,7 @@ function testExemplo(exemplo) {
         testExemplo("branco.por");
         testExemplo("condicoes.por");
         testExemplo("entrada.por");
-        testExemplo("funcoes.por");
+        testExemplo("recursividade.por");
         testExemplo("graficos.por");
         testExemplo("internet.por");
         testExemplo("jogodavida.por");
